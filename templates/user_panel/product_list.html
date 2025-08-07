@@ -1,0 +1,577 @@
+{% extends "user_panel/base.html" %}
+{% load static %}
+
+{% load custom_filters %}
+{% block content %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>LushDairy | Products</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Bootstrap 5 CDN -->
+ 
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+  
+  <style>
+    :root {
+      --lush-green: #2e7d32;
+      --light-green: #e8f5e9;
+      --white: #ffffff;
+    }
+
+    body {
+      background-color: var(--light-green);
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    .navbar {
+      background-color:  #2e7d32;
+    }
+
+    
+
+    .navbar-brand {
+      font-weight: bold;
+      font-size: 24px;
+    }
+
+    .navbar form input {
+      border-radius: 20px;
+      padding-left: 15px;
+    }
+
+    .sidebar {
+      background-color: var(--white);
+      border: 2px solid var(--lush-green);
+      border-radius: 12px;
+      padding: 20px;
+    }
+
+    .sidebar h5 {
+      color: var(--lush-green);
+      font-weight: bold;
+    }
+
+    
+
+    .product-card {
+      background-color: var(--white);
+      border: 1px solid #c8e6c9;
+      border-radius: 10px;
+      padding: 15px;
+      margin-bottom: 20px;
+      height: 100%;
+      transition: transform 0.3s ease;
+    }
+
+    .product-card:hover {
+      transform: scale(1.02);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .product-card h6 {
+      color: var(--lush-green);
+      font-weight: 600;
+    }
+
+    .pagination-controls {
+      margin-top: 30px;
+    }
+
+    .pagination-controls a {
+      color: var(--lush-green);
+    }
+
+    
+    
+
+    
+    /* Basic Reset */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* Top Bar */
+.top-bar {
+  background-color:var(--light-green);
+  padding: 0.5rem 0;
+  font-size: 14px;
+  border-bottom: 1px solid #ddd;
+}
+
+.top-bar .user-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 1rem;
+}
+
+.top-bar a {
+  color: #333;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.top-bar a:hover {
+  color:hsl(174, 100.00%, 29.60%);
+}
+
+/* Dropdown */
+.dropdown {
+  position: relative;
+}
+
+.dropdown .icon-button {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  color: #333;
+}
+
+.dropdown-content {
+  display: none;
+  position: absolute;
+  right: 0;
+  top: 120%;
+  background-color: #fff;
+  min-width: 200px;
+  box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+  z-index: 10;
+  padding: 10px 0;
+}
+
+.dropdown-content a {
+  padding: 10px 20px;
+  display: block;
+  color: #333;
+  text-decoration: none;
+}
+
+.dropdown-content a:hover {
+  background-color: #f0f0f0;
+}
+
+.dropdown:hover .dropdown-content {
+  display: block;
+}
+
+.dropdown-header {
+  font-weight: bold;
+  padding: 10px 20px;
+  border-bottom: 1px solid #eee;
+  background-color: #fafafa;
+}
+
+/* Header Content */
+.header-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 0;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #333;
+}
+
+.logo img {
+  height: 40px;
+  width: 40px;
+  object-fit: cover;
+}
+
+/* Navigation */
+nav ul {
+  list-style: none;
+  display: flex;
+  gap: 2rem;
+}
+
+nav a {
+  text-decoration: none;
+  color: #333;
+  font-weight: 500;
+  padding: 8px 0;
+  position: relative;
+}
+
+nav a.active,
+nav a:hover {
+  color: #009688;
+}
+
+nav a.active::after,
+nav a:hover::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 2px;
+  width: 100%;
+  background-color: #009688;
+}
+
+/* Header Actions */
+.header-actions {
+  display: flex;
+  align-items: center;
+}
+
+
+
+
+
+
+/* Icon Buttons */
+.icon-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  color: #333;
+  position: relative;
+}
+
+.cart-count {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background-color: red;
+  color: white;
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 50%;
+}
+
+/* Container Utility */
+.container {
+  width: 90%;
+  max-width: 1200px;
+  margin: auto;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .header-content,
+  .top-bar .user-actions {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  nav ul {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .search-input {
+    width: 100%;
+  }
+}
+
+  .product-image-fixed {
+    width: 100%;
+    height: 200px; /* Adjust height as needed */
+    object-fit: cover;
+    border-radius: 8px;
+    margin-bottom: 10px;
+  }
+
+
+/* Footer */
+        footer {
+            background-color:#198754;
+            color: white;
+            padding: 50px 0 20px;
+        }
+        
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            margin-bottom: 30px;
+        }
+        
+        .footer-logo {
+            margin-bottom: 20px;
+        }
+        
+        .footer-logo img {
+            height: 40px;
+        }
+        
+        .footer-info p {
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+        }
+        
+        .footer-section {
+            margin-bottom: 30px;
+            min-width: 150px;
+        }
+        
+        .footer-section h3 {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            font-weight: 500;
+        }
+        
+        .footer-section ul {
+            list-style: none;
+        }
+        
+        .footer-section ul li {
+            margin-bottom: 8px;
+        }
+        
+        .footer-section ul li a {
+            color: white;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: opacity 0.3s;
+        }
+        
+        .footer-section ul li a:hover {
+            opacity: 0.8;
+        }
+        
+        .copyright {
+            text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255,255,255,0.2);
+            font-size: 0.9rem;
+        }
+        
+        .btn {
+            display: inline-block;
+            background-color: var(--primary-green);
+            color: white;
+            padding: 12px 25px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: bold;
+           
+        }
+        btn:hover {
+    color: white;
+    background-color: var(--bs-btn-hover-bg);
+    border-color: var(--bs-btn-hover-border-color);
+}
+
+.no-hover,
+.no-hover:hover,
+.no-hover:focus,
+.no-hover:active {
+  background-color: #009688;
+  color: white;
+  border: none;
+  transition: none;
+}
+
+
+
+        
+        
+
+  </style>
+</head>
+<body>
+ <header>
+                <nav>
+                    <ul>
+                        <li><a href="{% url 'user_panel:home' %}" class="active">Home</a></li>
+                        <li><a href="{% url 'user_panel:userproduct_list' %}">Products</a></li>
+                        <li><a href="#">About Us</a></li>
+                        <li><a href="#">Blog</a></li>
+                        <li><a href="#">Contact</a></li>
+                    </ul>
+                </nav>
+                <div class="header-actions">
+                    
+                </div>
+            
+    </header>
+
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg">
+  <div class="container">
+    
+     <form class="d-flex ms-auto" method="get" action="">
+    <input class="form-control me-2" type="search" placeholder="Search products..." name="q" value="{{ query|default:'' }}">
+    <button class="btn btn-outline-light me-2" type="submit">Search</button>
+
+    <!-- Cancel Button -->
+    {% if query %}
+      <a href="{% url 'user_panel:userproduct_list' %}" class="btn btn-outline-secondary">Clear</a>
+    {% endif %}
+  </form>
+  </div>
+</nav>
+
+<!-- Main -->
+<div class="container mt-4">
+  <div class="row">
+
+    <!-- Sidebar Filters -->
+    <div class="col-md-3 mb-4">
+      <div class="sidebar">
+        <h5>Filter Products</h5>
+        <form method="get" action="">
+          <input type="hidden" name="q" value="{{ query|default:'' }}">
+
+          <!-- Category -->
+          <div class="mb-3">
+            <label class="form-label">Category</label>
+            <select class="form-select" name="category">
+              <option value="">All</option>
+              {% for cat in categories %}
+                <option value="{{ cat.id }}" {% if cat.id|stringformat:"s" == selected_category %}selected{% endif %}>{{ cat.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <!-- Price Range -->
+          <div class="mb-3">
+            <label class="form-label">Price Range</label>
+            <div class="d-flex gap-2">
+              <input type="number" class="form-control" name="min_price" placeholder="Min" value="{{ min_price|default:'' }}">
+              <input type="number" class="form-control" name="max_price" placeholder="Max" value="{{ max_price|default:'' }}">
+            </div>
+          </div>
+
+          <!-- Sort -->
+          <div class="mb-3">
+            <label class="form-label">Sort By</label>
+            <select class="form-select" name="sort">
+              <option value="">Default</option>
+              <option value="price_asc" {% if sort_by == "price_asc" %}selected{% endif %}>Price: Low to High</option>
+              <option value="price_desc" {% if sort_by == "price_desc" %}selected{% endif %}>Price: High to Low</option>
+              <option value="az" {% if sort_by == "az" %}selected{% endif %}>A-Z</option>
+              <option value="za" {% if sort_by == "za" %}selected{% endif %}>Z-A</option>
+             
+              <option value="rating" {% if sort_by == "rating" %}selected{% endif %}>Rating</option>
+              <option value="new" {% if sort_by == "new" %}selected{% endif %}>New Arrivals</option>
+            </select>
+          </div>
+
+          <div class="d-grid gap-2">
+            <button class="btn btn-lush no-hover" type="submit">Apply</button>
+
+            <a href="{% url 'user_panel:userproduct_list' %}" class="btn btn-lush no-hover">Clear</a>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Product List -->
+    <div class="col-md-9">
+  <div class="row">
+    {% for product in products %}
+      <div class="col-md-6 col-lg-4">
+        <div class="product-card h-100 text-center">
+          {% with main_image=product|get_main_image %}
+
+            {% if product.main_image %}
+              <img src="{{  product.main_image.url }}" class="img-fluid rounded mb-2 product-image-fixed" alt="{{ product.name }}">
+            {% else %}
+              <img src="{% static 'images/default.jpg' %}" class="img-fluid rounded mb-2 product-image-fixed" alt="No image available">
+            {% endif %}
+          {% endwith %}
+
+          <h6>{{ product.name }}</h6>
+          <p>₹{{ product.price }}</p>
+          <p><del>₹{{ product.price }}</del> ₹{{ product.discounted_price }}</p>
+          <a href={% url 'user_panel:product_detail' product.pk %} class="btn btn-success btn-sm no-hover">View Details</a>
+        </div>
+      </div>
+    {% empty %}
+      <p>No products found.</p>
+    {% endfor %}
+  </div>
+</div>
+
+      <!-- Pagination -->
+      <div class="pagination-controls d-flex justify-content-between align-items-center">
+        {% if page_obj.has_previous %}
+          <a class="btn btn-outline-lush" href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if min_price %}&min_price={{ min_price }}{% endif %}{% if max_price %}&max_price={{ max_price }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}">Previous</a>
+        {% endif %}
+
+        <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+
+        {% if page_obj.has_next %}
+          <a class="btn btn-outline-lush" href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if min_price %}&min_price={{ min_price }}{% endif %}{% if max_price %}&max_price={{ max_price }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}">Next</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+<footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="footer-logo">
+                         <img src="{% static 'images/logo.png' %}" alt="Lush Dairy Logo">
+                    </div>
+                    <div class="footer-info">
+                        <p>123 Dairy Road</p>
+                        <p>Farmville, CA 12345</p>
+                        <p>contact@lushdairy.com</p>
+                        <p>(555) 123-4567</p>
+                    </div>
+                </div>
+                <div class="footer-section">
+                    <h3>Shop</h3>
+                    <ul>
+                        <li><a href="#">All Products</a></li>
+                        <li><a href="#">Milk</a></li>
+                        <li><a href="#">Yogurt</a></li>
+                        <li><a href="#">Cheese</a></li>
+                        <li><a href="#">Butter</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>About Us</h3>
+                    <ul>
+                        <li><a href="#">Our Story</a></li>
+                        <li><a href="#">Our Farms</a></li>
+                        <li><a href="#">Sustainability</a></li>
+                        <li><a href="#">Careers</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>Support</h3>
+                    <ul>
+                        <li><a href="#">FAQ</a></li>
+                        <li><a href="#">Shipping Policy</a></li>
+                        <li><a href="#">Returns & Refunds</a></li>
+                        <li><a href="#">Contact Us</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="copyright">
+                <p>© 2025 Lush Dairy. All Rights Reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+{% endblock %}

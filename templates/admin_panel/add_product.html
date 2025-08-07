@@ -1,0 +1,645 @@
+{% extends 'admin_panel/base.html' %}
+{% load static %}
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lush Dairy Admin - Add New Product</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+  <link  href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet">
+  
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+
+  <style>
+    :root {
+      --primary-color: #4d8b31;
+      --secondary-color: #e8f5e9;
+      --text-color: #333;
+      --light-gray: #f5f5f5;
+      --border-color: #ddd;
+      --accent-color: #388e3c;
+      --error-color: #f44336;
+      --success-color: #4caf50;
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    
+    body {
+      background-color: var(--secondary-color);
+      color: var(--text-color);
+    }
+    
+    .container {
+      display: flex;
+      min-height: 100vh;
+    }
+    
+    /* Sidebar styles */
+    .sidebar {
+      width: 240px;
+      background-color: white;
+      box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+      padding: 20px 0;
+    }
+    
+    .logo {
+      padding: 0 20px 20px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+    }
+    
+    .logo img {
+      height: 40px;
+      margin-right: 10px;
+    }
+    
+    .logo h2 {
+      color: var(--primary-color);
+      font-size: 18px;
+    }
+    
+    .nav-menu {
+      margin-top: 20px;
+    }
+    
+    .nav-item {
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      color: var(--text-color);
+      text-decoration: none;
+      transition: all 0.3s;
+      font-size: 14px;
+    }
+    
+    .nav-item:hover, .nav-item.active {
+      background-color: var(--secondary-color);
+      color: var(--primary-color);
+      border-left: 4px solid var(--primary-color);
+    }
+    
+    .nav-item i {
+      margin-right: 10px;
+      width: 20px;
+      text-align: center;
+    }
+    
+    /* Main content area */
+    .main-content {
+      flex-grow: 1;
+      padding: 20px;
+    }
+    
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    
+    .search-bar {
+      display: flex;
+      align-items: center;
+      background-color: white;
+      border-radius: 20px;
+      padding: 8px 15px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+    
+    .search-bar input {
+      border: none;
+      outline: none;
+      padding: 5px;
+      width: 200px;
+    }
+    
+    .search-bar button {
+      background: transparent;
+      border: none;
+      cursor: pointer;
+    }
+    
+    .user-info {
+      display: flex;
+      align-items: center;
+    }
+    
+    .user-info .avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background-color: var(--primary-color);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 10px;
+    }
+    
+    /* Form section */
+    .product-form-section {
+      background-color: white;
+      border-radius: 8px;
+      padding: 30px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    
+    .form-title {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 25px;
+      color: var(--text-color);
+      text-align: center;
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+      font-size: 14px;
+    }
+    
+    .form-control {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    
+    .form-control:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 2px rgba(77, 139, 49, 0.2);
+    }
+    
+    textarea.form-control {
+      min-height: 100px;
+      resize: vertical;
+    }
+    
+    .image-upload-container {
+      border: 2px dashed var(--border-color);
+      padding: 20px;
+      border-radius: 4px;
+      text-align: center;
+      margin-bottom: 20px;
+      background-color: var(--light-gray);
+    }
+    
+    .image-preview {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 15px;
+      justify-content: center;
+    }
+    
+    .image-container {
+      position: relative;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      overflow: hidden;
+      width: 120px;
+      height: 120px;
+      background-color: white;
+    }
+    
+    .image-placeholder {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background-color: var(--light-gray);
+      width: 100%;
+      height: 100%;
+      cursor: pointer;
+    }
+    
+    .image-placeholder i {
+      font-size: 24px;
+      color: #999;
+      margin-bottom: 5px;
+    }
+    
+    .image-placeholder span {
+      font-size: 12px;
+      color: #666;
+    }
+    
+    .preview-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    .form-row {
+      display: flex;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+    
+    .form-row .form-group {
+      flex: 1;
+      margin-bottom: 0;
+    }
+    
+    .btn-container {
+      display: flex;
+      justify-content: flex-end;
+      gap: 15px;
+      margin-top: 30px;
+    }
+    
+    .btn {
+      padding: 10px 20px;
+      border-radius: 4px;
+      font-weight: 500;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.3s;
+    }
+    
+    .btn-primary {
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+    }
+    
+    .btn-primary:hover {
+      background-color: var(--accent-color);
+    }
+    
+    .btn-secondary {
+      background-color: white;
+      color: var(--text-color);
+      border: 1px solid var(--border-color);
+    }
+    
+    .btn-secondary:hover {
+      background-color: var(--light-gray);
+    }
+    
+    .hidden-file-input {
+      display: none;
+    }
+    
+    /* Messages */
+    .messages {
+      list-style: none;
+      margin-bottom: 20px;
+      padding: 0;
+    }
+    
+    .message {
+      padding: 10px 15px;
+      margin-bottom: 10px;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    
+    .message-success {
+      background-color: rgba(76, 175, 80, 0.1);
+      color: var(--success-color);
+      border-left: 4px solid var(--success-color);
+    }
+    
+    .message-error {
+      background-color: rgba(244, 67, 54, 0.1);
+      color: var(--error-color);
+      border-left: 4px solid var(--error-color);
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      .container {
+        flex-direction: column;
+      }
+      
+      .sidebar {
+        width: 100%;
+        padding: 10px 0;
+      }
+      
+      .form-row {
+        flex-direction: column;
+        gap: 15px;
+      }
+      
+      .main-content {
+        padding: 15px;
+      }
+      
+      .product-form-section {
+        padding: 20px 15px;
+      }
+    }
+      .add-variant-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 24px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    width: fit-content;
+    position: relative;
+    overflow: hidden;
+}
+
+.add-variant-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+    text-decoration: none;
+    color: white;
+}
+
+.add-variant-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
+}
+
+.add-variant-btn:hover::before {
+    left: 100%;
+}
+    
+  </style>
+</head>
+<body>
+  <div class="container">
+  
+    <div class="sidebar">
+      <div class="logo">
+        <img src="{% static 'images/logo.png' %}" alt="Lush Dairy Logo">
+        <h2>Lush Dairy Admin</h2>
+      </div>
+      <div class="nav-menu">
+        <a href="{% url 'admin_panel:admin_dashboard' %}" class="nav-item">
+          <i class="fas fa-tachometer-alt"></i> Dashboard
+        </a>
+        <a href="#" class="nav-item">
+          <i class="fas fa-shopping-cart"></i> Order
+        </a>
+        <a href="{% url 'admin_panel:product_list' %}" class="nav-item">
+          <i class="fas fa-box"></i> Products
+        </a>
+        <a href="{% url 'admin_panel:add_product' %}" class="nav-item active">
+          <i class="fas fa-plus-circle"></i> Add new products
+        </a>
+        <a href="#" class="nav-item">
+          <i class="fas fa-chart-line"></i> Sales report
+        </a>
+        <a href="{% url 'admin_panel:user_list' %}" class="nav-item">
+          <i class="fas fa-users"></i> Customer
+        </a>
+        <a href="{% url 'admin_panel:category_list' %}" class="nav-item">
+          <i class="fas fa-tags"></i> Category
+        </a>
+        <a href="{% url 'admin_panel:admin_return_requests' %}" class="nav-item">
+          <i class="fas fa-exchange-alt"></i> Refund/Return
+        </a>
+        <a href="{% url 'admin_panel:admin_logout' %}" class="nav-item">
+          <i class="fas fa-sign-out-alt"></i> Sign Out
+        </a>
+      </div>
+    </div>
+    
+   
+    <div class="main-content">
+      <div class="header">
+        <div class="search-bar">
+          <input type="text" placeholder="Search...">
+          <button type="submit"><i class="fas fa-search"></i></button>
+        </div>
+        <div class="user-info">
+          <div class="avatar">
+            <i class="fas fa-user"></i>
+          </div>
+          <span>Admin</span>
+        </div>
+      </div>
+      
+
+      {% if messages %}
+      <ul class="messages">
+        {% for message in messages %}
+          <li class="message {% if message.tags %}message-{{ message.tags }}{% endif %}">{{ message }}</li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+      
+ 
+      <div class="product-form-section">
+        <h2 class="form-title">Add New Products</h2>
+        
+        <form method="POST" enctype="multipart/form-data">
+          {% csrf_token %}
+          
+          <div class="form-group">
+            <label for="id_name">Product Name</label>
+            {{ form.name.errors }}
+            <input type="text" name="name" id="id_name" class="form-control" placeholder="Farm Fresh Milk" required>
+          </div>
+          
+          <div class="form-group">
+            <label for="id_description">Product Description</label>
+            {{ form.description.errors }}
+            <textarea name="description" id="id_description" class="form-control" placeholder="Write your description here...">{{ form.description.value|default_if_none:'' }}</textarea>
+          </div>
+          
+          <div class="form-group">
+            <label for="id_composition">Composition</label>
+            {{ form.composition.errors }}
+            <input type="text" name="composition" id="id_composition" class="form-control" placeholder="Key ingredients or composition details" value="{{ form.composition.value|default_if_none:'' }}">
+          </div>
+         
+          
+         
+<input type="file" name="images" id="image-upload" class="hidden-file-input" multiple accept="image/*">
+
+
+<div class="image-preview" id="image-preview">
+  <div class="image-container" onclick="triggerFileInput()">
+    <div class="image-placeholder">
+      <i class="fas fa-camera"></i>
+      <span>Add Image</span>
+    </div>
+  </div>
+</div>
+
+
+<div id="cropper-modal" style="display:none; position: fixed; top: 0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.8); z-index:1000; align-items: center; justify-content: center;">
+  <div style="background:#fff; padding:20px;">
+    <img id="cropper-image" style="max-width:100%; max-height:500px;">
+    <br>
+    <button type="button" onclick="cropImage()">Crop</button>
+    <button type="button" onclick="closeModal()">Cancel</button>
+  </div>
+</div>
+
+
+<div id="uploaded-images"></div>
+
+
+         
+          <div class="form-row">
+            <div class="form-group">
+              <label for="id_selling_price">Selling Price</label>
+              {{ form.price.errors }}
+              <input type="number" name="price" id="id_selling_price" class="form-control" placeholder="₹ 60" min="0" step="0.01" required value="{{ form.price.value|default_if_none:'' }}">
+            </div>
+            <div class="form-group">
+  <label for="id_main_image">Main Product Image</label>
+  {{ form.main_image.errors }}
+  <input type="file" name="main_image" id="id_main_image" class="form-control" accept="image/*" required>
+</div>
+            
+            <div class="form-group">
+              <label for="id_discounted_price">Discounted Price</label>
+              {{ form.discounted_price.errors }}
+              <input type="number" name="discounted_price" id="id_discounted_price" class="form-control" placeholder="Enter discount price" min="0" step="0.01" value="{{ form.discounted_price.value|default_if_none:'' }}">
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-row">
+  <div class="form-group">
+    <label for="id_category">Category name</label>
+    {{ form.category.errors }}
+    {{ form.category }}
+  </div>
+ 
+</div>
+
+           
+          </div>
+          
+          <div class="btn-container">
+            <button type="button" class="btn btn-secondary" onclick="window.location.href='{% url 'admin_panel:product_list' %}'">Cancel</button>
+            <button type="submit" class="btn btn-primary">
+              <i class="fas fa-save"></i> Save
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    
+let cropper;
+let filesToUpload = [];  
+
+function triggerFileInput() {
+    document.getElementById('image-upload').click();
+}
+
+document.getElementById('image-upload').addEventListener('change', function (e) {
+    const files = e.target.files;
+
+    for (const file of files) {
+        const reader = new FileReader();
+        reader.onload = function (event) {
+            const img = document.getElementById('cropper-image');
+            img.src = event.target.result;
+            document.getElementById('cropper-modal').style.display = 'flex';
+
+            if (cropper) cropper.destroy();
+            cropper = new Cropper(img, {
+                aspectRatio: 1, 
+                viewMode: 1,
+                movable: true,
+                zoomable: true,
+                scalable: true,
+            });
+
+           
+            img.file = file;
+        };
+        reader.readAsDataURL(file);
+    }
+
+    
+    e.target.value = '';
+});
+
+function cropImage() {
+    cropper.getCroppedCanvas().toBlob(function (blob) {
+        const url = URL.createObjectURL(blob);
+        const preview = document.createElement('img');
+        preview.src = url;
+        preview.style.height = "100px";
+        preview.style.margin = "5px";
+
+        document.getElementById('uploaded-images').appendChild(preview);
+
+       
+        const formDataInput = new File([blob], `cropped_${Date.now()}.png`, { type: "image/png" });
+        filesToUpload.push(formDataInput); 
+
+        closeModal();
+    }, 'image/png');
+}
+
+function closeModal() {
+    document.getElementById('cropper-modal').style.display = 'none';
+    cropper.destroy();
+}
+
+
+document.querySelector("form").addEventListener("submit", function (e) {
+    const formData = new FormData(this);
+    filesToUpload.forEach((file, i) => {
+        formData.append('images', file, file.name);
+    });
+
+   
+    fetch(this.action, {
+        method: "POST",
+        body: formData,
+    }).then(response => {
+        if (response.ok) {
+            window.location.href = "/accounts/products/"; 
+        } else {
+            alert("Upload failed");
+        }
+    });
+
+    e.preventDefault(); 
+});
+</script>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+
+  </script>
+</body>
+</html>
+{% endblock %}

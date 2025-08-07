@@ -1,0 +1,279 @@
+{% extends "user_panel/base.html" %}
+{% load static %}
+
+{% block content %}
+
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{% url 'user_panel:home' %}">Home</a></li>
+    <li class="breadcrumb-item active" aria-current="page"><a href="{% url 'user_panel:userproduct_list' %}">Products</a></li>
+    <li class="breadcrumb-item active" aria-current="page">{{ product.name }}</li>
+  </ol>
+</nav>
+
+  
+  <div class="row g-4">
+    
+    <div class="col-md-6">
+    <div class="border rounded p-2">
+     
+      <div class="zoom-container text-center">
+        <img id="main-image"
+             src="{{ product.main_image.url }}"
+             data-zoom-image="{{ product.main_image.url }}"
+             width="400" height="400" alt="Main Product Image">
+      </div>
+
+     
+      <div class="d-flex gap-2 mt-3 justify-content-center">
+        {% for img in images %}
+          <img src="{{ img.image.url }}"
+               class="img-thumbnail"
+               style="width: 80px; height: 80px; object-fit: cover; cursor: pointer;"
+                onclick="changeMainImage(this);">
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+    
+    <div class="col-md-6">
+      <h2 class="text-success">{{ product.name }}</h2>
+
+     
+      
+
+    
+  <form method="get" id="variantForm">
+  <select id="variantSelect" name="variant_id" class="form-select mb-2" onchange="document.getElementById('variantForm').submit();">
+    {% for variant in variants %}
+      <option value="{{ variant.id }}"
+              data-price="{{ variant.price }}"
+              data-selling-price="{{ product.selling_price }}"
+              {% if variant.id == selected_variant.id %}selected{% endif %}>
+        {{ variant.variant_name }} - ₹{{ variant.price }}
+      </option>
+    {% endfor %}
+  </select>
+</form>
+
+
+
+<div class="mb-3">
+  <h4 class="text-dark d-inline" id="priceDisplay">
+     ₹{{ selected_variant.price }} <!--selected variant price -->
+  </h4>
+  <small class="text-danger" id="delPrice">
+     {% if selected_variant.price < product.selling_price %}
+      <del>₹{{ product.selling_price }}</del>
+    {% endif %}
+    {% if discounted_price < product.price %}
+        <p>
+            <span class="text-success fw-bold fs-4">₹{{ discounted_price|floatformat:2 }}</span>
+            <del class="text-success ms-2">₹{{ product.price|floatformat:2 }}</del>
+        </p>
+    {% else %}
+        <p class="fw-bold fs-4">₹{{ product.price|floatformat:2 }}</p>
+    {% endif %}
+  </small>
+</div>
+
+
+
+      <!-- Stock -->
+      {% if selected_variant.stock > 0 %}
+        <p class="text-success">In Stock ({{selected_variant.stock }})</p>
+      {% else %}
+        <p class="text-danger">Out of Stock</p>
+      {% endif %}
+     <!-- Add to Cart + Wishlist Block -->
+{% if product.is_blocked or not product.is_available or selected_variant.stock == 0 or product.category.is_blocked or not product.category.is_available %}
+  <button class="btn btn-secondary" disabled>
+    <i class="bi bi-x-circle"></i> Unavailable
+  </button>
+{% else %}
+  <form method="post" action="{% url 'user_panel:add_to_cart' product.id %}" class="mt-3">
+    {% csrf_token %}
+    <input type="hidden" name="variant_id" id="selectedVariantInput" value="{{ selected_variant.id }}">
+
+    <div class="d-flex flex-wrap align-items-center gap-2">
+      <!-- Quantity Input -->
+      <input type="number" name="quantity" value="1" min="1" max="{{selected_variant.stock }}" 
+             class="form-control form-control-sm" style="width: 90px;">
+
+      <!-- Add to Cart Button -->
+      <button type="submit" class="btn btn-success btn-sm d-flex align-items-center gap-1">
+        <i class="bi bi-cart-plus"></i> Add to Cart
+      </button>
+
+      <!-- Wishlist Button -->
+      {% if user.is_authenticated %}
+        {% if product in wishlist_products %}
+          <a href="{% url 'user_panel:remove_from_wishlist' product.id %}" 
+             class="btn btn-outline-danger btn-sm d-flex align-items-center gap-1" 
+             title="Remove from Wishlist">
+            <i class="bi bi-heart-fill"></i> Remove
+          </a>
+        {% else %}
+          <a href="{% url 'user_panel:add_to_wishlist' product.id %}" 
+             class="btn btn-outline-danger btn-sm d-flex align-items-center gap-1" 
+             title="Add to Wishlist">
+            <i class="bi bi-heart"></i> Wishlist
+          </a>
+        {% endif %}
+      {% else %}
+        <a href="{% url 'user_panel:login' %}" 
+           class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-1"
+           title="Login to use Wishlist">
+          <i class="bi bi-box-arrow-in-right"></i> Login
+        </a>
+      {% endif %}
+    </div>
+  </form>
+{% endif %}
+
+
+
+      <!-- Coupon -->
+      {% if product.coupon %}
+        <div class="alert alert-success p-2">
+          <strong>Use Coupon:</strong> <span class="fw-bold">{{ product.coupon.code }}</span><br>
+          <small>{{ product.coupon.description }}</small>
+        </div>
+      {% endif %}
+
+      <!-- Highlights -->
+      <h5 class="mt-4">Highlights</h5>
+<ul class="list-unstyled">
+  {% if product.description %}
+    <li>
+      <i class="bi bi-check-circle-fill text-success me-2"></i>
+      {{ product.description }}
+    </li>
+  {% endif %}
+  </ul>
+      <!-- Services -->
+      <h5 class="mt-3">Services</h5>
+      <ul class="list-unstyled">
+        <li><i class="bi bi-truck text-success me-2"></i>Free delivery on  order above ₹30</li>
+        <li><i class="bi bi-arrow-counterclockwise text-success me-2"></i>Easy 1-day return</li>
+      </ul>
+    </div>
+  </div>
+
+
+  <!-- Reviews Section -->
+  <div class="mt-5">
+    <h4>Customer Reviews</h4>
+    {% for review in reviews %}
+      <div class="border p-3 mb-2 rounded">
+        <div class="fw-bold">{{ review.user.username }}</div>
+        <div class="mb-1">
+          {% for i in "12345"|slice:":review.rating"|make_list %}
+            <i class="bi bi-star-fill text-warning"></i>
+          {% endfor %}
+          
+        </div>
+        <p>{{ review.comment }}</p>
+      </div>
+    {% empty %}
+      <p>No reviews yet. Be the first to review this product.</p>
+    {% endfor %}
+    {% if user.is_authenticated %}
+    <a href="{% url 'user_panel:add_review' product.id %}" class="btn btn-outline-success mt-2">Write a Review</a>
+{% else %}
+    <p><a href="{% url 'user_panel:login' %}?next={{ request.path }}">Login to write a review</a></p>
+{% endif %}
+
+  </div>
+
+ 
+  <!-- Related Products Section -->
+<div class="mt-5">
+  <h4 class="mb-4">You May Also Like</h4>
+  <div class="row g-3">
+    {% if related_products %}
+      {% for related in related_products %}
+        <div class="col-md-3 col-sm-6">
+          <div class="card h-100 shadow-sm">
+            <a href="{% url 'user_panel:product_detail' related.id %}" class="text-decoration-none text-dark">
+              {% if related.main_image %}
+                <img src="{{ related.main_image.url }}" class="card-img-top" alt="{{ related.name }}" style="height: 200px; object-fit: cover;">
+              {% else %}
+                <img src="{% static 'images/default.jpeg' %}" class="card-img-top" alt="{{ related.name }}" style="height: 200px; object-fit: cover;">
+              {% endif %}
+              <div class="card-body">
+                <h6 class="card-title text-truncate">{{ related.name }}</h6>
+                
+              </div>
+            </a>
+          </div>
+        </div>
+      {% endfor %}
+    {% else %}
+      <p class="text-muted">No related products found.</p>
+    {% endif %}
+  </div>
+</div>
+
+
+
+
+<!-- Bootstrap Icons CDN (if not in base.html) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+<!-- Scripts (load once, at the bottom) -->
+ <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> 
+<script src="https://cdn.jsdelivr.net/npm/elevatezoom-plus@1.1.21/jquery.elevateZoom.min.js"></script>
+
+<script>
+  $(document).ready(function () {
+    $("#main-image").elevateZoom({
+      zoomType: "window",
+      lensShape: "square",
+      lensSize: 200,
+    });
+  });
+
+  function changeMainImage(elem) {
+    var imageUrl = $(elem).attr("src");
+    const $mainImage = $("#main-image");
+    $mainImage.removeData('elevateZoom');
+    $mainImage.removeData('zoomImage');
+    $('.zoomWrapper img.zoomed').unwrap();
+    $('.zoomContainer').remove();
+    $mainImage.attr("src", imageUrl);
+    $mainImage.attr("data-zoom-image", imageUrl);
+    $mainImage.elevateZoom({
+      zoomType: "window",
+      lensShape: "square",
+      lensSize: 200,
+    });
+  }
+
+  
+
+ 
+  const variantSelect = document.getElementById("variantSelect");
+  const priceDisplay = document.getElementById("priceDisplay");
+  const delPrice = document.getElementById("delPrice");
+
+  variantSelect.addEventListener("change", function () {
+    const selectedOption = this.options[this.selectedIndex];
+    const variantPrice = parseFloat(selectedOption.dataset.price);
+    const originalPrice = parseFloat(selectedOption.dataset.sellingPrice);
+
+    
+    priceDisplay.textContent = `₹${variantPrice}`;
+
+    
+    if (variantPrice < originalPrice) {
+      delPrice.innerHTML = `<del>₹${originalPrice}</del>`;
+    } else {
+      delPrice.innerHTML = ``;
+    }
+  });
+
+
+
+</script>
+{% endblock %}

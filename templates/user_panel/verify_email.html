@@ -1,0 +1,35 @@
+{% extends 'user_panel/base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card shadow-sm p-4" style="max-width: 500px; margin: auto;">
+        <h3 class="text-center text-success mb-3">🔐 Verify Your Email</h3>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} text-center">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <p class="text-center text-muted">
+            Please enter the 6-digit OTP sent to your new email address to verify and complete the update.
+        </p>
+
+        <form method="POST" action="{% url 'user_panel:verify_email' %}">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="otp">Enter OTP</label>
+                <input type="text" name="otp" id="otp" class="form-control" maxlength="6" required>
+            </div>
+
+            <div class="mt-4 text-center">
+                <button type="submit" class="btn btn-success px-4">Verify</button>
+                <a href="{% url 'user_panel:resend_email_otp' %}" class="btn btn-link">Resend OTP</a>
+                <a href="{% url 'user_panel:user_profile' %}" class="btn btn-secondary ml-2">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

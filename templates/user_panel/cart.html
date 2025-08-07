@@ -1,0 +1,606 @@
+
+{% extends "user_panel/base.html" %}
+{% load static %}
+
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fresh Milk Cart - Premium Dairy Delivery</title>
+    
+    
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.0/font/bootstrap-icons.min.css" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #1e40af;
+            --success-color: #059669;
+            --danger-color: #dc2626;
+            --warning-color: #d97706;
+            --info-color: #0891b2;
+            --light-bg: #f8fafc;
+            --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --hover-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+        }
+
+        .main-container {
+            padding: 2rem 0;
+            min-height: 100vh;
+        }
+
+        .cart-header {
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            border-radius: 1rem;
+            box-shadow: var(--card-shadow);
+            border-left: 4px solid var(--primary-color);
+            margin-bottom: 2rem;
+            padding: 2rem;
+            transition: all 0.3s ease;
+        }
+
+        .cart-header:hover {
+            box-shadow: var(--hover-shadow);
+            transform: translateY(-2px);
+        }
+
+        .cart-icon {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: var(--primary-color);
+            margin-right: 1rem;
+        }
+
+        .total-amount {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--success-color) 0%, #047857 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .card-premium {
+            background: white;
+            border-radius: 1rem;
+            box-shadow: var(--card-shadow);
+            border: none;
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+
+        .card-premium:hover {
+            box-shadow: var(--hover-shadow);
+            transform: translateY(-2px);
+        }
+
+        .cart-item {
+            border: 2px solid #e5e7eb;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            background: white;
+            transition: all 0.3s ease;
+        }
+
+        .cart-item:hover {
+            border-color: var(--primary-color);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
+        }
+
+        .cart-item.out-of-stock {
+            background: #fef2f2;
+            border-color: var(--danger-color);
+            opacity: 0.8;
+        }
+
+        .product-image {
+    width: 100%;
+    max-width: 80px;
+    height: 80px;
+    border-radius: 1rem;
+    overflow: hidden;
+}
+
+.product-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+
+        .quantity-control {
+            display: flex;
+            align-items: center;
+            background: #f1f5f9;
+            border-radius: 0.5rem;
+            overflow: hidden;
+        }
+
+        .quantity-btn {
+            background: white;
+            border: none;
+            padding: 0.5rem 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: var(--primary-color);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .quantity-btn:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .quantity-btn:disabled {
+            background: #f3f4f6;
+            color: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        .quantity-display {
+            padding: 0.5rem 1rem;
+            background: white;
+            border-left: 1px solid #e5e7eb;
+            border-right: 1px solid #e5e7eb;
+            font-weight: 600;
+            min-width: 60px;
+            text-align: center;
+        }
+
+        .badge-custom {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.375rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .btn-gradient {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            border: none;
+            color: white;
+            font-weight: 600;
+            padding: 1rem 2rem;
+            border-radius: 0.75rem;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-gradient:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(37, 99, 235, 0.3);
+            color: white;
+        }
+
+        .btn-gradient:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .delivery-info-card {
+            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+            border: 2px solid #bfdbfe;
+            border-radius: 1rem;
+            padding: 1.5rem;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.25);
+        }
+
+        .price-highlight {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--success-color);
+        }
+
+        .empty-cart {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: #6b7280;
+        }
+
+        .empty-cart-icon {
+            width: 80px;
+            height: 80px;
+            background: #f3f4f6;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            font-size: 2rem;
+        }
+
+        .success-message {
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            border: 2px solid #10b981;
+            border-radius: 0.75rem;
+            padding: 1rem;
+            color: #065f46;
+            margin-top: 1rem;
+        }
+
+        .warning-message {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border: 2px solid #f59e0b;
+            border-radius: 0.75rem;
+            padding: 1rem;
+            color: #92400e;
+            margin-top: 1rem;
+        }
+
+        .info-highlight {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            border: 2px solid var(--primary-color);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            color: var(--primary-color);
+            margin-top: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                padding: 1rem 0;
+            }
+            
+            .cart-header {
+                padding: 1.5rem;
+                margin-bottom: 1rem;
+            }
+            
+            .total-amount {
+                font-size: 2rem;
+            }
+            
+            .product-image {
+                width: 60px;
+                height: 60px;
+                font-size: 1.5rem;
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Custom checkbox styling */
+        .custom-checkbox {
+            position: relative;
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            margin-right: 0.5rem;
+        }
+
+        .custom-checkbox input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .checkmark {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 20px;
+            width: 20px;
+            background-color: #f3f4f6;
+            border: 2px solid #d1d5db;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .custom-checkbox:hover input ~ .checkmark {
+            background-color: #e5e7eb;
+        }
+
+        .custom-checkbox input:checked ~ .checkmark {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .checkmark:after {
+            content: "";
+            position: absolute;
+            display: none;
+        }
+
+        .custom-checkbox input:checked ~ .checkmark:after {
+            display: block;
+        }
+
+        .custom-checkbox .checkmark:after {
+            left: 6px;
+            top: 2px;
+            width: 6px;
+            height: 12px;
+            border: solid white;
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid main-container">
+        <!-- Cart Header -->
+        <div class="cart-header fade-in">
+    <div class="row align-items-center">
+        <div class="col-md-8">
+            <div class="d-flex align-items-center">
+                <div class="cart-icon">
+                    <i class="bi bi-cart3"></i>
+                </div>
+                <div>
+                    <h1 class="h2 mb-1 fw-bold text-dark">Your Milk Cart</h1>
+                    <p class="mb-0 text-muted"  id="total-items">
+                        {{ total_items }} item{{ total_items|pluralize }} • Fresh & Cold Delivery
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 text-md-end mt-3 mt-md-0">
+            <div class="total-amount" id="cart-totalprice" >₹{{ total_price}}</div>
+            <p class="mb-0 text-muted small">Total Amount</p>
+        </div>
+    </div>
+</div>
+
+        <div class="row g-4">
+            <!-- Cart Items & Delivery Info -->
+           <div class="col-lg-8">
+    <!-- Cart Items -->
+    <div class="card-premium mb-4 fade-in">
+        <div class="card-body p-4">
+            <h3 class="card-title mb-4 d-flex align-items-center">
+                <i class="bi bi-bag-check me-2 text-primary"></i>Cart Items
+            </h3>
+
+            {% for item in cart_items %}
+          {% if cart_items %}
+<div class="table-responsive">
+  <table class="table table-bordered align-middle text-center">
+    <thead class="table-light">
+      <tr>
+        <th>Image</th>
+        <th>Product</th>
+        <th>Category</th>
+        <th>Variant</th>
+        <th>Quantity</th>
+        <th>Price</th>
+        <th>Remove</th>
+      </tr>
+    </thead>
+    <tbody>
+     
+      <tr>
+        <td>
+          <img src="{{ item.product.main_image.url }}" alt="{{ item.product.name }}" class="img-thumbnail" style="width: 80px; height: auto;" />
+        </td>
+
+        <td>
+          <strong>{{ item.product.name }}</strong><br>
+         
+         
+        </td>
+        <td>
+          
+          <small class="text-muted">{{ item.product.category }}</small><br>
+          
+        </td>
+
+        <td>
+         <small class="text-muted">{{ item.product_variant.variant_name }}</small>
+        </td>
+
+        <td>
+          <div class="d-flex justify-content-center align-items-center">
+            <button class="btn btn-outline-secondary btn-sm me-1 quantity-btn"
+                    type="button"
+                    data-id="{{ item.id }}"
+                    data-action="decrement"
+                    aria-label="Decrease quantity">
+              <i class="bi bi-dash"></i>
+            </button>
+            <span id="quantity-{{ item.id }}">{{ item.quantity }}</span>
+            <button class="btn btn-outline-secondary btn-sm ms-1 quantity-btn"
+                    type="button"
+                    data-id="{{ item.id }}"
+                    data-action="increment"
+                    aria-label="Increase quantity">
+              <i class="bi bi-plus"></i>
+            </button>
+          </div>
+        </td>
+
+        <td>
+          ₹{{ item.total_price }}<br>
+          <small class="text-muted">₹{{ item.product_variant.price }} each</small>
+        </td>
+
+        <td>
+          <form method="post" action="{% url 'user_panel:remove_cart_item' item.id %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-outline-danger btn-sm">
+              <i class="bi bi-trash"></i>
+            </button>
+          </form>
+        </td>
+      </tr>
+     
+    </tbody>
+  </table>
+</div>
+
+{% endif %}
+
+            {% empty %}
+            <p>Your cart is empty.</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+
+                        
+                        
+
+                
+            <!-- Order Summary Sidebar -->
+            <div class="col-lg-4">
+               
+               
+
+                <!-- Order Summary -->
+                <div class="card-premium mb-4 fade-in">
+    <div class="card-body p-4">
+        <h4 class="card-title mb-4">
+            <i class="bi bi-receipt me-2 text-primary"></i>
+            Order Summary
+        </h4>
+
+        <div class="d-flex justify-content-between mb-2">
+    <span class="text-muted">Subtotal ({{ total_items }} items)</span>
+    <span id="cart-subtotal">₹{{ total_price }}</span>
+</div>
+
+        <div class="d-flex justify-content-between mb-2">
+            <span class="text-success">Discount</span>
+            <span id="cart-discount" class="text-success">-₹{{ discount }}</span>
+        </div>
+
+        <div class="d-flex justify-content-between mb-2">
+            <span class="text-muted">Delivery Fee</span>
+            <span>₹{{ delivery_fee }}</span>
+        </div>
+
+        <div class="small text-muted mb-3">
+            <i class="bi bi-info-circle me-1"></i>
+            {% if delivery_fee == 0 %}
+                Free delivery on orders over ₹30
+            {% else %}
+                Spend ₹{{ 30|floatformat:2 }} to get free delivery
+            {% endif %}
+        </div>
+
+        <hr>
+        <div class="d-flex justify-content-between mb-4">
+            <span class="h5 fw-bold">Total</span>
+            <span  id="cart-total" class="h5 fw-bold text-success">₹{{ total_price }}</span>
+        </div>
+
+        <a href="{% url 'user_panel:checkout' %}" class="btn btn-gradient w-100 mb-3">
+    <i class="bi bi-credit-card me-2"></i>
+    Proceed to Checkout
+</a>
+
+        <div class="text-center small text-success">
+            <i class="bi bi-check-circle me-1"></i>
+            Ready to checkout - All requirements met
+        </div>
+    </div>
+</div>
+
+                
+
+                
+
+    <!-- Bootstrap JS (Optional - for tooltips, modals, etc.) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+
+
+
+<script>
+$(document).ready(function() {
+    $(document).on('click', '.quantity-btn', function() {
+        const btn = $(this);
+        const cartId = btn.data('id');
+        const action = btn.data('action');
+
+        let url = '';
+        if (action === 'increment') {
+            url = `/cart/increment/`;
+        } else if (action === 'decrement') {
+            url = `/cart/decrement/`;
+        } else {
+            return;
+        }
+
+        $.ajax({
+            url: url,
+            type: 'POST',
+            data: {
+                'cart_id': cartId,
+                'csrfmiddlewaretoken': '{{ csrf_token }}'
+            },
+            success: function(response) {
+                if (response.status === 'success') {
+                    
+                    $('#quantity-' + cartId).text(response.quantity);
+
+                   
+                    $('#item-total-' + cartId).text('₹' + response.item_total.toFixed(2));
+
+                   
+                    $('#cart-subtotal').text('₹' + response.subtotal.toFixed(2));
+                    $('#cart-discount').text('-₹' + response.discount.toFixed(2));
+                    $('#cart-total').text('₹' + response.total.toFixed(2));
+
+                    $('#cart-totalprice').text('₹' + response.total.toFixed(2));
+                    
+
+                const itemCount = Number(response.total_items);
+$('#total-items').text(`${itemCount} item${itemCount === 1 ? '' : 's'} • Fresh & Cold Delivery`);
+
+                } else {
+                    alert(response.message || 'Something went wrong');
+                }
+            },
+            error: function() {
+                alert('Error communicating with the server.');
+            }
+        });
+    });
+});
+</script>
+
+
+
+</body>
+</html>
+
+
+{% endblock %}

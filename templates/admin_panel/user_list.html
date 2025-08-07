@@ -1,0 +1,378 @@
+{% extends 'admin_panel/base.html' %}
+{% load static %}
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Lush Dairy Admin - Users Management</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+  <style>
+    :root {
+      --primary-color: #4d8b31;
+      --secondary-color: #e8f5e9;
+      --text-color: #333;
+      --light-gray: #f5f5f5;
+      --border-color: #ddd;
+      --accent-color: #388e3c;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background-color: var(--secondary-color);
+      color: var(--text-color);
+    }
+
+    .container {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      width: 240px;
+      background-color: white;
+      box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+      padding: 20px 0;
+    }
+
+    .logo {
+      padding: 0 20px 20px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+    }
+
+    .logo img {
+      height: 40px;
+      margin-right: 10px;
+    }
+
+    .logo h2 {
+      color: var(--primary-color);
+      font-size: 18px;
+    }
+
+    .nav-menu {
+      margin-top: 20px;
+    }
+
+    .nav-item {
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      color: var(--text-color);
+      text-decoration: none;
+      transition: all 0.3s;
+      font-size: 14px;
+    }
+
+    .nav-item:hover, .nav-item.active {
+      background-color: var(--secondary-color);
+      color: var(--primary-color);
+      border-left: 4px solid var(--primary-color);
+    }
+
+    .nav-item i {
+      margin-right: 10px;
+      width: 20px;
+      text-align: center;
+    }
+
+    .main-content {
+      flex-grow: 1;
+      padding: 20px;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .search-bar {
+      display: flex;
+      align-items: center;
+      background-color: white;
+      border-radius: 20px;
+      padding: 8px 15px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    .search-bar input {
+      border: none;
+      outline: none;
+      padding: 5px;
+      width: 200px;
+    }
+
+    .search-bar button {
+      background: transparent;
+      border: none;
+      cursor: pointer;
+    }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+    }
+
+    .user-info .avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background-color: var(--primary-color);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 10px;
+    }
+
+    .section-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-color);
+    }
+
+    .users-section {
+      background-color: white;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .btn {
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 500;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      font-size: 14px;
+    }
+
+    .btn-primary {
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+    }
+
+    .btn-secondary {
+      background-color: var(--light-gray);
+      color: var(--text-color);
+      border: 1px solid var(--border-color);
+    }
+
+    .btn i {
+      margin-right: 5px;
+    }
+
+    .users-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    .users-table th {
+      background-color: var(--light-gray);
+      padding: 10px 15px;
+      text-align: left;
+      font-weight: 500;
+      color: var(--text-color);
+      font-size: 14px;
+    }
+
+    .users-table td {
+      padding: 10px 15px;
+      font-size: 14px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .status-active {
+      background-color: #e0f2f1;
+      color: var(--primary-color);
+      padding: 5px 10px;
+      border-radius: 12px;
+      font-size: 0.85rem;
+      display: inline-block;
+    }
+
+    .status-blocked {
+      background-color: #ffebee;
+      color: #e53935;
+      padding: 5px 10px;
+      border-radius: 12px;
+      font-size: 0.85rem;
+      display: inline-block;
+    }
+
+    .action-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--primary-color);
+      margin-right: 5px;
+    }
+
+    .pagination {
+      display: flex;
+      justify-content: center;
+      margin-top: 20px;
+      align-items: center;
+    }
+
+    .pagination a, .pagination span {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 12px;
+      margin: 0 3px;
+      border-radius: 4px;
+      min-width: 30px;
+      text-align: center;
+    }
+
+    .pagination .current {
+      background-color: var(--primary-color);
+      color: white;
+    }
+
+    .pagination a {
+      color: var(--text-color);
+      text-decoration: none;
+      background-color: var(--light-gray);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px 0;
+    }
+
+    .empty-state p {
+      margin-bottom: 20px;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <div class="logo">
+         <img src="{% static 'images/logo.png' %}" alt="Lush Dairy Logo">
+        <h2>Lush Dairy Admin</h2>
+      </div>
+      <div class="nav-menu">
+        <a href="{% url 'admin_panel:admin_dashboard' %}" class="nav-item"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+        <a href="{% url 'admin_panel:admin_order_list' %}" class="nav-item"><i class="fas fa-shopping-cart"></i> Order</a>
+        <a href="{% url 'admin_panel:product_list' %}" class="nav-item"><i class="fas fa-box"></i> Products</a>
+        <a href="#" class="nav-item"><i class="fas fa-chart-line"></i> Sales report</a>
+        <a href="{% url 'admin_panel:user_list' %}" class="nav-item active"><i class="fas fa-users"></i> Customer</a>
+        <a href="{% url 'admin_panel:category_list' %}" class="nav-item"><i class="fas fa-tags"></i> Category</a>
+        <a href="{% url 'admin_panel:admin_return_requests' %}" class="nav-item">
+          <i class="fas fa-exchange-alt"></i> Refund/Return
+        </a>
+        <a href="{% url 'admin_panel:inventory_list' %}" class="nav-item active"><i class="fas fa-warehouse"></i> Stock</a>
+        
+        <a href="{% url 'admin_panel:admin_logout' %}" class="nav-item"><i class="fas fa-sign-out-alt"></i> Sign Out</a>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+      <div class="header">
+        <div class="search-bar">
+          <form method="get" action="{% url 'admin_panel:user_list' %}">
+            <input type="text" name="q" placeholder="Search users..." value="{{ request.GET.q }}">
+            <button type="submit"><i class="fas fa-search"></i></button>
+          </form>
+        </div>
+        <div class="user-info">
+          <div class="avatar">
+            <i class="fas fa-user"></i>
+          </div>
+          <span>Admin</span>
+        </div>
+      </div>
+
+      <div class="users-section">
+        <h2 class="section-title">User Management</h2>
+
+        {% if page_obj %}
+        <table class="users-table">
+          <thead>
+            <tr>
+              <th>User ID</th>
+              <th>Username</th>
+              <th>Email</th>
+              <th>Joined</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for user in page_obj %}
+            <tr>
+              <td>{{ user.id }}</td>
+              <td>{{ user.username }}</td>
+              <td>{{ user.email }}</td>
+              <td>{{ user.date_joined|date:"d-m-Y" }}</td>
+              <td>
+                <span class="{% if user.is_blocked %}status-blocked{% else %}status-active{% endif %}">
+                  {% if user.is_blocked %}Blocked{% else %}Active{% endif %}
+                </span>
+              </td>
+              <td>
+                <form method="post" action="{% url 'admin_panel:toggle_block_user' user.id %}" onsubmit="return confirm('Are you sure?');">
+                  {% csrf_token %}
+                  <button type="submit" class="action-btn">
+                    {% if user.is_blocked %}
+                      <i class="fas fa-unlock"></i>
+                    {% else %}
+                      <i class="fas fa-ban"></i>
+                    {% endif %}
+                  </button>
+                </form>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+
+        <div class="pagination">
+          {% if page_obj.has_previous %}
+            <a href="?q={{ request.GET.q }}&page={{ page_obj.previous_page_number }}"><i class="fas fa-chevron-left"></i></a>
+          {% endif %}
+          {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+              <span class="current">{{ num }}</span>
+            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+              <a href="?q={{ request.GET.q }}&page={{ num }}">{{ num }}</a>
+            {% endif %}
+          {% endfor %}
+          {% if page_obj.has_next %}
+            <a href="?q={{ request.GET.q }}&page={{ page_obj.next_page_number }}"><i class="fas fa-chevron-right"></i></a>
+          {% endif %}
+        </div>
+
+        {% else %}
+        <div class="empty-state">
+          <p>No users found.</p>
+          <a href="#" class="btn btn-primary">Add your first user</a>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</body>
+</html>
+{% endblock %}

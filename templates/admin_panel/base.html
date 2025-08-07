@@ -1,0 +1,38 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Admin Panel{% endblock %}</title>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+    {% block content %}{% endblock %}
+
+
+    {% if messages %}
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            {% for message in messages %}
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: '{% if "success" in message.tags %}success{% elif "error" in message.tags or "danger" in message.tags %}error{% elif "warning" in message.tags %}warning{% else %}info{% endif %}',
+                title: "{{ message|escapejs|safe }}",
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true
+            });
+            {% endfor %}
+        });
+    </script>
+    {% endif %}
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

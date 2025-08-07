@@ -1,0 +1,54 @@
+<h2>Redirecting to Razorpay...</h2>
+
+<!-- Optional: Show final price summary before redirect -->
+<div>
+    <p>Subtotal: ₹{{ totals.subtotal }}</p>
+    <p>Coupon Discount: ₹{{ totals.coupon_discount }}</p>
+    <p>Shipping: ₹{{ totals.shipping }}</p>
+    <h3>Total Payable: ₹{{ totals.final_total }}</h3>
+</div>
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+    window.onload = function () {
+        var options = {
+            "key": "{{ razorpay_key }}",  // Razorpay Key ID
+            "amount": "{{ amount }}",     // Amount in paise (already calculated in view)
+            "currency": "INR",
+            "name": "Lush Dairy",
+            "description": "Milk Order Payment",
+            "order_id": "{{ razorpay_order_id }}",  // Razorpay Order ID
+
+            "handler": function (response) {
+                var form = document.createElement("form");
+                form.method = "POST";
+                form.action = "{{ callback_url }}";  // Safer: Pass as context variable
+
+                const csrfToken = "{{ csrf_token }}";
+
+                const fields = {
+                    'razorpay_payment_id': response.razorpay_payment_id,
+                    'razorpay_order_id': response.razorpay_order_id,
+                    'razorpay_signature': response.razorpay_signature,
+                    'csrfmiddlewaretoken': csrfToken
+                };
+
+                for (const key in fields) {
+                    const input = document.createElement("input");
+                    input.type = "hidden";
+                    input.name = key;
+                    input.value = fields[key];
+                    form.appendChild(input);
+                }
+
+                document.body.appendChild(form);
+                form.submit();
+            },
+
+            "theme": { "color": "#28a745" }
+        };
+
+        var rzp = new Razorpay(options);
+        rzp.open();
+    };
+</script>

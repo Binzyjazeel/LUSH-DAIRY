@@ -1,0 +1,44 @@
+{% extends 'user_panel/base.html' %}
+{% block content %}
+
+<div class="container my-5">
+    <div class="card shadow">
+        <div class="card-body text-center">
+            <h3 class="mb-4">💰 My Wallet</h3>
+            <p class="fs-5">Available Balance:</p>
+            <h2 class="text-success fw-bold">₹{{ wallet.balance }}</h2>
+            <hr>
+            <a href="{% url 'user_panel:order_list' %}" class="btn btn-primary mb-4">Back to Orders</a>
+
+            {% if return_requests %}
+                <h4 class="mb-3">🧾 Refund History</h4>
+                <div class="table-responsive">
+                    <table class="table table-bordered align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Refund Amount</th>
+                                <th>Return Reason</th>
+                                <th>Refund Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for req in return_requests %}
+                                <tr>
+                                    <td>{{ req.order.order_id }}</td>
+                                    <td>₹{{ req.refund_amount }}</td>
+                                    <td>{{ req.reason }}</td>
+                                    <td>{{ req.requested_at|date:"M d, Y h:i A" }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p class="text-muted">No refund history available.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% endblock %}

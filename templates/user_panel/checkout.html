@@ -1,0 +1,198 @@
+{% extends 'user_panel/base.html' %}
+{% load static %}
+{% load form_tags %}
+
+{% block content %}
+<div class="container my-5">
+  <div class="row g-5">
+
+    <!-- Address Section -->
+    <div class="col-md-6">
+      <h3 class="mb-4 text-primary fw-bold">Select Delivery Address</h3>
+      <form id="orderForm" method="POST" action="{% url 'user_panel:place_order' %}">
+        {% csrf_token %}
+        {% if addresses %}
+          {% for address in addresses %}
+            <div class="card mb-3 shadow-sm {% if address.id == default_address.id %}border-success{% endif %}" style="cursor: pointer;">
+              <div class="card-body d-flex justify-content-between align-items-center">
+                <label class="flex-grow-1 mb-0" for="address{{ address.id }}">
+                  <input type="radio" id="address{{ address.id }}" name="address" value="{{ address.id }}"
+                         class="form-check-input me-3"
+                         {% if address.id == default_address.id %}checked{% endif %}>
+                  <span class="fw-semibold">{{ address.name }}</span><br>
+                  <small class="text-muted">
+                    {{ address.house }}, {{ address.street }}, {{ address.city }}<br>
+                    {{ address.state }}, {{ address.pincode }}<br>
+                    📞 {{ address.phone }}
+                  </small>
+                </label>
+                <a href="{% url 'user_panel:edit_address' address.id %}"
+                   class="btn btn-outline-secondary btn-sm ms-3" title="Edit Address">
+                  <i class="bi bi-pencil-fill"></i>
+                </a>
+              </div>
+            </div>
+          {% endfor %}
+        {% else %}
+          <p class="text-warning fst-italic">
+            No address found. Please <a href="{% url 'user_panel:add_address_checkout' %}">add one</a>.
+          </p>
+        {% endif %}
+
+        <!-- Add New Address Trigger -->
+        <button type="button" class="btn btn-outline-primary btn-sm w-100 mt-3" data-bs-toggle="modal" data-bs-target="#addAddressModal">
+          <i class="bi bi-plus-circle me-2"></i> Add New Address
+        </button>
+
+        
+        
+
+        <!-- COD Button -->
+        <button type="submit" class="btn btn-success btn-lg w-100 mt-4">
+          <i class="bi bi-cash-coin me-2"></i> Place Order (Cash on Delivery)
+        </button>
+      </form>
+    </div>
+
+    <!-- Order Summary -->
+
+    <div class="col-md-6">
+      <h3 class="mb-4 text-primary fw-bold">Order Summary</h3>
+       <!-- Coupon Section -->
+        <div class="mt-4">
+         <form id="coupon-form" method="POST">
+  {% csrf_token %}
+  <div class="input-group mb-3">
+    <input type="text" id="coupon_code" name="coupon_code" class="form-control" placeholder="Enter coupon code">
+    <button type="submit" class="btn btn-primary" id="apply-coupon-btn">Apply</button>
+  </div>
+</form>
+
+        </div>
+        <br><br>
+      <div class="card shadow-sm p-4">
+        {% for item in cart_items %}
+          <div class="d-flex align-items-center mb-4">
+            <img src="{{ item.product.main_image.url }}" alt="{{ item.product.name }}"
+                 width="70" height="70" class="rounded-3 border me-3 object-fit-cover">
+            <div class="flex-grow-1">
+              <h5 class="mb-1">{{ item.product.name }}</h5>
+              <small class="text-muted">{{ item.product_variant.variant_name }}</small><br>
+              <small>Qty: <span class="fw-semibold">{{ item.quantity }}</span></small><br>
+              <small>Price: ₹{{ item.product_variant.price|floatformat:2 }}</small>
+            </div>
+          </div>
+          {% if not forloop.last %}
+            <hr class="my-3">
+          {% endif %}
+        {% endfor %}
+
+        <!-- Price Breakdown -->
+<!-- Price Breakdown -->
+<div class="mt-4">
+  <div class="d-flex justify-content-between mb-2">
+    <span class="fs-6 fw-semibold">Subtotal</span>
+    <span id="subtotal" class="fs-6">₹{{ subtotal|floatformat:2 }}</span>
+  </div>
+
+  <div class="d-flex justify-content-between mb-2 text-success" id="discount-row" style="{% if not coupon_discount %}display: none;{% endif %}">
+    <span class="fs-6 fw-semibold">Coupon Discount</span>
+    <span id="coupon-discount">-₹{{ coupon_discount|floatformat:2 }}</span>
+  </div>
+
+  <div class="d-flex justify-content-between mb-2">
+    <span class="fs-6 fw-semibold">Shipping</span>
+    <span id="shipping" class="fs-6">{{ shipping|default_if_none:"0.00" }}
+</span>
+
+
+  </div>
+
+  <hr>
+  <div class="d-flex justify-content-between fs-5 fw-bold text-primary">
+    <span>Total</span>
+    <span id="final-total">₹{{ final_total|floatformat:2 }}</span>
+  </div>
+</div>
+
+        <!-- Razorpay Payment -->
+        <form action="{% url 'user_panel:razorpay_checkout' %}" method="POST" class="mt-4">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger btn-lg w-100 rounded-pill shadow-sm">
+            💳 Pay Now (Online)
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add Address Modal -->
+<div class="modal fade" id="addAddressModal" tabindex="-1" aria-labelledby="addAddressModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <form method="POST" action="{% url 'user_panel:add_address_checkout' %}">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title text-primary fw-bold">Add New Address</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          {% for field in address_form %}
+            <div class="mb-3">
+              <label class="form-label">{{ field.label }}</label>
+              {{ field|add_class:"form-control" }}
+              {% for error in field.errors %}
+                <div class="text-danger small">{{ error }}</div>
+              {% endfor %}
+            </div>
+          {% endfor %}
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary">
+            <i class="bi bi-save me-1"></i> Save Address
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<script>
+document.getElementById('coupon-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const couponCode = document.getElementById('coupon_code').value;
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+    fetch("{% url 'user_panel:apply_coupon' %}", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken,
+        },
+        body: JSON.stringify({
+            coupon_code: couponCode
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById('subtotal').textContent = `₹${parseFloat(data.subtotal).toFixed(2)}`;
+            document.getElementById('shipping').textContent = `₹${parseFloat(data.shipping).toFixed(2)}`;
+            document.getElementById('final-total').textContent = `₹${parseFloat(data.final_total).toFixed(2)}`;
+
+            // Show discount row if hidden
+            const discountRow = document.getElementById('discount-row');
+            discountRow.style.display = 'flex';
+            document.getElementById('coupon-discount').textContent = `-₹${parseFloat(data.coupon_discount).toFixed(2)}`;
+        } else {
+            alert(data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Coupon Apply Error:', error);
+    });
+});
+</script>
+
+{% endblock %}

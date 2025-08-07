@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Account Confirmation</title>
+    <style>
+        body {
+            background-color: #1a1a1a;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            text-align: center;
+        }
+        input[type="text"] {
+            padding: 10px;
+            width: 200px;
+            margin: 20px 0;
+            border: 1px solid #444;
+            background-color: #333;
+            color: white;
+            border-radius: 4px;
+        }
+        button[type="submit"] {
+            padding: 10px 20px;
+            background-color: #4a4a4a;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button[type="submit"]:hover {
+            background-color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>CONFIRM YOUR ACCOUNT</h2>
+        <p>check the inbox of your email - {{email}} - and enter the otp</p>
+        
+        <form action="{% url 'user_panel:otp_verify'%}" method="POST">
+            {% csrf_token %}
+            <div>
+                Enter the otp : <input type="text" placeholder="enter the otp" name="otp">
+            </div>
+            <br><br>
+            <button type="submit">Verify</button>
+        </form>
+        <p id="timer">Resend OTP in <span id="countdown">60</span> seconds</p>
+<button id="resendBtn" onclick="resendOTP()" disabled>Resend OTP</button>
+<div>
+   {% if messages %}
+    {% for message in messages %}
+        <script>alert('{{message}}')</script>
+    {% endfor %}
+{% endif %}
+</div>
+<script>
+    let seconds = 60;
+    const countdownSpan = document.getElementById("countdown");
+    const resendBtn = document.getElementById("resendBtn");
+
+    const interval = setInterval(() => {
+        seconds--;
+        countdownSpan.innerText = seconds;
+        if (seconds <= 0) {
+            clearInterval(interval);
+            resendBtn.disabled = false;
+            countdownSpan.innerText = "0";
+        }
+    }, 1000);
+
+    function resendOTP() {
+        fetch("{% url 'user_panel:resend_otp' %}")
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message || data.error);
+                if (!data.error) {
+                    // Restart timer
+                    seconds = 60;
+                    resendBtn.disabled = true;
+                    countdownSpan.innerText = seconds;
+
+                    const newInterval = setInterval(() => {
+                        seconds--;
+                        countdownSpan.innerText = seconds;
+                        if (seconds <= 0) {
+                            clearInterval(newInterval);
+                            resendBtn.disabled = false;
+                        }
+                    }, 1000);
+                }
+            });
+    }
+</script>
+
+    </div>
+</body>
+</html>

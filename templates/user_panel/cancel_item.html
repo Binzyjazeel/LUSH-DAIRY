@@ -1,0 +1,14 @@
+{% extends "user_panel/base.html" %}
+{% block content %}
+<div class="container my-5">
+    <h5>Cancel <b>{{ item.product_name }}</b> from Order #{{ item.order.order_id }}</h5>
+    <form method="post">{% csrf_token %}
+        <div class="mb-3">
+            <label for="reason" class="form-label">Reason (optional)</label>
+            <textarea name="reason" id="reason" class="form-control" rows="3"></textarea>
+        </div>
+        <button type="submit" class="btn btn-warning">Cancel Item</button>
+        <a href="{% url 'user_panel:order_detail' item.order.order_id %}" class="btn btn-secondary">Go Back</a>
+    </form>
+</div>
+{% endblock %}

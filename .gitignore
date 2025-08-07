@@ -1,0 +1,11 @@
+### Django ###
+venv
+LushDairy/.env
+accounts/__pycache__/
+accounts/migrations/
+app/__pycache__/
+app/migrations/
+app/templatetags/__pycache__/
+LushDairy/__pycache__/
+.vscode/
+djvenv

@@ -1,0 +1,274 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sales Report - Lush Dairy Admin</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+  <style>
+    :root {
+      --primary-color: #4d8b31;
+      --secondary-color: #f3fdf4;
+      --text-color: #333;
+      --light-gray: #f5f5f5;
+      --border-color: #ddd;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--secondary-color);
+      color: var(--text-color);
+      margin: 0;
+    }
+
+    .container {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      width: 240px;
+      background-color: white;
+      box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+      padding: 20px 0;
+    }
+
+    .logo {
+      padding: 0 20px 20px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+    }
+
+    .logo img {
+      height: 40px;
+      margin-right: 10px;
+    }
+
+    .logo h2 {
+      color: var(--primary-color);
+      font-size: 18px;
+    }
+
+    .nav-menu a {
+      display: flex;
+      align-items: center;
+      padding: 12px 20px;
+      color: var(--text-color);
+      text-decoration: none;
+      transition: all 0.3s;
+      font-size: 14px;
+    }
+
+    .nav-menu a:hover, .nav-menu a.active {
+      background-color: var(--secondary-color);
+      color: var(--primary-color);
+      border-left: 4px solid var(--primary-color);
+    }
+
+    .nav-menu i {
+      margin-right: 10px;
+      width: 20px;
+      text-align: center;
+    }
+
+    .main-content {
+      flex-grow: 1;
+      padding: 30px;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 25px;
+    }
+
+    .header h2 {
+      font-size: 24px;
+      font-weight: 600;
+    }
+
+    .section {
+      background-color: white;
+      border-radius: 8px;
+      padding: 25px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .filter-form {
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-bottom: 25px;
+    }
+
+    .filter-form label {
+      font-weight: 500;
+    }
+
+    .filter-form input,
+    .filter-form select,
+    .filter-form button {
+      padding: 6px 12px;
+      font-size: 14px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+    }
+
+    .stats {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      margin-bottom: 30px;
+    }
+
+    .stats h4 {
+      background: var(--light-gray);
+      padding: 12px 20px;
+      border-radius: 5px;
+      font-size: 15px;
+      font-weight: 500;
+      min-width: 200px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+      margin-top: 10px;
+    }
+
+    th, td {
+      padding: 12px;
+      border: 1px solid var(--border-color);
+      text-align: left;
+    }
+
+    th {
+      background-color: #f2f2f2;
+    }
+
+    .download-links {
+      margin-top: 20px;
+    }
+
+    .download-links a {
+      text-decoration: none;
+      margin-right: 10px;
+      background-color: var(--primary-color);
+      color: white;
+      padding: 8px 14px;
+      border-radius: 4px;
+      font-size: 14px;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .download-links i {
+      margin-right: 6px;
+    }
+
+    .user-info .avatar {
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="logo">
+      <img src="{% static 'images/logo.png' %}" alt="Lush Dairy Logo">
+    </div>
+    <div class="nav-menu">
+      <a href="{% url 'admin_panel:admin_dashboard' %}"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+      <a href="{% url 'admin_panel:admin_order_list' %}"><i class="fas fa-shopping-cart"></i> Orders</a>
+      <a href="{% url 'admin_panel:product_list' %}"><i class="fas fa-box"></i> Products</a>
+      <a href="#" class="active"><i class="fas fa-chart-line"></i> Sales Report</a>
+      <a href="{% url 'admin_panel:user_list' %}"><i class="fas fa-users"></i> Customers</a>
+      <a href="{% url 'admin_panel:category_list' %}"><i class="fas fa-tags"></i> Category</a>
+      <a href="{% url 'admin_panel:inventory_list' %}"><i class="fas fa-warehouse"></i> Stock</a>
+      <a href="{% url 'admin_panel:admin_return_requests' %}"><i class="fas fa-exchange-alt"></i> Refund/Return</a>
+      <a href="{% url 'admin_panel:admin_logout' %}"><i class="fas fa-sign-out-alt"></i> Sign Out</a>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <div class="header">
+      <h2>Sales Report</h2>
+      <div class="user-info">
+        <div class="avatar"><i class="fas fa-user"></i><span> Admin</span></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <!-- Filter Form -->
+      <form method="get" class="filter-form">
+        <label>Date Range:</label>
+        <input type="date" name="start_date" value="{{ request.GET.start_date }}">
+        <input type="date" name="end_date" value="{{ request.GET.end_date }}">
+        <button type="submit">Filter</button>
+
+        <label>Quick Filter:</label>
+        <select name="period" onchange="this.form.submit()">
+          <option value="">-- Select --</option>
+          <option value="day" {% if request.GET.period == 'day' %}selected{% endif %}>Today</option>
+          <option value="week" {% if request.GET.period == 'week' %}selected{% endif %}>This Week</option>
+          <option value="month" {% if request.GET.period == 'month' %}selected{% endif %}>This Month</option>
+          <option value="year" {% if request.GET.period == 'year' %}selected{% endif %}>This Year</option>
+        </select>
+      </form>
+
+      <!-- Stats Summary -->
+      <div class="stats">
+        <h4>Total Orders: {{ aggregated_data.total_orders }}</h4>
+        <h4>Total Sales: ₹{{ aggregated_data.total_sales|floatformat:2 }}</h4>
+        <h4>Total Discount: ₹{{ aggregated_data.total_discount|floatformat:2 }}</h4>
+      </div>
+
+      <!-- Sales by Status Table -->
+      <h2 style="font-size: 20px; margin-top: 30px;">Sales by Order Status</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Status</th>
+            <th>Total Orders</th>
+            <th>Total Revenue</th>
+            <th>Total Discount</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for status in status_summary %}
+          <tr>
+            <td>{{ status.status }}</td>
+            <td>{{ status.total_orders }}</td>
+            <td>₹{{ status.total_revenue|floatformat:2 }}</td>
+            <td>₹{{ status.total_discount|floatformat:2 }}</td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="4" style="text-align:center; color: #888; padding: 15px;">No data available for this period.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      <!-- Download Buttons -->
+      <div class="download-links">
+        <a href="{% url 'admin_panel:download_sales_pdf' %}?{{ request.GET.urlencode }}">
+          <i class="fas fa-file-pdf"></i> Download PDF
+        </a>
+        <a href="{% url 'admin_panel:download_sales_excel' %}?{{ request.GET.urlencode }}">
+          <i class="fas fa-file-excel"></i> Download Excel
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

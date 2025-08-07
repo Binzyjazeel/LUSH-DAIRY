@@ -1,0 +1,33 @@
+{% extends 'admin_panel/base.html' %}
+{% block content %}
+<h2>Return Requests</h2>
+<table>
+  <tr>
+    <th>User</th>
+    <th>Order</th>
+    <th>Reason</th>
+    <th>Verified</th>
+    <th>Refunded</th>
+    <th>Actions</th>
+  </tr>
+  {% for r in return_requests %}
+  <tr>
+    <td>{{ r.user }}</td>
+    <td>{{ r.order.order_id }}</td>
+    <td>{{ r.reason }}</td>
+    <td>{{ r.verified }}</td>
+    <td>{{ r.refunded }}</td>
+    <td>
+      {% if not r.verified %}
+        <a href="{% url 'admin_panel:approve_return_request' r.id %}">Verify</a>
+      {% elif not r.refunded %}
+        <a href="{% url 'admin_panel:approve_return_request' r.id %}">Refund</a>
+      {% else %}
+        Done
+      {% endif %}
+    </td>
+  </tr>
+  {% endfor %}
+</table>
+{% endblock %}
+

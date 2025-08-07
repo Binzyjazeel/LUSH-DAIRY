@@ -1,0 +1,61 @@
+{% extends 'user_panel/base.html' %}
+{% load static %}
+{% load form_tags %}
+
+
+{% block content %}
+<div class="container my-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-7 col-md-8 col-sm-10">
+      <div class="card shadow border-0 rounded-4">
+        <div class="card-body p-5">
+          <h3 class="text-center mb-4 text-primary fw-semibold">
+            Return Request<br><small class="text-muted">Order ID: {{ order.order_id }}</small>
+          </h3>
+
+          <form method="POST" enctype="multipart/form-data" novalidate>
+            {% csrf_token %}
+
+            {% for field in form %}
+              <div class="mb-4">
+                <label for="{{ field.id_for_label }}" class="form-label fw-medium">
+                  {{ field.label }}
+                </label>
+                {{ field|add_class:"form-control" }}
+                
+                {% if field.help_text %}
+                  <small class="form-text text-muted">{{ field.help_text }}</small>
+                {% endif %}
+                {% for error in field.errors %}
+                  <div class="text-danger small mt-1">{{ error }}</div>
+                {% endfor %}
+              </div>
+            {% endfor %}
+
+            <div class="d-grid mt-4">
+              <button type="submit" class="btn btn-outline-danger btn-lg rounded-3">
+                <i class="fas fa-undo-alt me-2"></i>Submit Return Request
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SweetAlert for Django messages -->
+{% if messages %}
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script>
+    {% for message in messages %}
+      Swal.fire({
+        icon: '{{ message.tags|default:"info" }}',
+        title: '{{ message.tags|capfirst }}',
+        text: '{{ message }}',
+        confirmButtonColor: '#d33',
+      });
+    {% endfor %}
+  </script>
+{% endif %}
+{% endblock %}
