@@ -39,7 +39,8 @@
 <body>
     <div class="container">
         <h2>CONFIRM YOUR ACCOUNT</h2>
-        <p>check the inbox of your email - {{email}} - and enter the otp</p>
+       <p>Check the inbox of your email - {{ email }} - and enter the OTP</p>
+<input type="hidden" id="emailInput" value="{{ email }}">  
         
         <form action="{% url 'user_panel:otp_verify'%}" method="POST">
             {% csrf_token %}
@@ -49,7 +50,7 @@
             <br><br>
             <button type="submit">Verify</button>
         </form>
-        <p id="timer">Resend OTP in <span id="countdown">60</span> seconds</p>
+        <p id="timer">Resend OTP in <span id="countdown">30</span> seconds</p>
 <button id="resendBtn" onclick="resendOTP()" disabled>Resend OTP</button>
 <div>
    {% if messages %}
@@ -59,44 +60,69 @@
 {% endif %}
 </div>
 <script>
-    let seconds = 60;
-    const countdownSpan = document.getElementById("countdown");
-    const resendBtn = document.getElementById("resendBtn");
+    let seconds = 30;
+    let countdownSpan = document.getElementById("countdown");
+    let resendBtn = document.getElementById("resendBtn");
+    let timer;
 
-    const interval = setInterval(() => {
-        seconds--;
+    function startCountdown() {
+        resendBtn.disabled = true;
         countdownSpan.innerText = seconds;
-        if (seconds <= 0) {
-            clearInterval(interval);
-            resendBtn.disabled = false;
-            countdownSpan.innerText = "0";
-        }
-    }, 1000);
-
-    function resendOTP() {
-        fetch("{% url 'user_panel:resend_otp' %}")
-            .then(response => response.json())
-            .then(data => {
-                alert(data.message || data.error);
-                if (!data.error) {
-                    // Restart timer
-                    seconds = 60;
-                    resendBtn.disabled = true;
-                    countdownSpan.innerText = seconds;
-
-                    const newInterval = setInterval(() => {
-                        seconds--;
-                        countdownSpan.innerText = seconds;
-                        if (seconds <= 0) {
-                            clearInterval(newInterval);
-                            resendBtn.disabled = false;
-                        }
-                    }, 1000);
-                }
-            });
+        timer = setInterval(() => {
+            seconds--;
+            countdownSpan.innerText = seconds;
+            if (seconds <= 0) {
+                clearInterval(timer);
+                resendBtn.disabled = false;
+            }
+        }, 1000);
     }
-</script>
 
+    startCountdown(); // start on page load
+
+    function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+function resendOTP() {
+    const email = document.getElementById("emailInput").value;
+
+    fetch("{% url 'user_panel:resend_reset_password_otp' %}", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+            "X-CSRFToken": getCookie('csrftoken')
+        },
+        body: new URLSearchParams({ "email": email })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message);
+            seconds = 30;
+            startCountdown();
+        } else {
+            alert(data.error || "Failed to resend OTP");
+        }
+    })
+    .catch(err => {
+        alert("Error sending OTP");
+        console.error(err);
+    });
+}
+</script>
     </div>
 </body>
 </html>

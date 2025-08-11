@@ -10,6 +10,50 @@
             <hr>
             <a href="{% url 'user_panel:order_list' %}" class="btn btn-primary mb-4">Back to Orders</a>
 
+            {# Transaction History #}
+            {% if transactions %}
+                <h4 class="mb-3">📜 Wallet Transactions</h4>
+                <div class="table-responsive">
+                    <table class="table table-bordered align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Date</th>
+                                <th>Type</th>
+                                <th>Amount</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for txn in transactions %}
+                                <tr>
+                                    <td>{{ txn.created_at|date:"M d, Y h:i A" }}</td>
+                                    <td>
+                                        {% if txn.transaction_type == 'credit' %}
+                                            <span class="text-success fw-bold">Credit</span>
+                                        {% else %}
+                                            <span class="text-danger fw-bold">Debit</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if txn.transaction_type == 'credit' %}
+                                            +₹{{ txn.amount }}
+                                        {% else %}
+                                            -₹{{ txn.amount }}
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ txn.description|default:"—" }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p class="text-muted">No wallet transactions yet.</p>
+            {% endif %}
+
+            <hr>
+
+            {# Refund History #}
             {% if return_requests %}
                 <h4 class="mb-3">🧾 Refund History</h4>
                 <div class="table-responsive">
@@ -18,7 +62,7 @@
                             <tr>
                                 <th>Order ID</th>
                                 <th>Refund Amount</th>
-                                <th>Return Reason</th>
+                                <th>Complaint</th>
                                 <th>Refund Date</th>
                             </tr>
                         </thead>

@@ -212,8 +212,17 @@
         <label>Date Range:</label>
         <input type="date" name="start_date" value="{{ request.GET.start_date }}">
         <input type="date" name="end_date" value="{{ request.GET.end_date }}">
+         <input type="hidden" name="period" value="custom">
+<label>Status:</label>
+<select name="status">
+  <option value="">All</option>
+  {% for s in statuses %}
+    <option value="{{ s }}" {% if s == selected_status %}selected{% endif %}>{{ s }}</option>
+  {% endfor %}
+</select>
         <button type="submit">Filter</button>
-
+      </form>
+        <form method="get" class="filter-form">
         <label>Quick Filter:</label>
         <select name="period" onchange="this.form.submit()">
           <option value="">-- Select --</option>
@@ -226,9 +235,9 @@
 
       <!-- Stats Summary -->
       <div class="stats">
-        <h4>Total Orders: {{ aggregated_data.total_orders }}</h4>
-        <h4>Total Sales: ₹{{ aggregated_data.total_sales|floatformat:2 }}</h4>
-        <h4>Total Discount: ₹{{ aggregated_data.total_discount|floatformat:2 }}</h4>
+        <h4>Total Orders: {{ aggregated_data.total_orders|default:"0" }}</h4>
+<h4>Total Sales: ₹{{ aggregated_data.total_sales|default:"0.00"|floatformat:2 }}</h4>
+<h4>Total Discount: ₹{{ aggregated_data.total_discount|default:"0.00"|floatformat:2 }}</h4>
       </div>
 
       <!-- Sales by Status Table -->
@@ -270,5 +279,18 @@
     </div>
   </div>
 </div>
+<script>
+  const periodSelect = document.querySelector('select[name="period"]');
+  const hiddenPeriodInput = document.querySelector('input[name="period"][type="hidden"]');
+
+  periodSelect.addEventListener('change', () => {
+    // Remove hidden input to let quick filter submit only selected period
+    if (hiddenPeriodInput) {
+      hiddenPeriodInput.remove();
+    }
+  });
+</script>
+
 </body>
+
 </html>

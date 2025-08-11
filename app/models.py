@@ -117,7 +117,10 @@ class Order(models.Model):
     address_city = models.CharField(max_length=100,default='')
     address_state = models.CharField(max_length=100,default='')
     address_zipcode = models.CharField(max_length=10,default='')
-    coupon = models.ForeignKey('Coupon', null=True, blank=True, on_delete=models.SET_NULL) 
+    coupon = models.ForeignKey('Coupon', null=True, blank=True, on_delete=models.SET_NULL)
+    # models.py
+    wallet_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+ 
 
     
     class Meta:
@@ -180,6 +183,7 @@ class ReturnRequest(models.Model):
     verified = models.BooleanField(default=False)
     refunded = models.BooleanField(default=False) 
     requested_at = models.DateTimeField(auto_now_add=True)
+    image = models.ImageField(upload_to='complaint_images/', blank=True, null=True)
 
     def __str__(self):
         return f"ReturnRequest #{self.id} for Order {self.order.order_id}"
@@ -212,13 +216,14 @@ class Payment(models.Model):
     def __str__(self):
         return f"{self.user.username} - {self.amount} - {self.status}"
 class Coupon(models.Model):
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE,default=1)
+    users = models.ManyToManyField(CustomUser, blank=True)
+    used_users = models.ManyToManyField(CustomUser, blank=True, related_name="redeemed_coupons")
     code = models.CharField(max_length=50, unique=True)
     discount_percentage = models.PositiveIntegerField()
     valid_from = models.DateField()
     valid_to = models.DateField()
     active = models.BooleanField(default=True)
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, null=True, blank=True)  
+   
 
     def __str__(self):
         return self.code

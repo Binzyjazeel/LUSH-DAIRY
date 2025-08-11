@@ -149,4 +149,4 @@ class ForgotPasswordForm(forms.Form):
 class ReturnRequestForm(forms.ModelForm):
     class Meta:
         model = ReturnRequest
-        fields = ['reason']
+        fields = ['reason', 'image']

@@ -21,8 +21,8 @@ def calculate_cart_totals(cart_items, coupon=None):
         for item in cart_items:
             product = item.product_variant.product
             base_price = item.product_variant.price or Decimal('0.00')
-            discount_percent = get_product_discount(product) or 0
-            discounted_price = base_price - (base_price * discount_percent / 100)
+            discount_percentage = get_product_discount(product) or 0
+            discounted_price = base_price - (base_price * discount_percentage / 100)
 
             item_total = discounted_price * item.quantity
             subtotal += item_total
@@ -58,30 +58,33 @@ def calculate_cart_totals(cart_items, coupon=None):
         }
 
 
-
-from accounts.models import CategoryOffer, ProductOffer
+from django.db import models
 from django.utils import timezone
+from decimal import Decimal
+from accounts.models import Offer
 
 def get_product_discount(product):
-    category_offer = CategoryOffer.objects.filter(
-        category=product.category,
+    today = timezone.now().date()
+
+    # Get all valid offers for product OR its category
+    offers = Offer.objects.filter(
         is_active=True,
-        valid_from__lte=timezone.now().date(),
-        valid_to__gte=timezone.now().date()
-    ).order_by('-discount_percent').first()
+        valid_from__lte=today,
+        valid_to__gte=today
+    ).filter(
+        models.Q(product=product) | models.Q(category=product.category)
+    ).order_by('-discount_percent')
 
-    product_offer = ProductOffer.objects.filter(
-        product=product,
-        is_active=True,
-        valid_from__lte=timezone.now().date(),
-        valid_to__gte=timezone.now().date()
-    ).order_by('-discount_percent').first()
-
-    category_discount = category_offer.discount_percent if category_offer else 0
-    product_discount = product_offer.discount_percent if product_offer else 0
-
-    return max(category_discount, product_discount)
+    if offers.exists():
+        return offers.first().discount_percent
+    return Decimal(0)
 
 def get_discounted_price(product):
+    price = Decimal(product.price or 0)
     discount = get_product_discount(product)
-    return product.price - (product.price * discount / 100)
+
+    if discount > 0:
+        discounted_price = price - (price * discount / Decimal(100))
+        return discounted_price.quantize(Decimal('0.01'))
+    return price
+

@@ -13,9 +13,9 @@ from .forms import CategoryForm
 from .models import Product,ProductImage
 from django.views.decorators.cache import never_cache
 from django.utils import timezone
-
-from django.views.decorators.cache import never_cache
 from django.utils.decorators import method_decorator
+from django.contrib.auth.decorators import user_passes_test
+
 
 @never_cache
 def admin_login(request):
@@ -43,6 +43,7 @@ def admin_login(request):
 def admin_logout(request):
     logout(request)
     return redirect('admin_panel:admin_login')
+
 @never_cache
 @login_required
 def admin_dashboard(request):
@@ -56,6 +57,8 @@ def admin_dashboard(request):
     response['Pragma'] = 'no-cache'
     response['Expires'] = '0'
     return response
+
+
 @never_cache
 @login_required
 def user_list(request):
@@ -78,6 +81,7 @@ def user_list(request):
         'page_obj': page_obj,
     }
     return render(request, 'admin_panel/user_list.html', context)
+
 @require_POST
 def toggle_block_user(request, user_id):
     user = get_object_or_404(CustomUser, id=user_id)
@@ -143,6 +147,7 @@ def category_edit(request, pk):
 
    
     return render(request, 'admin_panel/edit_category.html', {'form': form})
+
 def category_delete(request, pk):
     category = get_object_or_404(Category, pk=pk, is_deleted=False)
     category.is_deleted = True 
@@ -206,7 +211,6 @@ def delete_product(request, product_id):
     messages.success(request, "Product deleted (soft delete).")
     return redirect('admin_panel:product_list')
 
-
 def product_list(request):
     query = request.GET.get('q')
     products = Product.objects.filter(is_deleted=False)
@@ -230,6 +234,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 import io
 from PIL import Image
+
 @csrf_exempt
 def upload_image(request):
     if request.method == 'POST' and request.FILES.get('cropped_image'):
@@ -387,6 +392,8 @@ def admin_change_order_status(request, order_id):
         return redirect('admin_panel:admin_order_detail', order_id=order_id)
 
     return render(request, 'admin_panel/change_order_status.html', {'order': order})
+
+   
 def admin_verify_return_request(request, return_id):
     return_request = get_object_or_404(ReturnRequest, id=return_id)
 
@@ -496,6 +503,8 @@ def delete_variant(request, variant_id):
     variant.delete()
     messages.success(request, "Variant deleted successfully.")
     return redirect('admin_panel:manage_variants', product_id=product_id)
+
+
 def manage_variants(request, product_id):
     product = get_object_or_404(Product, id=product_id)
     variants = product.variants.all()
@@ -509,7 +518,8 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib import messages
 @login_required
-@user_passes_test(lambda u: u.is_superuser)
+
+
 def approve_return_request(request, request_id):
     return_request = get_object_or_404(ReturnRequest, id=request_id)
     order = return_request.order
@@ -517,7 +527,7 @@ def approve_return_request(request, request_id):
     
     if not return_request.verified:
         return_request.verified = True
-        messages.info(request, "Return request verified.")
+        messages.info(request, "Complaint verified.")
 
     
     if not return_request.refunded:
@@ -530,13 +540,36 @@ def approve_return_request(request, request_id):
     if order.status != 'returned' or order.return_status != 'approved':
         order.status = 'returned'
         order.return_status = 'approved'
-        messages.info(request, "Order marked as returned.")
+        messages.info(request, "Complaint processed and fixed.")
 
   
     return_request.save()
     order.save()
 
     return redirect('admin_panel:admin_return_requests')
+@login_required
+
+def reject_return_request(request, request_id):
+    return_request = get_object_or_404(ReturnRequest, id=request_id)
+    order = return_request.order
+
+    if not return_request.verified:
+        return_request.verified = True  # Mark complaint verified even if rejected
+        messages.info(request, "Complaint verified and rejected.")
+
+    if not return_request.refunded:
+        return_request.refund_amount = 0  # No refund
+        return_request.refunded = False
+        messages.warning(request, "No refund will be issued for this complaint.")
+
+    order.return_status = 'rejected'  # Mark complaint rejected in order
+    # Optionally update order.status if needed, e.g. leave as is or mark differently
+
+    return_request.save()
+    order.save()
+
+    return redirect('admin_panel:admin_return_requests')
+
 
 
 from django.db.models import Q
@@ -544,7 +577,7 @@ from django.contrib.auth.decorators import user_passes_test, login_required
 from django.shortcuts import render, get_object_or_404
 from app.models import ReturnRequest
 
-@user_passes_test(lambda u: u.is_superuser)
+
 def admin_return_requests(request):
     query = request.GET.get('q', '').strip()
     
@@ -596,11 +629,13 @@ def coupon_list_view(request):
     return render(request, 'admin_panel/coupon_list.html', context)
 
 from django.utils.dateparse import parse_date
+
 def create_coupon(request):
     if request.method == 'POST':
         form = CouponForm(request.POST)
         if form.is_valid():
             coupon = form.save()
+            form.save_m2m() 
             print(f"Saved Coupon: {coupon.code}, ID: {coupon.id}")  # Debug print
             messages.success(request, "Coupon created successfully!")
             return redirect('admin_panel:coupon_list')
@@ -624,7 +659,9 @@ def edit_coupon(request, coupon_id):
     if request.method == 'POST':
         form = CouponForm(request.POST, instance=coupon)
         if form.is_valid():
+            coupon = form.save(commit=False)
             form.save()
+            form.save_m2m() 
             return redirect('admin_panel:coupon_list')  # or your custom success URL
     else:
         form = CouponForm(instance=coupon)
@@ -643,70 +680,115 @@ from django.db.models import Sum, Count, F
 
 from django.utils.timezone import now
 
+from django.shortcuts import render
+from django.utils.timezone import now
+from datetime import datetime, timedelta
+from django.db.models import Count, Sum
+from app.models import Order
+
 def sales_report(request):
-    filter_type = request.GET.get('period', 'daily')  # daily, weekly, monthly, yearly, custom
+    period = request.GET.get('period', 'day')  # day, week, month, year, custom
     from_date = request.GET.get('start_date')
     to_date = request.GET.get('end_date')
-    all_orders = Order.objects.all()
-    orders = Order.objects.filter(status='Delivered')  # or whatever status means "completed"
+    status_filter = request.GET.get('status', '')  # optional status filter
 
     today = now().date()
 
-    if filter_type == 'daily':
-        orders = orders.filter(created_at__date=today)
-        all_orders = all_orders.filter(created_at__date=today)
+    # Start with all orders
+    all_orders = Order.objects.all()
+    # Delivered/completed orders only for main stats
+    orders = Order.objects.all()
+    statuses = [status[0] for status in Order.ORDER_STATUS]
 
-    elif filter_type == 'weekly':
-        start_week = today - timedelta(days=7)
-        orders = orders.filter(created_at__date__range=[start_week, today])
-        all_orders = all_orders.filter(created_at__date__range=[start_week, today])
+    # Apply status filter if provided (overrides 'Delivered' filter if needed)
+    if status_filter:
+        orders = orders.filter(status=status_filter)
+        all_orders = all_orders.filter(status=status_filter)
 
-    elif filter_type == 'monthly':
-        start_month = today - timedelta(days=30)
-        orders = orders.filter(created_at__date__range=[start_month, today])
-
-    elif filter_type == 'yearly':
-        start_year = today - timedelta(days=365)
-        orders = orders.filter(created_at__date__range=[start_year, today])
-        all_orders = all_orders.filter(created_at__date__range=[start_year, today])
-
-    elif filter_type == 'custom' and from_date and to_date:
+    # Filter by date range
+    if period == 'custom' and from_date and to_date:
         try:
-            from_date = datetime.strptime(from_date, '%Y-%m-%d')
-            to_date = datetime.strptime(to_date, '%Y-%m-%d')
-            all_orders = all_orders.filter(created_at__date__range=[from_date, to_date])
-            orders = orders.filter(created_at__date__range=[from_date, to_date])
+            start_date = datetime.strptime(from_date, '%Y-%m-%d').date()
+            end_date = datetime.strptime(to_date, '%Y-%m-%d').date()
+            orders = orders.filter(created_at__date__range=[start_date, end_date])
+            all_orders = all_orders.filter(created_at__date__range=[start_date, end_date])
         except ValueError:
-            pass  # invalid date format
+            # Invalid date format, ignore filter or handle error
+            pass
+    else:
+        # Use period-based filtering
+        if period == 'day':
+            orders = orders.filter(created_at__date=today)
+            all_orders = all_orders.filter(created_at__date=today)
 
-    # ✅ Aggregate Data
+        elif period == 'week':
+            start_week = today - timedelta(days=7)
+            orders = orders.filter(created_at__date__range=[start_week, today])
+            all_orders = all_orders.filter(created_at__date__range=[start_week, today])
+
+        elif period == 'month':
+            start_month = today - timedelta(days=30)
+            orders = orders.filter(created_at__date__range=[start_month, today])
+            all_orders = all_orders.filter(created_at__date__range=[start_month, today])
+
+        elif period == 'year':
+            start_year = today - timedelta(days=365)
+            orders = orders.filter(created_at__date__range=[start_year, today])
+            all_orders = all_orders.filter(created_at__date__range=[start_year, today])
+
+    # Aggregations on filtered 'orders' (completed/delivered)
     aggregated_data = orders.aggregate(
         total_orders=Count('id'),
-        total_sales=Sum('total_amount'),  # change field as per your model
-        total_discount=Sum('discount') # adapt as per model fields
+        total_sales=Sum('total_amount'),  # change 'total_amount' to your field
+        total_discount=Sum('discount')     # change 'discount' to your field
     )
-    status_summary = all_orders.values('status').annotate(
-        total_orders=Count('id'),
-        total_revenue=Sum('total_amount'),
-        total_discount=Sum('discount')
-    ).order_by('status')
+    aggregated_data = {
+    key: value if value is not None else 0
+    for key, value in aggregated_data.items()
+}
 
+    # Group by status for all filtered orders
+    status_summary = (
+        all_orders
+        .values('status')
+        .annotate(
+            total_orders=Count('id'),
+            total_revenue=Sum('total_amount'),
+            total_discount=Sum('discount')
+        )
+        .order_by('status')
+    )
 
     context = {
-        'orders': orders,
         'aggregated_data': aggregated_data,
-        'filter_type': filter_type,
         'status_summary': status_summary,
+        'filter_type': period,
+        'start_date': from_date,
+        'end_date': to_date,
+        'selected_status': status_filter,
+        'statuses': statuses,
     }
+
     return render(request, 'admin_panel/sales_report.html', context)
 
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
-from reportlab.lib.styles import getSampleStyleSheet
+
+
+from reportlab.lib.styles import getSampleStyleSheet,ParagraphStyle
 from django.utils import timezone
 from django.db.models import Sum
 from datetime import timedelta
 from app.models import Order  # make sure this is correct
 from django.http import HttpResponse
+
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import A4
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+from datetime import datetime
+from django.utils.timezone import make_aware
+
+
 
 def download_sales_report_pdf(request):
     start_date = request.GET.get('start_date')
@@ -716,47 +798,110 @@ def download_sales_report_pdf(request):
     orders = Order.objects.all()
     today = timezone.now()
 
+    # Filtering
     if period:
         if period == 'day':
             orders = orders.filter(created_at__date=today.date())
         elif period == 'week':
             week_ago = today - timedelta(days=7)
-            orders = orders.filter(created_at__date__gte=week_ago)
+            orders = orders.filter(created_at__gte=week_ago)
         elif period == 'month':
-            orders = orders.filter(created_at__month=today.month, date_ordered__year=today.year)
+            orders = orders.filter(created_at__month=today.month, created_at__year=today.year)
         elif period == 'year':
             orders = orders.filter(created_at__year=today.year)
+
     elif start_date and end_date:
-        orders = orders.filter(created_at__date__range=[start_date, end_date])
+        try:
+            start_date_obj = datetime.strptime(start_date, "%Y-%m-%d")
+            end_date_obj = datetime.strptime(end_date, "%Y-%m-%d")
+        
+        # Make them timezone-aware
+            start_date_aware = make_aware(datetime.combine(start_date_obj, datetime.min.time()))
+            end_date_aware = make_aware(datetime.combine(end_date_obj, datetime.max.time()))
+
+            orders = orders.filter(created_at__range=[start_date_aware, end_date_aware])
+        except ValueError:
+         pass 
+
+# Filtering
+   
 
     total_orders = orders.count()
     total_sales = orders.aggregate(Sum('total_amount'))['total_amount__sum'] or 0
     total_discount = orders.aggregate(Sum('discount'))['discount__sum'] or 0
 
+    # PDF setup with margins
     response = HttpResponse(content_type='application/pdf')
     response['Content-Disposition'] = 'attachment; filename="sales_report.pdf"'
 
-    doc = SimpleDocTemplate(response)
+    doc = SimpleDocTemplate(
+        response,
+        pagesize=A4,
+        rightMargin=30,
+        leftMargin=30,
+        topMargin=30,
+        bottomMargin=30
+    )
+
     styles = getSampleStyleSheet()
+    styles.add(ParagraphStyle(name='CenterTitle', alignment=1, fontSize=16, spaceAfter=10, fontName='Helvetica-Bold'))
+
     elements = []
 
-    elements.append(Paragraph("Sales Report", styles['Title']))
-    elements.append(Spacer(1, 12))
-    elements.append(Paragraph(f"Total Orders: {total_orders}", styles['Normal']))
-    elements.append(Paragraph(f"Total Sales: ₹{total_sales}", styles['Normal']))
-    elements.append(Paragraph(f"Total Discount: ₹{total_discount}", styles['Normal']))
+    # Title
+    elements.append(Paragraph(" Sales Report", styles['CenterTitle']))
     elements.append(Spacer(1, 12))
 
+    # Summary Table
+    summary_data = [
+        ["Total Orders", f"{total_orders}"],
+        ["Total Sales", f"Rs. {total_sales:,.2f}"],
+        ["Total Discount", f"Rs. {total_discount:,.2f}"]
+    ]
+    summary_table = Table(summary_data, colWidths=[200, 200])
+    summary_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.lightgrey),
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+        ('FONTSIZE', (0, 0), (-1, -1), 11),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+        ('GRID', (0, 0), (-1, -1), 0.25, colors.grey),
+    ]))
+    elements.append(summary_table)
+    elements.append(Spacer(1, 20))
+
+    # Orders Table
+    order_data = [["Order ID", "User", "Amount", "Discount", "Date"]]
     for order in orders:
-        elements.append(Paragraph(
-            f"Order #{order.id} | User: {order.user.username} | Amount: ₹{order.total_amount} | "
-            f"Discount: ₹{order.discount} | Date: {order.created_at.strftime('%Y-%m-%d')}",
-            styles['Normal']
-        ))
-        elements.append(Spacer(1, 6))
+        order_data.append([
+            f"#{order.id}",
+            order.user.username,
+            f"Rs. {order.total_amount:,.2f}",
+            f"Rs. {order.discount:,.2f}",
+            order.created_at.strftime('%Y-%m-%d')
+        ])
 
+    order_table = Table(order_data, colWidths=[70, 120, 80, 80, 100])
+    order_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor("#4F81BD")),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (2, 1), (3, -1), 'RIGHT'),  # Align currency to right
+        ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 11),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 8),
+        ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.whitesmoke, colors.lightgrey]),
+        ('GRID', (0, 0), (-1, -1), 0.25, colors.grey),
+    ]))
+
+    elements.append(order_table)
+
+    # Build PDF
     doc.build(elements)
     return response
+    # Build PDF
+    
 from openpyxl import Workbook
 from django.utils import timezone
 from django.db.models import Sum
@@ -816,3 +961,54 @@ def download_sales_report_excel(request):
     response['Content-Disposition'] = 'attachment; filename="sales_report.xlsx"'
     wb.save(response)
     return response
+
+
+# admin_panel/views.py
+from django.shortcuts import render, get_object_or_404, redirect
+from django.core.paginator import Paginator
+from django.utils import timezone
+from .models import Offer
+from .forms import OfferForm
+
+def offer_list(request):
+    query = request.GET.get('q', '')
+    offers = Offer.objects.all()
+    if query:
+        offers = offers.filter(name__icontains=query)
+
+    paginator = Paginator(offers, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    return render(request, 'admin_panel/offer_list.html', {
+        'page_obj': page_obj,
+        'query': query,
+        'today': timezone.now().date()
+    })
+
+def create_offer(request):
+    if request.method == 'POST':
+        form = OfferForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('admin_panel:offer_list')
+    else:
+        form = OfferForm()
+    return render(request, 'admin_panel/offer_form.html', {'form': form, 'title': 'Create Offer'})
+
+def edit_offer(request, offer_id):
+    offer = get_object_or_404(Offer, id=offer_id)
+    if request.method == 'POST':
+        form = OfferForm(request.POST, instance=offer)
+        if form.is_valid():
+            form.save()
+            return redirect('admin_panel:offer_list')
+    else:
+        form = OfferForm(instance=offer)
+    return render(request, 'admin_panel/offer_form.html', {'form': form, 'title': 'Edit Offer'})
+
+def delete_offer(request, offer_id):
+    offer = get_object_or_404(Offer, id=offer_id)
+    offer.delete()
+    return redirect('admin_panel:offer_list')
+

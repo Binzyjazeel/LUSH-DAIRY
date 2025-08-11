@@ -343,8 +343,8 @@
           <table class="products-table">
             <thead>
               <tr>
-                <th>Product</th>
-                <th>Code</th>
+              
+                <th>CouponCode</th>
                 <th>Discount</th>
                  <th>Valid From</th>
                 <th>Valid Till</th>
@@ -355,7 +355,7 @@
             <tbody>
               {% for coupon in page_obj %}
               <tr>
-                <td>{{ coupon.product }}</td>
+                
                 <td><span class="product-id">{{ coupon.code }}</span></td>
                 <td>{{ coupon.discount_percentage }}%</td>
                 <td>{{ coupon.valid_from|date:"d-m-Y" }}</td>

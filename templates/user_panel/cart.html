@@ -10,9 +10,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fresh Milk Cart - Premium Dairy Delivery</title>
     
-    
+    <!-- Bootstrap CSS -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
-    
+    <!-- Bootstrap Icons -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.0/font/bootstrap-icons.min.css" rel="stylesheet">
     
     <style>
@@ -364,139 +364,116 @@
                 </div>
                 <div>
                     <h1 class="h2 mb-1 fw-bold text-dark">Your Milk Cart</h1>
-                    <p class="mb-0 text-muted"  id="total-items">
+                    <p class="mb-0 text-muted" id="cart-items-count"  >
                         {{ total_items }} item{{ total_items|pluralize }} • Fresh & Cold Delivery
                     </p>
                 </div>
             </div>
         </div>
         <div class="col-md-4 text-md-end mt-3 mt-md-0">
-            <div class="total-amount" id="cart-totalprice" >₹{{ total_price}}</div>
+            <div class="total-amount" id="cart-total-amount">₹{{ total}}</div>
             <p class="mb-0 text-muted small">Total Amount</p>
         </div>
     </div>
 </div>
 
-        <div class="row g-4">
-            <!-- Cart Items & Delivery Info -->
-           <div class="col-lg-8">
-    <!-- Cart Items -->
-    <div class="card-premium mb-4 fade-in">
-        <div class="card-body p-4">
-            <h3 class="card-title mb-4 d-flex align-items-center">
-                <i class="bi bi-bag-check me-2 text-primary"></i>Cart Items
-            </h3>
+      <div class="card-premium mb-4 fade-in">
+    <div class="card-body p-4">
+        <h3 class="card-title mb-4 d-flex align-items-center">
+            <i class="bi bi-bag-check me-2 text-primary"></i>Cart Items
+        </h3>
 
-            {% for item in cart_items %}
-          {% if cart_items %}
-<div class="table-responsive">
-  <table class="table table-bordered align-middle text-center">
-    <thead class="table-light">
-      <tr>
-        <th>Image</th>
-        <th>Product</th>
-        <th>Category</th>
-        <th>Variant</th>
-        <th>Quantity</th>
-        <th>Price</th>
-        <th>Remove</th>
-      </tr>
-    </thead>
-    <tbody>
-     
-      <tr>
-        <td>
-          <img src="{{ item.product.main_image.url }}" alt="{{ item.product.name }}" class="img-thumbnail" style="width: 80px; height: auto;" />
-        </td>
+        {% if cart_items %}
+        <div class="table-responsive">
+            <table class="table align-middle text-center">
+                <thead class="table-light">
+                    <tr>
+                        <th>Product</th>
+                        <th>Details</th>
+                        <th>Quantity</th>
+                        <th>Price</th>
+                        <th>Remove</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in cart_items %}
+                    <tr class="cart-item">
+                        <td>
+                            <img src="{{ item.product.main_image.url }}" alt="{{ item.product.name }}" class="img-fluid rounded" style="max-height: 80px;" />
+                        </td>
+                        <td>
+                            <h6 class="mb-0">{{ item.product.name }}</h6>
+                            <small class="text-muted">{{ item.product.category }}</small><br>
+                            <small class="text-muted">{{ item.product_variant.variant_name }}</small>
+                        </td>
+                        <td>
+                            <div class="d-flex justify-content-center align-items-center gap-2 quantity-control">
+                                <button class="quantity-btn btn btn-outline-secondary btn-sm"
+                                        type="button"
+                                        data-id="{{ item.id }}"
+                                        data-action="decrement"
+                                        aria-label="Decrease quantity">
+                                    <i class="bi bi-dash"></i>
+                                </button>
 
-        <td>
-          <strong>{{ item.product.name }}</strong><br>
-         
-         
-        </td>
-        <td>
-          
-          <small class="text-muted">{{ item.product.category }}</small><br>
-          
-        </td>
+                                <span id="quantity-{{ item.id }}" class="quantity-display px-2">
+                                    {{ item.quantity }}
+                                </span>
 
-        <td>
-         <small class="text-muted">{{ item.product_variant.variant_name }}</small>
-        </td>
-
-        <td>
-          <div class="d-flex justify-content-center align-items-center">
-            <button class="btn btn-outline-secondary btn-sm me-1 quantity-btn"
-                    type="button"
-                    data-id="{{ item.id }}"
-                    data-action="decrement"
-                    aria-label="Decrease quantity">
-              <i class="bi bi-dash"></i>
-            </button>
-            <span id="quantity-{{ item.id }}">{{ item.quantity }}</span>
-            <button class="btn btn-outline-secondary btn-sm ms-1 quantity-btn"
-                    type="button"
-                    data-id="{{ item.id }}"
-                    data-action="increment"
-                    aria-label="Increase quantity">
-              <i class="bi bi-plus"></i>
-            </button>
-          </div>
-        </td>
-
-        <td>
-          ₹{{ item.total_price }}<br>
-          <small class="text-muted">₹{{ item.product_variant.price }} each</small>
-        </td>
-
-        <td>
-          <form method="post" action="{% url 'user_panel:remove_cart_item' item.id %}">
-            {% csrf_token %}
-            <button type="submit" class="btn btn-outline-danger btn-sm">
-              <i class="bi bi-trash"></i>
-            </button>
-          </form>
-        </td>
-      </tr>
-     
-    </tbody>
-  </table>
-</div>
-
-{% endif %}
-
-            {% empty %}
-            <p>Your cart is empty.</p>
-            {% endfor %}
+                                <button class="quantity-btn btn btn-outline-secondary btn-sm"
+                                        type="button"
+                                        data-id="{{ item.id }}"
+                                        data-action="increment"
+                                        aria-label="Increase quantity">
+                                    <i class="bi bi-plus"></i>
+                                </button>
+                            </div>
+                        </td>
+                        <td>
+                            <div id="item-total-{{ item.id }}" class="price-highlight">₹{{ item.total_price }}</div>
+                            <small class="text-muted">₹{{ item.product_variant.price }} each</small>
+                        </td>
+                        <td>
+                            <form method="post" action="{% url 'user_panel:remove_cart_item' item.id %}">
+                                {% csrf_token %}
+                                <button class="btn btn-outline-danger btn-sm" type="submit">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
+        {% else %}
+        <p>Your cart is empty.</p>
+        {% endif %}
     </div>
 </div>
 
 
                         
-                        
 
                 
-            <!-- Order Summary Sidebar -->
-            <div class="col-lg-4">
-               
-               
+  
+          
 
                 <!-- Order Summary -->
                 <div class="card-premium mb-4 fade-in">
     <div class="card-body p-4">
         <h4 class="card-title mb-4">
-            <i class="bi bi-receipt me-2 text-primary"></i>
+            <i class="bi bi-receipt me-2 text-primary" id="items-count"></i>
             Order Summary
         </h4>
 
         <div class="d-flex justify-content-between mb-2">
-    <span class="text-muted">Subtotal ({{ total_items }} items)</span>
+    <span class="text-muted"> Subtotal </span>
     <span id="cart-subtotal">₹{{ total_price }}</span>
 </div>
 
         <div class="d-flex justify-content-between mb-2">
-            <span class="text-success">Discount</span>
+            <span class="text-success">Discount </span>
             <span id="cart-discount" class="text-success">-₹{{ discount }}</span>
         </div>
 
@@ -517,7 +494,7 @@
         <hr>
         <div class="d-flex justify-content-between mb-4">
             <span class="h5 fw-bold">Total</span>
-            <span  id="cart-total" class="h5 fw-bold text-success">₹{{ total_price }}</span>
+            <span  id="cart-total" class="h5 fw-bold text-success">₹{{ total }}</span>
         </div>
 
         <a href="{% url 'user_panel:checkout' %}" class="btn btn-gradient w-100 mb-3">
@@ -568,23 +545,20 @@ $(document).ready(function() {
             },
             success: function(response) {
                 if (response.status === 'success') {
-                    
+                    // ✅ Update quantity
                     $('#quantity-' + cartId).text(response.quantity);
+                    $('#cart-items-count').text(response.total_items + ' items');
+                    $('#cart-total-amount').text('₹' + response.total.toFixed(2));
+                    $('#items-count').text(response.total_items + ' items');
 
-                   
+
+                    // ✅ Update item total price
                     $('#item-total-' + cartId).text('₹' + response.item_total.toFixed(2));
 
-                   
+                    // ✅ Update cart summary
                     $('#cart-subtotal').text('₹' + response.subtotal.toFixed(2));
                     $('#cart-discount').text('-₹' + response.discount.toFixed(2));
                     $('#cart-total').text('₹' + response.total.toFixed(2));
-
-                    $('#cart-totalprice').text('₹' + response.total.toFixed(2));
-                    
-
-                const itemCount = Number(response.total_items);
-$('#total-items').text(`${itemCount} item${itemCount === 1 ? '' : 's'} • Fresh & Cold Delivery`);
-
                 } else {
                     alert(response.message || 'Something went wrong');
                 }

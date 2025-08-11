@@ -6,7 +6,7 @@ from django.core.mail import send_mail
 from django.contrib.auth.hashers import make_password
 from django.http import JsonResponse
 from django.contrib.auth import authenticate, login, logout
-from .models import PasswordResetOTP,Review,Order,OrderItem
+from .models import PasswordResetOTP,Review,Order,OrderItem,Wallet,WalletTransaction
 from .forms import EmailForm, OTPForm, ResetPasswordForm
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.cache import never_cache
@@ -22,14 +22,17 @@ def signup_view(request):
         email=request.POST["email"]
         password1=request.POST["password1"]
         password2=request.POST["password2"]
-        referral_code = request.POST.get("referral")
-        referrer = None
+        
+        referral_code = request.POST.get("referral") or request.session.get("referral_code_from_link")
+
+        referrer=None
         if referral_code:
             try:
                 referrer = CustomUser.objects.get(referral_code=referral_code)
+                request.session["referrer_id"] = referrer.id
             except CustomUser.DoesNotExist:
                 messages.error(request, "Invalid referral code")
-            return redirect('user_panel:signup')
+                return redirect('user_panel:signup')
         if not all([username, email, password1, password2]):
             messages.error(request, "All fields are required.")
             return redirect('user_panel:signup')
@@ -37,7 +40,9 @@ def signup_view(request):
         request.session["username"]=username
         request.session["email"]=email
         request.session["password1"]=password1
-        request.session["referral_code"] = referral_code 
+        if request.method == "GET" and "ref" in request.GET:
+            request.session["referral_code_from_link"] = request.GET["ref"]
+
 
         if password1==password2:
             if CustomUser.objects.filter(username=username).exists():
@@ -68,32 +73,61 @@ def send_otp(request):
 
 
 
+from decimal import Decimal
+
+from decimal import Decimal
+
 def otp_verification(request):
-    if 'username' not in request.session or 'email' not in request.session or 'password1' not in request.session:
+    if not all(k in request.session for k in ["username", "email", "password1"]):
         messages.error(request, "Session expired. Please try signing up again.")
         return redirect('user_panel:signup')
-    otp_ = None 
-    if request.method=="POST":
-        otp_= request.POST.get("otp")
-    if otp_ == request.session.get("otp"):
-        encrypted_password=make_password(request.session['password1'])
-        nameuser=CustomUser(username=request.session["username"],email=request.session["email"],password=encrypted_password)
-        
-       
-        nameuser.is_active=True
-        nameuser.save()
 
+    if request.method == "POST":
+        otp_ = request.POST.get("otp")
+        if otp_ == request.session.get("otp"):
+            encrypted_password = make_password(request.session['password1'])
 
-        del request.session['username']
-        del request.session['email']
-        del request.session['password1']
-        
+            # ✅ Create new user
+            nameuser = CustomUser(
+                username=request.session["username"],
+                email=request.session["email"],
+                password=encrypted_password,
+                is_active=True
+            )
 
+            referrer_id = request.session.get("referrer_id")
+            if referrer_id:
+                nameuser.referred_by_id = referrer_id
 
-        return redirect('user_panel:login')
-    else:
-        messages.error(request,"otp doesnt match,please try again!!")
-    return render(request,"user_panel/verify_otp.html")
+            nameuser.save()
+
+            # ✅ Credit referral bonus only first time
+            if referrer_id:
+                wallet, _ = Wallet.objects.get_or_create(user_id=referrer_id)
+                if not WalletTransaction.objects.filter(
+                    wallet=wallet,
+                    description__icontains=f"Referral bonus for {nameuser.username}"
+                ).exists():
+                    wallet.credit(Decimal("50.00"))
+
+                    WalletTransaction.objects.create(
+                        wallet=wallet,
+                        transaction_type="credit",
+                        amount=Decimal("50.00"),
+                        description=f"Referral bonus for {nameuser.username}"
+                    )
+
+            # ✅ Clear session
+            for key in ["username", "email", "password1", "referrer_id", "otp"]:
+                request.session.pop(key, None)
+
+            messages.success(request, "Account created successfully!")
+            return redirect('user_panel:login')
+
+        messages.error(request, "OTP doesn't match, please try again!")
+
+    return render(request, "user_panel/verify_otp.html")
+
 
 
 def logout_view(request):
@@ -133,27 +167,38 @@ def home(request):
     return render(request, 'user_panel/home.html')
 
 def resend_otp(request):
-    if request.method == "GET" and 'email' in request.session:
-        s = "".join([str(random.randint(0, 9)) for _ in range(4)])
-        request.session["otp"] = s
-        email = request.session.get('email')
-
+    if request.method == "POST":
+        email = request.session.get("email")
+        if not email:
+            user_id = request.session.get("reset_user_id")
+            if not user_id:
+                return JsonResponse({"error": "Session expired. Please restart process."}, status=400)
+            try:
+                user = CustomUser.objects.get(id=user_id)
+                email = user.email
+            except CustomUser.DoesNotExist:
+                return JsonResponse({"error": "User not found."}, status=404)
+        otp = "".join([str(random.randint(0, 9)) for _ in range(4)])
+        request.session["otp"] = otp
+        
         send_mail(
             "Your New OTP",
-            f"Your new OTP is {s}",
+            f"Your new OTP is {otp}",
             'djangoalerts0011@gmail.com',
-            [request.session['email']],
+            [email],
             fail_silently=False
         )
-        return JsonResponse({"message": "OTP resent successfully."})
-    return JsonResponse({"error": "Session expired. Please restart signup."}, status=400)
+        print("Session email before resend:", request.session.get("email"))
+
+        return JsonResponse({"success": True, "message": "OTP resent successfully."})
+    
+    return JsonResponse({"error": "Invalid request method"}, status=405)
 
 def generate_otp():
     return str(random.randint(100000, 999999))
 
-
 def forgot_password_request(request):
-    request.session.flush() 
+    
 
     if request.method == 'POST':
         form = EmailForm(request.POST)
@@ -224,6 +269,32 @@ def otp_verify(request):
         form = OTPForm()
 
     return render(request, 'user_panel/otp_verify.html', {'form': form})
+def resend_reset_password_otp(request):
+    if request.method == "POST":
+        user_id = request.session.get("reset_user_id")
+        if not user_id:
+            return JsonResponse({"error": "Session expired. Please restart password reset."}, status=400)
+
+        try:
+            user = CustomUser.objects.get(id=user_id)
+        except CustomUser.DoesNotExist:
+            return JsonResponse({"error": "User not found."}, status=404)
+
+        otp = generate_otp()
+        PasswordResetOTP.objects.create(user=user, otp=otp)
+
+        send_mail(
+            "Your New OTP for Password Reset",
+            f"Your new OTP is {otp}",
+            'djangoalerts0011@gmail.com',
+            [user.email],
+            fail_silently=False
+        )
+
+        return JsonResponse({"success": True, "message": "OTP resent successfully."})
+
+    return JsonResponse({"error": "Invalid request method"}, status=405)
+
 
 def reset_password(request):
     if not request.session.get('otp_verified'):
@@ -244,8 +315,9 @@ def reset_password(request):
             messages.error(request, 'Passwords do not match.')
         else:
             user.set_password(pwd1)
+            user.save()
             from django.contrib.auth import authenticate
-
+           
             auth_user = authenticate(username=user.username, password=pwd1)
             print("Authentication test after reset:", auth_user)
 
@@ -386,7 +458,7 @@ def product_detail(request, pk):
 ).exclude(id=product.id)[:4]
 
     
-    coupons = Coupon.objects.filter(product=product, active=True)
+    coupons = Coupon.objects.filter(active=True)
 
     context = {
         'product': product,
@@ -468,6 +540,9 @@ def profile_view(request):
     primary_address = addresses.filter(is_default=True).first()
     orders = Order.objects.filter(user=user).order_by('-created_at')
     referral_code = request.user.referral_code
+    referral_link = request.build_absolute_uri(
+        reverse('user_panel:signup') + f"?ref={request.user.referral_code}"
+    )
    
     total_orders = orders.count()
     active_orders = orders.filter(status__in=['pending', 'processing']).count()
@@ -486,6 +561,7 @@ def profile_view(request):
         'address_form': AddressForm(),
         'password_form': PasswordChangeForm(user),
         'referral_code': referral_code,
+        'referral_link': referral_link,
     }
     
     return render(request, 'user_panel/user_profile.html', context)
@@ -914,7 +990,7 @@ def increment_cart(request):
             'quantity': cart_item.quantity,
             'item_total': float(item_total),
             'subtotal': float(totals['subtotal']),
-            'discount': float(totals['discount']),
+            'discount': float(totals.get('coupon_discount', 0)),
             'total': float(totals['final_total']),
             'total_items': total_items,
         })
@@ -941,7 +1017,7 @@ def decrement_cart(request):
             'quantity': cart_item.quantity,
             'item_total': float(item_total),
             'subtotal': float(totals['subtotal']),
-            'discount': float(totals['discount']),
+            'discount': float(totals.get('coupon_discount', 0)),
             'total': float(totals['final_total']),
             'total_items': total_items,
         })
@@ -969,16 +1045,17 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.shortcuts import render, redirect
 from .forms import AddressForm 
-
+from decimal import Decimal
 import razorpay
 from django.conf import settings
-from app.models import Coupon  # ensure you have a Coupon model
+from app.models import Coupon,Wallet  # ensure you have a Coupon model
 from datetime import date
 
 @never_cache
 @login_required
 def checkout_view(request):
     Cart.objects.filter(user=request.user, product__is_deleted=True).delete()
+    wallet, _ = Wallet.objects.get_or_create(user=request.user)
     cart_items = Cart.objects.filter(user=request.user, product__is_deleted=False).select_related('product')
 
     if not cart_items.exists():
@@ -1035,9 +1112,11 @@ def checkout_view(request):
         try:
             coupon = Coupon.objects.get(code=request.session['applied_coupon'], active=True)
             applied_coupon = coupon
-            if coupon.expiry_date and coupon.expiry_date >= date.today():
+            if coupon.valid_from and coupon.valid_to >= date.today():
                 if not coupon.used_users.filter(id=request.user.id).exists():
-                    coupon_discount = (coupon.discount_percent / 100) * sub_total
+                    coupon_discount = (Decimal(coupon.discount_percentage) / Decimal(100)) * sub_total
+                    coupon_discount = coupon_discount.quantize(Decimal('0.01'))
+
                     totals['grand_total'] = sub_total - coupon_discount
                 else:
                     messages.warning(request, "Coupon already used. Removing.")
@@ -1060,8 +1139,10 @@ def checkout_view(request):
         'addresses': addresses,
         'default_address': default_address,
         'address_form': address_form,
+        'wallet':wallet,
         'coupon_discount': coupon_discount,
         'applied_coupon': applied_coupon,
+        'applied_coupon_code': applied_coupon.code if applied_coupon else '',
         **totals
     }
     return render(request, 'user_panel/checkout.html', context)
@@ -1149,14 +1230,19 @@ from django.views.decorators.cache import never_cache
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.shortcuts import redirect, get_object_or_404
-from app.models import Cart, Address, Order, OrderItem
+from app.models import Cart, Address, Order, OrderItem,Coupon,ReturnRequest,Wallet
 from app.utils import calculate_cart_totals
+from django.db import transaction
+from decimal import Decimal
 
 @never_cache
 @login_required
+@transaction.atomic
 def place_order(request):
+    coupon=None
     user = request.user
     address_id = request.POST.get('address')
+    use_wallet = request.POST.get('use_wallet') == 'true' 
 
    
     if not address_id or not address_id.isdigit():
@@ -1183,6 +1269,22 @@ def place_order(request):
         except Coupon.DoesNotExist:
             coupon = None
     totals = calculate_cart_totals(cart_items, coupon=coupon)
+    total_amount = Decimal(totals['final_total'])
+
+     
+    wallet_amount_used = Decimal(0)
+    wallet, _ = Wallet.objects.get_or_create(user=user)
+
+    if use_wallet and wallet.balance > 0:
+        if wallet.balance >= total_amount:
+            wallet_amount_used = total_amount
+            wallet.balance -= total_amount
+            total_amount = Decimal(0)
+        else:
+            wallet_amount_used = wallet.balance
+            total_amount -= wallet.balance
+            wallet.balance = Decimal(0)
+        wallet.save()
 
     order = Order.objects.create(
         user=user,
@@ -1193,6 +1295,7 @@ def place_order(request):
         discount=totals['coupon_discount'],
         shipping=totals['shipping'],
         total_amount=totals['final_total'],
+        wallet_amount=wallet_amount_used,
         address_name=user.first_name or user.username,
         address_phone=getattr(user, 'mobile', ''),
         address_line1=address.street,
@@ -1218,6 +1321,12 @@ def place_order(request):
         item.product_variant.save()
 
     cart_items.delete()
+
+    if total_amount == 0:
+        order.status = 'pending'
+        order.save()
+        return redirect('user_panel:order_success', order_id=order.order_id)
+
     if coupon and user in coupon.used_users.all():
         messages.error(request, "Coupon already used.")
         return redirect('user_panel:checkout')
@@ -1265,6 +1374,7 @@ from django.contrib.auth.decorators import login_required
 @login_required
 def order_detail(request, order_id):
     order = get_object_or_404(Order, order_id=order_id, user=request.user)
+    return_request = ReturnRequest.objects.filter(order=order).first()
     order_items = order.items.all()
 
     all_cancelled = all(item.status == "Cancelled" for item in order_items)
@@ -1293,6 +1403,7 @@ def order_detail(request, order_id):
         'shipping': shipping,
         'coupon_discount': coupon_discount,
         'final_price': final_price,
+        'return_request': return_request,
     }
 
     return render(request, 'user_panel/order_detail.html', context)
@@ -1377,7 +1488,7 @@ def return_order(request, order_id):
   
     existing_return = ReturnRequest.objects.filter(order=order).exists()
     if order.status != 'delivered' or existing_return:
-        messages.warning(request, "This order cannot be returned.")
+        messages.warning(request, "This order is  not delivered/already filed the complaints.")
         return redirect('user_panel:order_list')
 
     if request.method == 'POST':
@@ -1405,7 +1516,7 @@ def return_order(request, order_id):
         order.return_status = 'requested'
         order.save()
 
-        messages.success(request, "Return request submitted successfully.")
+        messages.success(request, "Complaint submitted successfully.")
         return redirect('user_panel:order_list')
 
     return render(request, 'user_panel/return_order.html', {'order': order})
@@ -1487,23 +1598,10 @@ def wallet_view(request):
         'return_requests': return_requests,
     })
 
-from django.http import HttpResponseBadRequest
-
-from django.views.decorators.csrf import csrf_exempt
-from django.shortcuts import redirect
-from django.http import HttpResponseBadRequest
-import razorpay
-from django.conf import settings
 
 
-from django.shortcuts import get_object_or_404
 
-from django.views.decorators.csrf import csrf_exempt
-from django.shortcuts import get_object_or_404, redirect
-from django.http import HttpResponseBadRequest
-from django.conf import settings
-import razorpay
-from .models import Order, Payment  # Make sure these are imported correctly
+
 
 from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import get_object_or_404, redirect
@@ -1515,9 +1613,7 @@ import logging
 
 logger = logging.getLogger(__name__)  # Enable logging
 
-from django.views.decorators.csrf import csrf_exempt
-from django.contrib.auth.decorators import login_required
-import razorpay
+
 @login_required
 def order_payment_success(request, order_id):
     order = get_object_or_404(Order, order_id=order_id, user=request.user)
@@ -1537,13 +1633,32 @@ from django.urls import reverse
 
 
 
+from decimal import Decimal
+from django.db import transaction
 
 from .utils import calculate_cart_totals  # Assuming you have this function
 from django.utils.crypto import get_random_string
+
+@transaction.atomic
 @login_required
 def razorpay_checkout_view(request):
-    # Step 1: Fetch applied coupon (if any)
+    address_id = request.POST.get('address')
+    use_wallet = request.POST.get('use_wallet') == 'true'
+  
+    if not address_id or not address_id.isdigit():
+        messages.error(request, "Please select a valid delivery address.")
+        return redirect('user_panel:checkout')
+
+    try:
+        address = Address.objects.get(id=address_id, user=request.user)
+    except Address.DoesNotExist:
+        messages.error(request, "Selected address is not available.")
+        return redirect('user_panel:checkout')
+
+    # Store in session so payment_handler can also access it if needed
+    request.session['checkout_address_id'] = address.id
     coupon_code = request.session.get('applied_coupon')
+    
     coupon = None
     if coupon_code:
         try:
@@ -1558,11 +1673,61 @@ def razorpay_checkout_view(request):
 
     # Step 2: Calculate totals
     totals = calculate_cart_totals(cart_items, coupon=coupon)
-    total_amount = totals['final_total']
+    total_amount = Decimal(totals['final_total'])
 
     if total_amount < 1:
         messages.error(request, "Order amount must be at least ₹1.")
         return redirect('user_panel:cart')
+    
+    wallet_amount_used = Decimal(0)
+    wallet, _ = Wallet.objects.get_or_create(user=request.user)
+
+    if use_wallet and wallet.balance > 0:
+        if wallet.balance >= total_amount:
+            wallet_amount_used = total_amount
+            wallet.balance -= total_amount
+            total_amount = Decimal(0)
+        else:
+            wallet_amount_used = wallet.balance
+            total_amount -= wallet.balance
+            wallet.balance = Decimal(0)
+        wallet.save()
+
+    if total_amount == 0:
+        order = Order.objects.create(
+            user=request.user,
+            order_id=get_random_string(12).upper(),
+            total_amount=wallet_amount_used,
+            wallet_amount=wallet_amount_used,
+            status='placed',
+            payment_status='Paid',
+            payment_method='Wallet',
+            subtotal=totals['subtotal'],
+            shipping=totals['shipping'],
+            discount=totals['coupon_discount'],
+            address_name=request.user.first_name or request.user.username,
+            address_phone=getattr(request.user, 'mobile', ''),
+            address_line1=address.street,
+            address_line2='',
+            address_city=address.city,
+            address_state=address.state,
+            address_zipcode=address.pincode,
+        )
+
+        for cart_item in cart_items:
+            OrderItem.objects.create(
+                order=order,
+                product=cart_item.product,
+                product_variant=cart_item.product_variant,
+                product_name=cart_item.product.name,
+                quantity=cart_item.quantity,
+                price=cart_item.get_price(),
+                subtotal=cart_item.total_price()
+            )
+
+        cart_items.delete()
+        return redirect('user_panel:order_success')
+
 
     # Step 3: Create Razorpay order
     amount_paise = int(total_amount * 100)
@@ -1577,18 +1742,27 @@ def razorpay_checkout_view(request):
         messages.error(request, f"Payment error: {str(e)}")
         return redirect('user_panel:cart')
 
-    # Step 4: Create local order
+     
     order = Order.objects.create(
-        user=request.user,
-        order_id=get_random_string(12).upper(),
-        razorpay_order_id=razorpay_order['id'],
-        total_amount=total_amount,
-        status='pending',
-        payment_method='Online',
-        subtotal=totals['subtotal'],
-        shipping=totals['shipping'],
-        discount=totals['coupon_discount'],
-    )
+            user=request.user,
+            order_id=get_random_string(12).upper(),
+            razorpay_order_id=razorpay_order['id'],
+            total_amount=total_amount+wallet_amount_used,
+            wallet_amount=wallet_amount_used,
+            status='pending',
+            payment_method='Online',
+            subtotal=totals['subtotal'],
+            shipping=totals['shipping'],
+            discount=totals['coupon_discount'],
+           
+            address_name=request.user.first_name or request.user.username,
+            address_phone=getattr(request.user, 'mobile', ''),
+            address_line1=address.street,
+            address_line2='',
+            address_city=address.city,
+            address_state=address.state,
+            address_zipcode=address.pincode,
+            )
 
     for cart_item in cart_items:
         OrderItem.objects.create(
@@ -1610,7 +1784,8 @@ def razorpay_checkout_view(request):
         'amount': amount_paise,
         'order': order,
         'callback_url': '/payment/handler/',
-        'totals': totals
+        'totals': totals,
+        'address_id': request.session.get('checkout_address_id'),
     }
 
     return render(request, 'user_panel/razorpay_checkout.html', context)
@@ -1691,10 +1866,11 @@ def apply_coupon(request):
                 return JsonResponse({'success': False, 'message': 'Invalid coupon code.'})
 
             # Apply coupon to totals
-            totals = calculate_cart_totals(cart_items, coupon=coupon)
+            
 
             # Save coupon to session
-            request.session['coupon_id'] = coupon.id
+            request.session['applied_coupon'] = coupon.code
+            totals = calculate_cart_totals(cart_items, coupon=coupon)
 
             return JsonResponse({
                 'success': True,
@@ -1707,11 +1883,36 @@ def apply_coupon(request):
             return JsonResponse({'success': False, 'message': 'Invalid JSON'})
         except Exception as e:
             return JsonResponse({'success': False, 'message': f'Server error: {str(e)}'})
-def remove_coupon(request):
-    if 'coupon_id' in request.session:
-        del request.session['coupon_id']
-        messages.success(request, 'Coupon removed successfully.')
-    return redirect('user_panel:checkout')
+from django.http import JsonResponse
+from .models import Cart, ProductVariant
 
+def get_cart_items(user):
+    return Cart.objects.filter(user=user)
+
+def calculate_cart_subtotal(cart_items):
+    return sum(item.quantity * item.product_variant.price for item in cart_items)
+
+def calculate_shipping(subtotal):
+    return 0 if subtotal >= 500 else 50  # Example: free shipping for orders >= ₹500
+
+
+@csrf_exempt
+def remove_coupon(request):
+    if request.method == 'POST':
+        request.session.pop('applied_coupon', None)
+
+        cart_items = Cart.objects.filter(user=request.user).select_related('product_variant__product')
+        from .utils import calculate_cart_totals
+        totals = calculate_cart_totals(cart_items)
+
+        return JsonResponse({
+            'success': True,
+            'message': 'Coupon removed successfully.',
+            'coupon_discount': f"{totals['coupon_discount']:.2f}",
+            'subtotal': f"{totals['subtotal']:.2f}",
+            'final_total': f"{totals['final_total']:.2f}",
+        })
+
+    return JsonResponse({'success': False, 'message': 'Invalid request method'})
 
 

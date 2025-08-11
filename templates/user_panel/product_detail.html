@@ -67,14 +67,7 @@
      {% if selected_variant.price < product.selling_price %}
       <del>₹{{ product.selling_price }}</del>
     {% endif %}
-    {% if discounted_price < product.price %}
-        <p>
-            <span class="text-success fw-bold fs-4">₹{{ discounted_price|floatformat:2 }}</span>
-            <del class="text-success ms-2">₹{{ product.price|floatformat:2 }}</del>
-        </p>
-    {% else %}
-        <p class="fw-bold fs-4">₹{{ product.price|floatformat:2 }}</p>
-    {% endif %}
+    <p>₹{{ product.discounted_price }}</p>
   </small>
 </div>
 

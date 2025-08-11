@@ -35,9 +35,9 @@ urlpatterns = [
       path('accounts/products/<int:product_id>/variants/', views.manage_variants, name='manage_variants'),
 
 
-    path('admin-orders/', views.admin_order_list, name='admin_order_list'),
-    path('admin-orders/<str:order_id>/', views.admin_order_detail, name='admin_order_detail'),
-    path('admin-orders/<str:order_id>/change-status/', views.admin_change_order_status, name='admin_change_order_status'),
+    path('accounts/orders/', views.admin_order_list, name='admin_order_list'),
+    path('accounts/orders/<str:order_id>/', views.admin_order_detail, name='admin_order_detail'),
+    path('accounts/orders/<str:order_id>/change-status/', views.admin_change_order_status, name='admin_change_order_status'),
    
     
     path('accounts/stock/', views.inventory_list, name='inventory_list'),
@@ -45,16 +45,22 @@ urlpatterns = [
 
     path('accounts/return/requests/', views.admin_return_requests, name='admin_return_requests'),
     path('accounts/return/approve/<int:request_id>/', views.approve_return_request, name='approve_return_request'),
+    path('accounts/return-request/<int:request_id>/reject/', views.reject_return_request, name='reject_return_request'),
 
-    path('coupons/', views.coupon_list_view, name='coupon_list'),
-    path('coupons/create/', views.create_coupon, name='create_coupon'),
+    path('accounts/coupons/', views.coupon_list_view, name='coupon_list'),
+    path('accounts/coupons/create/', views.create_coupon, name='create_coupon'),
    # urls.py
     path('accounts/coupons/edit/<int:coupon_id>/', views.edit_coupon, name='edit_coupon'),
 
-    path('coupons/delete/<int:coupon_id>/', views.delete_coupon_view, name='delete_coupon'),
+    path('accounts/coupons/delete/<int:coupon_id>/', views.delete_coupon_view, name='delete_coupon'),
     path('accounts/sales-report/', views.sales_report, name='sales_report'),
     path('accounts/sales-report/pdf/', views.download_sales_report_pdf, name='download_sales_pdf'),
 path('accounts/sales-report/excel/', views.download_sales_report_excel, name='download_sales_excel'),
+
+   path('offers/', views.offer_list, name='offer_list'),
+    path('offers/create/', views.create_offer, name='create_offer'),
+    path('offers/edit/<int:offer_id>/', views.edit_offer, name='edit_offer'),
+    path('offers/delete/<int:offer_id>/', views.delete_offer, name='delete_offer'),
 
 
 

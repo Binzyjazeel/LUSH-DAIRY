@@ -13,6 +13,7 @@ urlpatterns = [
 
     path('products/<int:product_id>/review/', views.add_review, name='add_review'),
    path('forgot-password/', views.forgot_password_request, name='forgot_password'),
+    path("resend-reset-password-otp/", views.resend_reset_password_otp, name="resend_reset_password_otp"),
     path('verify-otp/', views.otp_verification, name='verify_otp'),
     
     path("resend-otp/", views.resend_otp, name="resend_otp"),

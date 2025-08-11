@@ -146,22 +146,30 @@ class Address(models.Model):
 
     def __str__(self):
         return f"{self.street}, {self.city}, {self.state} - {self.pincode}"
-from django.core.validators import MaxValueValidator, MinValueValidator
-   
-# For Offer Types
-class CategoryOffer(models.Model):
-    category = models.ForeignKey(Category, on_delete=models.CASCADE)
-    discount_percent = models.PositiveIntegerField(validators=[MaxValueValidator(100)])
+from django.db import models
+from django.utils import timezone
+from decimal import Decimal
+
+class Offer(models.Model):
+    name = models.CharField(max_length=100)
+    discount_percent = models.DecimalField(max_digits=5, decimal_places=2)
     valid_from = models.DateField()
     valid_to = models.DateField()
     is_active = models.BooleanField(default=True)
 
-class ProductOffer(models.Model):
-    product = models.ForeignKey(Product, on_delete=models.CASCADE)
-    discount_percent = models.PositiveIntegerField(validators=[MaxValueValidator(100)])
-    valid_from = models.DateField()
-    valid_to = models.DateField()
-    is_active = models.BooleanField(default=True)
+    # Can apply to a single product or a whole category
+    product = models.ForeignKey('Product', on_delete=models.CASCADE, null=True, blank=True)
+    category = models.ForeignKey('Category', on_delete=models.CASCADE, null=True, blank=True)
+
+    def is_valid(self):
+        today = timezone.now().date()
+        return self.is_active and self.valid_from <= today <= self.valid_to
+
+    def __str__(self):
+        return self.name
+
+   
+
 
 
 

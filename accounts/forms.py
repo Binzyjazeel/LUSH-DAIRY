@@ -84,14 +84,43 @@ class EditProfileForm(forms.ModelForm):
             'mobile': forms.TextInput(attrs={'class': 'form-control'}),
             'profile_image': forms.FileInput(attrs={'class': 'form-control'}),
         }
+from django import forms
+from app.models import Coupon
+from django.contrib.auth import get_user_model
+
+CustomUser = get_user_model()
+
 class CouponForm(forms.ModelForm):
+    users = forms.ModelMultipleChoiceField(
+        queryset=CustomUser.objects.all(),
+        required=False,
+        widget=forms.SelectMultiple(attrs={'class': 'form-control'})
+    )
+
     class Meta:
         model = Coupon
         fields = '__all__'
         widgets = {
+            'valid_from': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+            'valid_to': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+            'code': forms.TextInput(attrs={'class': 'form-control'}),
+            'discount_percentage': forms.NumberInput(attrs={'class': 'form-control', 'min': 1, 'max': 100}),
+            'active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
+
+# admin_panel/forms.py
+from django import forms
+from .models import Offer
+
+class OfferForm(forms.ModelForm):
+    class Meta:
+        model = Offer
+        fields = ['name', 'discount_percent', 'valid_from', 'valid_to', 'is_active', 'product', 'category']
+        widgets = {
             'valid_from': forms.DateInput(attrs={'type': 'date'}),
             'valid_to': forms.DateInput(attrs={'type': 'date'}),
         }
+
 
     
     

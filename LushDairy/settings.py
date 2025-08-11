@@ -63,6 +63,7 @@ MIDDLEWARE = [
     'allauth.account.middleware.AccountMiddleware',
     'social_django.middleware.SocialAuthExceptionMiddleware',
     'app.middleware.BlockedUserLogoutMiddleware',
+    'app.middleware.AdminAccessMiddleware',
 ]
 
 ROOT_URLCONF = 'LushDairy.urls'
@@ -183,3 +184,7 @@ STATICFILES_DIRS = [
 
 RAZORPAY_KEY_ID = env('RAZORPAY_KEY_ID')      
 RAZORPAY_KEY_SECRET = env('RAZORPAY_KEY_SECRET')
+
+SESSION_COOKIE_AGE=3000
+SESSION_SAVE_EVERY_REQUEST = True
+

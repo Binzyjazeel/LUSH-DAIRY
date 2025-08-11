@@ -35,7 +35,7 @@
           {% endfor %}
         {% else %}
           <p class="text-warning fst-italic">
-            No address found. Please <a href="{% url 'user_panel:add_address_checkout' %}">add one</a>.
+            No address found. Please add one</a>.
           </p>
         {% endif %}
 
@@ -43,14 +43,29 @@
         <button type="button" class="btn btn-outline-primary btn-sm w-100 mt-3" data-bs-toggle="modal" data-bs-target="#addAddressModal">
           <i class="bi bi-plus-circle me-2"></i> Add New Address
         </button>
+<br><br>
 
+{% if wallet and wallet.balance > 0 %}
+  <div class="mt-4 p-3 border rounded shadow-sm bg-light">
+    <p class="mb-1 fw-semibold text-success">💰 Wallet Balance: ₹{{ wallet.balance }}</p>
+    <label class="form-check-label">
+      <input type="checkbox" name="use_wallet" value="true" class="form-check-input me-2">
+      Use Wallet Balance for this order
+    </label>
+  </div>
+{% endif %}
+
+<br><br>
         
         
 
         <!-- COD Button -->
         <button type="submit" class="btn btn-success btn-lg w-100 mt-4">
           <i class="bi bi-cash-coin me-2"></i> Place Order (Cash on Delivery)
-        </button>
+        </button><br><br><br>
+        <button type="submit" formaction="{% url 'user_panel:razorpay_checkout' %}" class="btn btn-danger btn-lg w-100 rounded-pill shadow-sm">
+            💳 Pay Now (Online)
+          </button>
       </form>
     </div>
 
@@ -60,11 +75,18 @@
       <h3 class="mb-4 text-primary fw-bold">Order Summary</h3>
        <!-- Coupon Section -->
         <div class="mt-4">
-         <form id="coupon-form" method="POST">
+        <form id="coupon-form" method="POST">
   {% csrf_token %}
   <div class="input-group mb-3">
-    <input type="text" id="coupon_code" name="coupon_code" class="form-control" placeholder="Enter coupon code">
-    <button type="submit" class="btn btn-primary" id="apply-coupon-btn">Apply</button>
+    <input type="text" id="coupon_code" name="coupon_code" class="form-control"
+           placeholder="Enter coupon code"
+           {% if applied_coupon %}value="{{ applied_coupon_code }}" disabled{% endif %}>
+    
+    {% if applied_coupon %}
+      <button type="submit" name="remove_coupon" class="btn btn-danger" id="remove-coupon-btn">Remove</button>
+    {% else %}
+      <button type="submit" name="apply_coupon" class="btn btn-primary" id="apply-coupon-btn">Apply</button>
+    {% endif %}
   </div>
 </form>
 
@@ -116,12 +138,7 @@
 </div>
 
         <!-- Razorpay Payment -->
-        <form action="{% url 'user_panel:razorpay_checkout' %}" method="POST" class="mt-4">
-          {% csrf_token %}
-          <button type="submit" class="btn btn-danger btn-lg w-100 rounded-pill shadow-sm">
-            💳 Pay Now (Online)
-          </button>
-        </form>
+       
       </div>
     </div>
   </div>
@@ -192,6 +209,35 @@ document.getElementById('coupon-form').addEventListener('submit', function(e) {
     .catch(error => {
         console.error('Coupon Apply Error:', error);
     });
+});
+document.addEventListener('DOMContentLoaded', function () {
+  const removeBtn = document.getElementById('remove-coupon-btn');
+  if (removeBtn) {
+    removeBtn.addEventListener('click', function () {
+      const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+      fetch("{% url 'user_panel:remove_coupon' %}", {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': csrfToken
+        },
+        body: JSON.stringify({})
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          // Reload the page to reset the coupon UI
+          location.reload();
+        } else {
+          alert(data.message);
+        }
+      })
+      .catch(error => {
+        console.error('Remove Coupon Error:', error);
+      });
+    });
+  }
 });
 </script>
 

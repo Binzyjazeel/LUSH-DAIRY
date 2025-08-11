@@ -474,7 +474,12 @@
                     <p><strong>📅 Member Since:</strong> <span id="memberSince">{{user.created_at}}</span></p>
                     <!-- user_panel/profile.html -->
                     <p><strong>📧Your Referral Code:</strong> <strong>{{ request.user.referral_code }}</strong></p>
-
+                    <p><strong>Your Referral Link:</strong></p>
+<input type="text" id="refLink" value="{{ referral_link }}" readonly style="width: 80%;">
+<button onclick="copyReferral()">Copy</button>
+<a href="https://wa.me/?text=Join%20using%20my%20referral%20link:%20{{ referral_link }}" target="_blank">
+    Share via WhatsApp
+</a>
                 </div>
             </div>
 
@@ -978,6 +983,14 @@ function handleImageUpload(event) {
             text: 'An error occurred during upload.',
             confirmButtonColor: '#4a7c59'
         });
+    });
+}
+function copyReferral() {
+    var copyText = document.getElementById("refLink");
+    copyText.select();
+    copyText.setSelectionRange(0, 99999); // For mobile
+    navigator.clipboard.writeText(copyText.value).then(() => {
+        alert("Referral link copied!");
     });
 }
 

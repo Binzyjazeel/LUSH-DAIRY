@@ -12,7 +12,7 @@
                 <h5 class="mb-2">Order ID: {{ order.order_id }}</h5>
                 <p>Status: <strong class="text-success">{{ order.status }}</strong></p>
                 {% if order.return_status %}
-                    <p>Return Status: <strong class="text-warning">{{ order.return_status }}</strong></p>
+                    <p>Complaint Status: <strong class="text-warning">{{ order.return_status }}</strong></p>
                 {% endif %}
                 <p>Order Date: {{ order.created_at|date:"d M Y, h:i A" }}</p>
             </div>
@@ -58,7 +58,7 @@
         {% if item.status == "Cancelled" %}
             This item was cancelled.
         {% elif item.status == "Returned" or order.status == "returned" %}
-            This item was returned.
+            This item was refunded.
         {% endif %}
     </p>
 {% endif %}
@@ -107,17 +107,19 @@
 
                     {% if order.status|lower == "delivered" and order.return_status|default_if_none:""|lower == "not_requested" %}
                         <a href="{% url 'user_panel:request_return' order.order_id %}" class="btn btn-warning">
-                            Return Order
+                            Raise Compalint
                         </a>
                     {% endif %}
 
                     {% if order.return_status %}
                         {% if order.return_status|lower == "requested" %}
-                            <span class="text-info">Return Requested</span>
+                            <span class="text-info">Complaint Requested</span>
                         {% elif order.return_status|lower == "approved" %}
-                            <span class="text-success">Return Approved</span>
+                            <span class="text-success">Complaint Approved</span>
                         {% elif order.return_status|lower == "rejected" %}
-                            <span class="text-danger">Return Rejected</span>
+                            {% if return_request %}
+                            <span class="text-danger">Complaint Rejected due to {{return_request.reason}}</span>
+                            {% endif %}
                         {% endif %}
                     {% endif %}
                     
