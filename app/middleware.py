@@ -26,19 +26,26 @@ class AdminAccessMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
-        path = request.path_info  # Always a string
+        path = request.path_info
 
-        # Skip check for admin login/logout views to prevent redirect loop
-        if path in [reverse('admin_panel:admin_login'), reverse('admin_panel:admin_logout')]:
+        try:
+            admin_login_url = reverse('admin_panel:admin_login')
+            admin_logout_url = reverse('admin_panel:admin_logout')
+        except:
+            # In case reverse fails during early startup
             return self.get_response(request)
 
-        # Apply check only to admin section
-        if path.startswith('/accounts/'):
+        # Skip check for admin login/logout
+        if path in [admin_login_url, admin_logout_url]:
+            return self.get_response(request)
+
+        # Protect only admin_panel URLs (avoid /accounts/)
+        if path.startswith('/admin_panel/'):
             if not request.user.is_authenticated:
-                return redirect(reverse('admin_panel:admin_login'))
-            if not request.user.is_staff:  # Custom admin check if needed
+                return redirect(admin_login_url)
+            if not request.user.is_staff:
                 return redirect(reverse('user_panel:home'))
 
+        # Always return an HttpResponse
         return self.get_response(request)
-
 

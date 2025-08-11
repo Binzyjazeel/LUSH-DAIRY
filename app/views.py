@@ -17,6 +17,8 @@ def not_superuser(user):
 
 @user_passes_test(not_superuser, login_url='user_panel:login')
 def signup_view(request):
+    if request.method == "GET" and "ref" in request.GET:
+        request.session["referral_code_from_link"] = request.GET["ref"]
     if request.method=="POST":
         username=request.POST["username"]
         email=request.POST["email"]
