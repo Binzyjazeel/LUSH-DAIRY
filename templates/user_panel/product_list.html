@@ -497,6 +497,9 @@ nav a:hover::after {
           <h6>{{ product.name }}</h6>
           <p>₹{{ product.discounted_price }}</p>
           
+
+
+          
           <a href={% url 'user_panel:product_detail' product.pk %} class="btn btn-success btn-sm no-hover">View Details</a>
         </div>
       </div>

@@ -67,7 +67,11 @@
      {% if selected_variant.price < product.selling_price %}
       <del>₹{{ product.selling_price }}</del>
     {% endif %}
-    <p>₹{{ product.discounted_price }}</p>
+   {% if offer %}
+    <span style="color: red; font-weight: bold;">
+        {{ offer.discount_percent }}% OFF
+    </span>
+{% endif %}
   </small>
 </div>
 

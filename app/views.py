@@ -343,11 +343,13 @@ def reset_password(request):
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.shortcuts import render
-from accounts.models import Product, Category,Address
+from accounts.models import Product, Category,Address,Offer
 from .utils import get_discounted_price
 @never_cache
 def product_list(request):
     products = Product.objects.filter(is_deleted=False, is_listed=True)
+    
+    
 
    
     query = request.GET.get('q')
@@ -385,7 +387,7 @@ def product_list(request):
     elif sort_by == 'new':
         products = products.order_by('-created_at')
 
-  
+    
     paginator = Paginator(products, 5)  
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -403,6 +405,8 @@ def product_list(request):
         'max_price': max_price,
         'sort_by': sort_by,
         'page_obj': page_obj,
+        
+       
     }
     return render(request, 'user_panel/product_list.html', context)
 
@@ -412,11 +416,27 @@ from django.templatetags.static import static
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib import messages
 from django.templatetags.static import static
+from django.utils import timezone
 @never_cache
 def product_detail(request, pk):
     product = get_object_or_404(Product, pk=pk)
     discounted_price = get_discounted_price(product)
     variants = ProductVariant.objects.filter(product=product)
+    offer = Offer.objects.filter(
+        product=product,
+        is_active=True,
+        valid_from__lte=timezone.now().date(),
+        valid_to__gte=timezone.now().date()
+    ).first()
+
+    # If no product-specific offer, check category offer
+    if not offer and product.category:
+        offer = Offer.objects.filter(
+            category=product.category,
+            is_active=True,
+            valid_from__lte=timezone.now().date(),
+            valid_to__gte=timezone.now().date()
+        ).first()
     variant_id = request.GET.get('variant_id')
     if variant_id:
         selected_variant = get_object_or_404(ProductVariant, id=variant_id, product=product)
@@ -472,6 +492,7 @@ def product_detail(request, pk):
         'variants': variants,
         'selected_variant': selected_variant,
         'discounted_price': discounted_price,
+        'offer': offer,
         
         
     }
