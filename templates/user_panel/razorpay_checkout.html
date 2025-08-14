@@ -46,6 +46,12 @@
                 document.body.appendChild(form);
                 form.submit();
             },
+              "modal": {
+                "ondismiss": function(){
+                    // FAIL / Cancel → redirect
+                    window.location.href = "{% url 'user_panel:payment_failed' %}";
+                }
+            },
 
             "theme": { "color": "#28a745" }
         };

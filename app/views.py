@@ -1073,7 +1073,7 @@ import razorpay
 from django.conf import settings
 from app.models import Coupon,Wallet  # ensure you have a Coupon model
 from datetime import date
-
+from django.db import models
 @never_cache
 @login_required
 def checkout_view(request):
@@ -1156,6 +1156,14 @@ def checkout_view(request):
     addresses = Address.objects.filter(user=request.user)
     default_address = addresses.filter(is_default=True).first()
     address_form = AddressForm()
+    available_coupons = Coupon.objects.filter(
+    active=True
+).exclude(
+    used_users=request.user
+).filter(
+    models.Q(valid_to__isnull=True) | models.Q(valid_to__gte=date.today())
+)
+
 
     context = {
         'cart_items': cart_items,
@@ -1166,6 +1174,7 @@ def checkout_view(request):
         'coupon_discount': coupon_discount,
         'applied_coupon': applied_coupon,
         'applied_coupon_code': applied_coupon.code if applied_coupon else '',
+        'available_coupons':available_coupons,
         **totals
     }
     return render(request, 'user_panel/checkout.html', context)
@@ -1399,7 +1408,7 @@ def order_detail(request, order_id):
     order = get_object_or_404(Order, order_id=order_id, user=request.user)
     return_request = ReturnRequest.objects.filter(order=order).first()
     order_items = order.items.all()
-
+   
     all_cancelled = all(item.status == "Cancelled" for item in order_items)
 
     if order.status in ['processing', '', None]:
@@ -1414,7 +1423,7 @@ def order_detail(request, order_id):
     # Calculate total, discount, final
     subtotal = sum(item.price * item.quantity for item in order_items)
     shipping = 40 if subtotal < 500 else 0
-    coupon_discount = order.coupon.discount if order.coupon else 0
+    coupon_discount = order.coupon.discount_percentage if order.coupon else 0
     total_discount = coupon_discount  # You can also add other discounts here
     final_price = subtotal + shipping - total_discount
 
@@ -1799,7 +1808,7 @@ def razorpay_checkout_view(request):
         )
 
     # Clear cart
-    cart_items.delete()
+   
 
     context = {
         'razorpay_order_id': razorpay_order['id'],
@@ -1823,48 +1832,74 @@ from django.conf import settings
 from django.http import HttpResponseBadRequest
 from app.models import Order,Payment
 
-
 @csrf_exempt
 def payment_handler(request):
-    if request.method == "POST":
-        try:
-            # Razorpay POST response
-            payment_id = request.POST.get('razorpay_payment_id')
-            order_id = request.POST.get('razorpay_order_id')
-            signature = request.POST.get('razorpay_signature')
+    if request.method != "POST":
+        return HttpResponseBadRequest()
 
-            # Verify signature
-            client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
-            params_dict = {
-                'razorpay_payment_id': payment_id,
-                'razorpay_order_id': order_id,
-                'razorpay_signature': signature
-            }
-            client.utility.verify_payment_signature(params_dict)
-            print("Received order ID from Razorpay:", order_id)
+    payment_id = request.POST.get('razorpay_payment_id')
+    order_id = request.POST.get('razorpay_order_id')
+    signature = request.POST.get('razorpay_signature')
 
+    order_obj = Order.objects.filter(razorpay_order_id=order_id).first()
+    if not order_obj:
+        print("❌ Order not found for Razorpay ID:", order_id)
+        return redirect('user_panel:payment_failed')
 
-            # ✅ Get the real order_id (your DB order)
-            order = get_object_or_404(Order, razorpay_order_id=order_id)
+    client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
 
-            # ✅ Update order status
-            order.payment_id = payment_id
-            order.status = "SUCCESS"  # or "PLACED"
-            order.is_paid = True
-            order.save()
-
-            return redirect('user_panel:order_payment_success', order_id=order.order_id)
-
-
-        except razorpay.errors.SignatureVerificationError:
-            # ❌ Signature mismatch → mark as failed
-            order = Order.objects.filter(razorpay_order_id=order_id).first()
-            if order:
-                order.status = "FAILED"
-                order.save()
+    try:
+        if not payment_id:
+            # No payment attempt → fail, but keep cart intact
+            order_obj.payment_status = "Failed"
+            order_obj.status = "pending"
+            order_obj.save()
             return redirect('user_panel:payment_failed')
 
-    return HttpResponseBadRequest()
+        # Verify signature
+        params_dict = {
+            'razorpay_payment_id': payment_id,
+            'razorpay_order_id': order_id,
+            'razorpay_signature': signature
+        }
+        client.utility.verify_payment_signature(params_dict)
+
+        # Fetch payment from Razorpay
+        payment_details = client.payment.fetch(payment_id)
+        print("🔍 Razorpay Payment Details:", payment_details)
+
+        if payment_details['status'] != "captured":
+            order_obj.payment_status = "Failed"
+            order_obj.status = "pending"
+            order_obj.save()
+            return redirect('user_panel:payment_failed')
+
+        # ✅ Payment success
+        order_obj.razorpay_payment_id = payment_id
+        order_obj.razorpay_signature = signature
+        order_obj.payment_status = "Paid"
+        order_obj.status = "placed"
+        order_obj.save()
+
+        # Clear cart only on success
+        Cart.objects.filter(user=order_obj.user).delete()
+
+        return redirect('user_panel:order_success', order_id=order_obj.order_id)
+
+    except razorpay.errors.SignatureVerificationError:
+        order_obj.payment_status = "Failed"
+        order_obj.status = "pending"
+        order_obj.save()
+        return redirect('user_panel:payment_failed')
+
+    except Exception as e:
+        print("Payment error:", str(e))
+        order_obj.payment_status = "Failed"
+        order_obj.status = "pending"
+        order_obj.save()
+        return redirect('user_panel:payment_failed')
+
+
 
 
 from django.views.decorators.csrf import csrf_exempt

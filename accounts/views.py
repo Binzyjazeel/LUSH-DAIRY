@@ -635,7 +635,7 @@ def create_coupon(request):
         form = CouponForm(request.POST)
         if form.is_valid():
             coupon = form.save()
-            form.save_m2m() 
+            
             print(f"Saved Coupon: {coupon.code}, ID: {coupon.id}")  # Debug print
             messages.success(request, "Coupon created successfully!")
             return redirect('admin_panel:coupon_list')

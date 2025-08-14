@@ -40,7 +40,11 @@
                             <strong>{{ item.product_name }}</strong><br>
                             Qty: {{ item.quantity }}<br>
                             Price: ₹{{ item.product_variant.price }}<br> 
-                            Discount: -₹{{ order.discount }}<br>
+                            {% if order.coupon %}
+                            Coupon Code: {{ order.coupon.code }}<br>
+                            {% endif %}
+                            
+                            Discount: -%{{ order.discount }}<br>
                             Shipping: ₹{{ order.shipping }}<br>
                             
                         </div>
