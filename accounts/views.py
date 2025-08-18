@@ -154,7 +154,7 @@ def category_list(request):
 
 def category_add(request):
     if request.method == 'POST':
-        form = CategoryForm(request.POST)
+        form = CategoryForm(request.POST,request.FILES)
         if form.is_valid():
             form.save()
             messages.success(request, "Category added successfully.")
@@ -169,7 +169,7 @@ def category_edit(request, pk):
 
    
     if request.method == 'POST':
-        form = CategoryForm(request.POST, instance=category)
+        form = CategoryForm(request.POST,request.FILES, instance=category)
         print("🔍 POST data received:", request.POST)
 
         if form.is_valid():
@@ -208,7 +208,7 @@ from .forms import ProductForm
 
 def add_product(request):
     if request.method == "POST":
-        form = ProductForm(request.POST)
+        form = ProductForm(request.POST,request.FILES)
         images = request.FILES.getlist('images') 
 
         if form.is_valid():

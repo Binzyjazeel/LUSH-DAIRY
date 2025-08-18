@@ -176,39 +176,32 @@ footer .footer-bottom {
       <a href="{% url 'user_panel:userproduct_list' %}" class="btn btn-light btn-lg mt-3">Shop Now</a>
     </div>
   </section>
-
+<br><br>
   <!-- Categories -->
-  <section class="py-5">
-    <div class="container">
-      <h2 class="text-center mb-5">Shop by Category</h2>
-      <div class="row g-4">
-        <div class="col-md-4">
-          <div class="card category-card shadow-sm">
-            <img src="{% static 'images/milk.jpg' %}" class="card-img-top" alt="Milk">
-            <div class="card-body text-center">
-              <h5 class="card-title">Milk</h5>
-            </div>
+<h2 class="text-center mb-5 text-success"><strong>Shop by Category</strong></h2><br>
+<div class="row g-4">
+  {% for category in categories %}
+    <div class="col-md-4">
+      <div class="card category-card shadow-sm">
+        <a href="{% url 'user_panel:products_by_category' category.id %}">
+          {% if category.image %}
+    <img src="{{ category.image.url }}" class="card-img-top" alt="{{ category.name }}">
+{% else %}
+    <img src="{% static 'images/default.jpg' %}" class="card-img-top" alt="{{ category.name }}">
+{% endif %}
+
+          <div class="card-body text-center">
+            <h5 class="card-title"><strong>{{ category.name }}</strong></h5>
           </div>
-        </div>
-        <div class="col-md-4">
-          <div class="card category-card shadow-sm">
-            <img src="{% static 'images/cheese.jpg' %}" class="card-img-top" alt="Cheese">
-            <div class="card-body text-center">
-              <h5 class="card-title">Cheese</h5>
-            </div>
-          </div>
-        </div>
-        <div class="col-md-4">
-          <div class="card category-card shadow-sm">
-            <img src="{% static 'images/butter.jpg' %}" class="card-img-top" alt="Butter">
-            <div class="card-body text-center">
-              <h5 class="card-title">Butter</h5>
-            </div>
-          </div>
-        </div>
+        </a>
       </div>
     </div>
-  </section>
+  {% empty %}
+    <p>No categories available.</p>
+  {% endfor %}
+</div>
+
+
 
   <!-- Products -->
   <section class="py-5 bg-light">

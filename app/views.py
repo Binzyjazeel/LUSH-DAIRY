@@ -179,7 +179,19 @@ def home(request):
         "new_arrivals": new_arrivals,
         "promotions": promotions,
     }
-    return render(request, 'user_panel/home.html')
+    return render(request, 'user_panel/home.html',context)
+# views.py
+from django.shortcuts import render, get_object_or_404
+from accounts.models import Category, Product
+
+def products_by_category(request, category_id):
+    category = get_object_or_404(Category, id=category_id)
+    products = Product.objects.filter(category=category)
+    return render(request, "user_panel/products_by_category.html", {
+        "category": category,
+        "products": products
+    })
+
 
 def resend_otp(request):
     if request.method == "POST":

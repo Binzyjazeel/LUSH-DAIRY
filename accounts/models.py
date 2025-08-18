@@ -46,7 +46,7 @@ class Category(models.Model):
     offer_text = models.CharField(max_length=255, blank=True, null=True)
     is_available = models.BooleanField(default=True)
     is_blocked = models.BooleanField(default=False)
-   
+    image = models.ImageField(upload_to="categories/", blank=True, null=True)
     objects = CategoryManager() 
     all_objects = models.Manager() 
 
@@ -70,7 +70,7 @@ class Product(models.Model):
     
   
     
-    category = models.ForeignKey(Category, on_delete=models.CASCADE, default=1)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, default=1,related_name="products")
     discounted_price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     
     is_deleted = models.BooleanField(default=False)

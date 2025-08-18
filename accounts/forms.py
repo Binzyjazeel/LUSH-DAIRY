@@ -7,7 +7,7 @@ from app.models import Coupon,ProductImage
 class CategoryForm(forms.ModelForm):
     class Meta:
         model = Category
-        fields = ['name', 'number_of_products', 'status', 'discount_percentage', 'offer_text']
+        fields = ['name', 'number_of_products','image', 'status', 'discount_percentage', 'offer_text']
 
     def clean_name(self):
         name = self.cleaned_data.get('name')
