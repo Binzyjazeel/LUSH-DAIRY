@@ -269,21 +269,45 @@
     <div class="sidebar">
       <div class="logo">
          <img src="{% static 'images/logo.png' %}" alt="Lush Dairy Logo">
-        <h2>Lush Dairy Admin</h2>
+        
       </div>
       <div class="nav-menu">
-        <a href="{% url 'admin_panel:admin_dashboard' %}" class="nav-item"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
-        <a href="{% url 'admin_panel:admin_order_list' %}" class="nav-item"><i class="fas fa-shopping-cart"></i> Order</a>
-        <a href="{% url 'admin_panel:product_list' %}" class="nav-item"><i class="fas fa-box"></i> Products</a>
-        <a href="#" class="nav-item"><i class="fas fa-chart-line"></i> Sales report</a>
-        <a href="{% url 'admin_panel:user_list' %}" class="nav-item active"><i class="fas fa-users"></i> Customer</a>
-        <a href="{% url 'admin_panel:category_list' %}" class="nav-item"><i class="fas fa-tags"></i> Category</a>
-        <a href="{% url 'admin_panel:admin_return_requests' %}" class="nav-item">
-          <i class="fas fa-exchange-alt"></i> Refund/Return
-        </a>
-        <a href="{% url 'admin_panel:inventory_list' %}" class="nav-item active"><i class="fas fa-warehouse"></i> Stock</a>
-        
-        <a href="{% url 'admin_panel:admin_logout' %}" class="nav-item"><i class="fas fa-sign-out-alt"></i> Sign Out</a>
+        <a href="{% url 'admin_panel:admin_dashboard' %}" class="nav-item">
+  <i class="fas fa-tachometer-alt"></i> Dashboard
+</a>
+<a href="{% url 'admin_panel:admin_order_list' %}" class="nav-item active">
+  <i class="fas fa-shopping-cart"></i> Orders
+</a>
+<a href="{% url 'admin_panel:product_list' %}" class="nav-item">
+  <i class="fas fa-box"></i> Products
+</a>
+<a href="{% url 'admin_panel:sales_report' %}" class="nav-item">
+  <i class="fas fa-chart-line"></i> Sales Report
+</a>
+<a href="{% url 'admin_panel:user_list' %}" class="nav-item">
+  <i class="fas fa-users"></i> Customers
+</a>
+<a href="{% url 'admin_panel:category_list' %}" class="nav-item">
+  <i class="fas fa-tags"></i> Categories
+</a>
+<a href="{% url 'admin_panel:inventory_list' %}" class="nav-item">
+  <i class="fas fa-warehouse"></i> Stock
+</a>
+<a href="{% url 'admin_panel:coupon_list' %}" class="nav-item">
+  <i class="fas fa-ticket-alt"></i> Coupons
+</a>
+<a href="{% url 'admin_panel:offer_list' %}" class="nav-item">
+  <i class="fas fa-bullhorn"></i> Offers
+</a>
+<a href="{% url 'admin_panel:wallet_transactions_list' %}" class="nav-item">
+  <i class="fas fa-wallet"></i> Wallet
+</a>
+<a href="{% url 'admin_panel:admin_return_requests' %}" class="nav-item">
+  <i class="fas fa-exchange-alt"></i> Complaints
+</a>
+<a href="{% url 'admin_panel:admin_logout' %}" class="nav-item">
+  <i class="fas fa-sign-out-alt"></i> Sign Out
+</a>
       </div>
     </div>
 

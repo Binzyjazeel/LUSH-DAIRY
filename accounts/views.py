@@ -11,6 +11,7 @@ from django.shortcuts import get_object_or_404
 from .models import Category
 from .forms import CategoryForm
 from .models import Product,ProductImage
+from app.models import OrderItem
 from django.views.decorators.cache import never_cache
 from django.utils import timezone
 from django.utils.decorators import method_decorator
@@ -44,20 +45,62 @@ def admin_logout(request):
     logout(request)
     return redirect('admin_panel:admin_login')
 
+import json
+from django.db.models import Sum
+from django.utils import timezone
+from datetime import timedelta
+
 @never_cache
 @login_required
 def admin_dashboard(request):
     if not request.user.is_superuser:
         return redirect('admin_panel:admin_login')
+    total_revenue = Order.objects.aggregate(
+    total=Sum('total_amount')
+)['total'] or 0
 
-    
+    total_orders = Order.objects.count()
+    total_customers = CustomUser.objects.filter(is_superuser=False).count()
+    filter_type = request.GET.get('filter', 'yearly')
+    now = timezone.now()
 
-    response = render(request, 'admin_panel/dashboard.html')
+    if filter_type == 'yearly':
+        start_date = now.replace(month=1, day=1)
+    elif filter_type == 'monthly':
+        start_date = now.replace(day=1)
+    elif filter_type == 'weekly':
+        start_date = now - timedelta(days=now.weekday())
+    else:
+        start_date = now.replace(month=1, day=1)
+
+    best_products = (
+        OrderItem.objects.filter(order__created_at__gte=start_date)
+        .values('product__name')
+        .annotate(total_sold=Sum('quantity'))
+        .order_by('-total_sold')[:10]
+    )
+
+    best_categories = (
+        OrderItem.objects.filter(order__created_at__gte=start_date)
+        .values('product__category__name')
+        .annotate(total_sold=Sum('quantity'))
+        .order_by('-total_sold')[:10]
+    )
+
+    context = {
+        'filter_type': filter_type,
+        'best_products': json.dumps(list(best_products), default=str),
+        'best_categories': json.dumps(list(best_categories), default=str),
+        'total_revenue': round(total_revenue, 2),
+        'total_orders': total_orders,
+        'total_customers': total_customers,
+    }
+
+    response = render(request, 'admin_panel/dashboard.html', context)
     response['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
     response['Pragma'] = 'no-cache'
     response['Expires'] = '0'
     return response
-
 
 @never_cache
 @login_required
@@ -533,6 +576,12 @@ def approve_return_request(request, request_id):
     if not return_request.refunded:
         wallet, _ = Wallet.objects.get_or_create(user=return_request.user)
         wallet.credit(return_request.refund_amount)
+        WalletTransaction.objects.create(
+        wallet=wallet,
+        amount=return_request.refund_amount,
+        transaction_type='credit',
+        description=f'Refund for Order ID: {return_request.order.order_id}'
+    )
         return_request.refunded = True
         messages.success(request, f"₹{return_request.refund_amount} refunded to wallet.")
 
@@ -1011,4 +1060,36 @@ def delete_offer(request, offer_id):
     offer = get_object_or_404(Offer, id=offer_id)
     offer.delete()
     return redirect('admin_panel:offer_list')
+
+
+
+from django.shortcuts import render, get_object_or_404
+from app.models import WalletTransaction,Wallet 
+
+
+# List of all transactions (both credit and debit)
+def wallet_transactions_list(request):
+    # Fetch all transactions with related user
+    transactions = WalletTransaction.objects.select_related('wallet__user').order_by('-created_at')
+
+    
+    return render(request, 'admin_panel/wallet_transaction_list.html', {
+        'transactions': transactions
+    })
+
+# Detail view for a single user's transactions (credit + debit)
+@login_required
+def wallet_transaction_detail(request, transaction_id):
+    transaction = get_object_or_404(WalletTransaction, id=transaction_id)
+    order_id = None
+    if transaction.description.lower().startswith("refund for"):
+        order_id = transaction.description.split()[-1]  
+    
+    return render(request, 'admin_panel/wallet_transaction_detail.html', {
+        'transaction': transaction,
+        'order_id':order_id,
+    })
+
+
+
 

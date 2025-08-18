@@ -141,11 +141,11 @@
               </select>
               <button type="submit" class="btn btn-primary">Update</button>
             </div>
-            <p><strong>Return Status:</strong>
+            <p><strong>Complaint Status:</strong>
               {% if order.return_status %}
                 <span class="return-status">{{ order.return_status }}</span>
               {% else %}
-                <span class="return-status return-none">No return requested</span>
+                <span class="return-status return-none">No Complaints raised</span>
               {% endif %}
             </p>
             <p><strong>Total Amount:</strong> ₹{{ order.total_amount|floatformat:2 }}</p>
@@ -178,7 +178,7 @@
                 <th>Quantity</th>
                 <th>Price (₹)</th>
                 <th>Discount (₹)</th>
-                <th>Status</th>
+                
                 <th>Subtotal (₹)</th>
               </tr>
             </thead>
@@ -186,11 +186,11 @@
               {% for item in order.items.all %}
               <tr>
               
-                 <td>{{ item.product_name }} {{item.product_variant.variant_name}}</td>
+                 <td>{{ item.product_name }} ({{item.product_variant.variant_name}})</td>
                 <td>{{ item.quantity }}</td>
                 <td>₹{{ item.price|floatformat:2 }}</td>
                 <td>-₹{{ order.discount }}</td>
-                <td>{{ item.status }}</td>
+                
                <td>₹{{ order.total_amount|mul:item.quantity }}</td>
 
               </tr>

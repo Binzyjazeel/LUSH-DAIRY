@@ -131,9 +131,12 @@ class Order(models.Model):
     
     def get_absolute_url(self):
         return reverse('user_panel:order_detail', kwargs={'order_id': self.id})
+from django.utils import timezone
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')
+    created_at = models.DateTimeField(default=timezone.now)  
+
     product_variant = models.ForeignKey(ProductVariant, on_delete=models.CASCADE,null=True, blank=True)
     product_name = models.CharField(max_length=200)
     product = models.ForeignKey(Product, on_delete=models.SET_NULL, null=True, blank=True)

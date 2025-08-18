@@ -85,10 +85,20 @@
             </div>
           {% endif %}
 
-          <!-- COD Button -->
-          <button type="submit" class="btn w-100 py-3 fw-bold text-white mt-4" style="background: linear-gradient(90deg, #28a745, #218838);">
-            <i class="bi bi-cash-coin me-2"></i> Place Order (Cash on Delivery)
-          </button>
+          {% if final_total <= 1000 %}
+  <!-- COD Button -->
+  <button type="submit" name="payment_method" value="COD"
+          class="btn w-100 py-3 fw-bold text-white mt-4"
+          style="background: linear-gradient(90deg, #28a745, #218838);">
+      <i class="bi bi-cash-coin me-2"></i> Place Order (Cash on Delivery)
+  </button>
+{% else %}
+  <button class="btn w-100 py-3 fw-bold text-white mt-4" disabled
+          style="background: gray;">
+      COD not available for orders above ₹1000
+  </button>
+{% endif %}
+
 
           <!-- Online Payment Button -->
           <button type="submit" formaction="{% url 'user_panel:razorpay_checkout' %}" class="btn w-100 py-3 fw-bold text-white mt-3" style="background: linear-gradient(90deg, #dc3545, #c82333);">

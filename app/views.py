@@ -1,7 +1,7 @@
 from django.shortcuts import redirect,render
 from django.contrib import messages
 import random
-from accounts.models import CustomUser,Product,ProductImage
+from accounts.models import CustomUser,Product,ProductImage,Offer,Category
 from django.core.mail import send_mail
 from django.contrib.auth.hashers import make_password
 from django.http import JsonResponse
@@ -164,8 +164,21 @@ def login_view(request):
             return redirect('user_panel:login')
 
     return render(request, 'user_panel/login.html')
+
+from django.db.models import Count
 @never_cache
 def home(request):
+    best_sellers = Product.objects.annotate(order_count=Count("orderitem")).order_by("-order_count")[:6] 
+    categories = Category.objects.all()
+    new_arrivals = Product.objects.order_by('-created_at')[:6]  
+    promotions = Offer.objects.filter(is_active=True)[:1]  
+
+    context = {
+        "best_sellers": best_sellers,
+        "categories": categories,
+        "new_arrivals": new_arrivals,
+        "promotions": promotions,
+    }
     return render(request, 'user_panel/home.html')
 
 def resend_otp(request):
@@ -1274,6 +1287,7 @@ def place_order(request):
     coupon=None
     user = request.user
     address_id = request.POST.get('address')
+    payment_method = request.POST.get('payment_method') 
     use_wallet = request.POST.get('use_wallet') == 'true' 
 
    
@@ -1303,6 +1317,16 @@ def place_order(request):
     totals = calculate_cart_totals(cart_items, coupon=coupon)
     total_amount = Decimal(totals['final_total'])
 
+    if not payment_method:
+        messages.error(request, "Please select a payment method.")
+        return redirect('user_panel:checkout')
+
+    # After calculating total_amount
+    if payment_method == "COD" and total_amount > 1000:
+        messages.error(request, "Cash on Delivery is not available for orders above ₹1000.")
+        return redirect('user_panel:checkout')
+
+
      
     wallet_amount_used = Decimal(0)
     wallet, _ = Wallet.objects.get_or_create(user=user)
@@ -1317,11 +1341,18 @@ def place_order(request):
             total_amount -= wallet.balance
             wallet.balance = Decimal(0)
         wallet.save()
+        if wallet_amount_used > 0:
+            WalletTransaction.objects.create(
+                wallet=wallet,
+                amount=wallet_amount_used,
+                transaction_type='debit',
+                description=f'Used in order payment, Order ID: {order.order_id if "order" in locals() else "N/A"}'
+            )
 
     order = Order.objects.create(
         user=user,
         order_id=generate_order_id(),
-        payment_method='COD',
+        payment_method=payment_method,
         status='pending',
         subtotal=totals['subtotal'],
         discount=totals['coupon_discount'],
@@ -1724,6 +1755,14 @@ def razorpay_checkout_view(request):
             total_amount -= wallet.balance
             wallet.balance = Decimal(0)
         wallet.save()
+
+        if wallet_amount_used > 0:
+            WalletTransaction.objects.create(
+                wallet=wallet,
+                amount=wallet_amount_used,
+                transaction_type='debit',
+                description=f'Used in order payment, Order ID: {order.order_id if "order" in locals() else "N/A"}'
+            )
 
     if total_amount == 0:
         order = Order.objects.create(

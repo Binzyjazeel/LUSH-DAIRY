@@ -62,6 +62,9 @@ path('accounts/sales-report/excel/', views.download_sales_report_excel, name='do
     path('offers/edit/<int:offer_id>/', views.edit_offer, name='edit_offer'),
     path('offers/delete/<int:offer_id>/', views.delete_offer, name='delete_offer'),
 
+    path('wallet/transactions/', views.wallet_transactions_list, name='wallet_transactions_list'),
+    path('wallet/transactions/<int:transaction_id>/', views.wallet_transaction_detail, name='wallet_transaction_detail'),
+
 
 
 

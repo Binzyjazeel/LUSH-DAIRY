@@ -1,0 +1,270 @@
+
+{%  load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lush Dairy Admin - Wallet Transactions</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+  <style>
+    :root {
+      --primary-color: #4d8b31;
+      --secondary-color: #e8f5e9;
+      --text-color: #333;
+      --light-gray: #f5f5f5;
+      --border-color: #ddd;
+      --accent-color: #388e3c;
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    
+    body {
+      background-color: var(--secondary-color);
+      color: var(--text-color);
+    }
+    
+    .container {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 240px;
+      background-color: white;
+      box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+      padding: 20px 0;
+    }
+    .logo {
+      padding: 0 20px 20px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+    }
+    .logo img { height: 40px; margin-right: 10px; }
+    .logo h2 { color: var(--primary-color); font-size: 18px; }
+    .nav-menu { margin-top: 20px; }
+    .nav-item {
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      color: var(--text-color);
+      text-decoration: none;
+      transition: all 0.3s;
+      font-size: 14px;
+    }
+    .nav-item:hover, .nav-item.active {
+      background-color: var(--secondary-color);
+      color: var(--primary-color);
+      border-left: 4px solid var(--primary-color);
+    }
+    .nav-item i { margin-right: 10px; width: 20px; text-align: center; }
+
+    /* Main content */
+    .main-content { flex-grow: 1; padding: 20px; }
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .search-bar {
+      display: flex; align-items: center;
+      background-color: white;
+      border-radius: 20px;
+      padding: 8px 15px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .search-bar input {
+      border: none;
+      outline: none;
+      padding: 5px;
+      width: 200px;
+    }
+    .search-bar button { background: transparent; border: none; cursor: pointer; }
+    .user-info { display: flex; align-items: center; }
+    .user-info .avatar {
+      width: 32px; height: 32px; border-radius: 50%;
+      background-color: var(--primary-color);
+      color: white;
+      display: flex; align-items: center; justify-content: center;
+      margin-right: 10px;
+    }
+
+    /* Section */
+    .products-section {
+      background-color: white;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .section-title { font-size: 18px; font-weight: 600; color: var(--text-color); }
+    .btn { padding: 8px 16px; border-radius: 4px; cursor: pointer; font-weight: 500; text-decoration: none; display: inline-flex; align-items: center; font-size: 14px; }
+    .btn-primary { background-color: var(--primary-color); color: white; border: none; }
+    .btn-secondary { background-color: var(--light-gray); color: var(--text-color); border: 1px solid var(--border-color); }
+    .btn i { margin-right: 5px; }
+    .filters { display: flex; gap: 10px; }
+
+    /* Table */
+    .products-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    .products-table th {
+      background-color: var(--light-gray);
+      padding: 10px 15px;
+      text-align: left;
+      font-weight: 500;
+      color: var(--text-color);
+      font-size: 14px;
+    }
+    .products-table tr { border-bottom: 1px solid var(--border-color); }
+    .products-table td { padding: 10px 15px; font-size: 14px; }
+    .action-btn { background: none; border: none; cursor: pointer; color: var(--primary-color); margin-right: 5px; }
+    .badge-credit { background-color: #4d8b31; color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.85em; }
+    .badge-debit { background-color: #d9534f; color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.85em; }
+
+    .show-results { display: flex; align-items: center; justify-content: flex-end; margin-top: 15px; font-size: 14px; }
+    .show-results select { margin-left: 10px; padding: 5px; border-radius: 4px; border: 1px solid var(--border-color); }
+
+    .empty-state { text-align: center; padding: 40px 0; }
+    .empty-state p { margin-bottom: 20px; color: #666; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="logo">
+      <img src="{% static 'images/logo.png' %}" alt="Lush Dairy Logo">
+     
+    </div>
+    <div class="nav-menu">
+      <a href="{% url 'admin_panel:admin_dashboard' %}" class="nav-item">
+  <i class="fas fa-tachometer-alt"></i> Dashboard
+</a>
+<a href="{% url 'admin_panel:admin_order_list' %}" class="nav-item active">
+  <i class="fas fa-shopping-cart"></i> Orders
+</a>
+<a href="{% url 'admin_panel:product_list' %}" class="nav-item">
+  <i class="fas fa-box"></i> Products
+</a>
+<a href="{% url 'admin_panel:sales_report' %}" class="nav-item">
+  <i class="fas fa-chart-line"></i> Sales Report
+</a>
+<a href="{% url 'admin_panel:user_list' %}" class="nav-item">
+  <i class="fas fa-users"></i> Customers
+</a>
+<a href="{% url 'admin_panel:category_list' %}" class="nav-item">
+  <i class="fas fa-tags"></i> Categories
+</a>
+<a href="{% url 'admin_panel:inventory_list' %}" class="nav-item">
+  <i class="fas fa-warehouse"></i> Stock
+</a>
+<a href="{% url 'admin_panel:coupon_list' %}" class="nav-item">
+  <i class="fas fa-ticket-alt"></i> Coupons
+</a>
+<a href="{% url 'admin_panel:offer_list' %}" class="nav-item">
+  <i class="fas fa-bullhorn"></i> Offers
+</a>
+<a href="{% url 'admin_panel:wallet_transactions_list' %}" class="nav-item">
+  <i class="fas fa-wallet"></i> Wallet
+</a>
+<a href="{% url 'admin_panel:admin_return_requests' %}" class="nav-item">
+  <i class="fas fa-exchange-alt"></i> Complaints
+</a>
+<a href="{% url 'admin_panel:admin_logout' %}" class="nav-item">
+  <i class="fas fa-sign-out-alt"></i> Sign Out
+</a>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <div class="header">
+      <div class="search-bar">
+        <form method="get" action="">
+          <input type="text" name="q" placeholder="Search transactions..." value="{{ request.GET.q }}">
+          <button type="submit"><i class="fas fa-search"></i></button>
+        </form>
+      </div>
+      <div class="user-info">
+        <div class="avatar"><i class="fas fa-user"></i></div>
+        <span>Admin</span>
+      </div>
+    </div>
+
+    <div class="products-section">
+      <div class="section-header">
+        <h2 class="section-title">Wallet Transactions</h2>
+      </div>
+
+      {% if transactions %}
+      <table class="products-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Date</th>
+            <th>User</th>
+            <th>Type</th>
+            <th>Amount</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for t in transactions %}
+          <tr>
+            <td>{{ t.id }}</td>
+            <td>{{ t.created_at|date:"d-m-Y H:i" }}</td>
+            <td>{{ t.wallet.user.username }}<br><small>{{ t.wallet.user.email }}</small></td>
+            <td>
+              {% if t.transaction_type == 'credit' %}
+                <span class="badge-credit">Credit</span>
+              {% else %}
+                <span class="badge-debit">Debit</span>
+              {% endif %}
+            </td>
+            <td>₹{{ t.amount }}</td>
+            <td>
+              <a href="{% url 'admin_panel:wallet_transaction_detail' t.id %}" class="action-btn"><i class="fas fa-eye"></i></a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      <div class="show-results">
+        Show results:
+        <select onchange="changeResultsPerPage(this.value)">
+          <option value="10">10</option>
+          <option value="20">20</option>
+          <option value="50">50</option>
+        </select>
+      </div>
+
+      {% else %}
+      <div class="empty-state">
+        <p>No transactions found.</p>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<script>
+  function changeResultsPerPage(value) {
+    const urlParams = new URLSearchParams(window.location.search);
+    urlParams.set('per_page', value);
+    window.location.search = urlParams.toString();
+  }
+</script>
+</body>
+</html>
