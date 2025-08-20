@@ -294,7 +294,7 @@
 </head>
 <body>
   <div class="container">
-    <!-- Sidebar -->
+   
     <div class="sidebar">
       <div class="logo">
         <img src="{% static 'images/logo.png' %}" alt="Logo">
@@ -340,7 +340,7 @@
       </div>
     </div>
 
-    <!-- Main Content -->
+  
     <div class="main-content">
       <div class="header">
         <div class="search-bar">
@@ -355,7 +355,7 @@
         </div>
       </div>
 
-      <!-- Coupons Section -->
+      
       <div class="products-section">
         <div class="section-header">
           <h2 class="section-title">Coupon Management</h2>
@@ -409,7 +409,7 @@
             </tbody>
           </table>
 
-          <!-- Pagination -->
+        
           <div class="pagination">
             {% if page_obj.has_previous %}
               <a href="?q={{ request.GET.q }}&page={{ page_obj.previous_page_number }}"><i class="fas fa-chevron-left"></i></a>

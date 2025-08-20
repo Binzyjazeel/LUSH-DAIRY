@@ -50,7 +50,7 @@ class ProductVariantForm(forms.ModelForm):
         variant_name = cleaned_data.get('variant_name')
 
         if product and variant_name:
-        # Check if a variant with the same name already exists for this product
+        
             qs = ProductVariant.objects.filter(
                 product=product,
                 variant_name__iexact=variant_name
@@ -63,7 +63,7 @@ class ProductVariantForm(forms.ModelForm):
                 'variant_name',
                 f"A variant named '{variant_name}' already exists for this product."
             )
-    # If either product or variant_name is missing, skip duplicate check
+   
         return cleaned_data
 
 
@@ -108,7 +108,7 @@ class CouponForm(forms.ModelForm):
             'active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
 
-# admin_panel/forms.py
+
 from django import forms
 from .models import Offer
 

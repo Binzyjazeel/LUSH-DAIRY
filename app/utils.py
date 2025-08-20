@@ -28,12 +28,12 @@ def calculate_cart_totals(cart_items, coupon=None):
             subtotal += item_total
             total_qty += item.quantity
 
-        # Apply coupon if provided
+        
         coupon_discount = Decimal('0.00')
         if coupon and coupon.discount_percentage:
             coupon_discount = subtotal * Decimal(coupon.discount_percentage) / 100
 
-        # Shipping logic
+       
         shipping = Decimal('0.00') if subtotal >= Decimal('30.00') else Decimal('4.99')
 
         final_total = subtotal - coupon_discount + shipping
@@ -66,7 +66,7 @@ from accounts.models import Offer
 def get_product_discount(product):
     today = timezone.now().date()
 
-    # Get all valid offers for product OR its category
+    
     offers = Offer.objects.filter(
         is_active=True,
         valid_from__lte=today,

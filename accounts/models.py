@@ -25,7 +25,7 @@ class CustomUser(AbstractUser):
         super().save(*args, **kwargs)
 
     def generate_referral_code(self):
-        return str(uuid.uuid4()).split('-')[0].upper()  # e.g., '5GHT21K8'
+        return str(uuid.uuid4()).split('-')[0].upper()  
 
 class CategoryManager(models.Manager):
     def get_queryset(self):
@@ -157,7 +157,7 @@ class Offer(models.Model):
     valid_to = models.DateField()
     is_active = models.BooleanField(default=True)
 
-    # Can apply to a single product or a whole category
+    
     product = models.ForeignKey('Product', on_delete=models.CASCADE, null=True, blank=True)
     category = models.ForeignKey('Category', on_delete=models.CASCADE, null=True, blank=True)
 

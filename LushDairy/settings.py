@@ -13,7 +13,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 from pathlib import Path
 import environ
 
-# Initialise environment variables
+
 env = environ.Env()
 environ.Env.read_env()
 
@@ -33,7 +33,7 @@ ALLOWED_HOSTS = [
     ".ngrok-free.app",
 ]
 CSRF_TRUSTED_ORIGINS = [
-    "https://*.ngrok-free.app",  # your current ngrok URL
+    "https://*.ngrok-free.app",  
 ]
 
 

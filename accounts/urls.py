@@ -49,7 +49,7 @@ urlpatterns = [
 
     path('accounts/coupons/', views.coupon_list_view, name='coupon_list'),
     path('accounts/coupons/create/', views.create_coupon, name='create_coupon'),
-   # urls.py
+  
     path('accounts/coupons/edit/<int:coupon_id>/', views.edit_coupon, name='edit_coupon'),
 
     path('accounts/coupons/delete/<int:coupon_id>/', views.delete_coupon_view, name='delete_coupon'),

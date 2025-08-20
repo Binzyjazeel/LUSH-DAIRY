@@ -357,7 +357,7 @@
     <div class="sidebar">
       <div class="logo">
          <img src="{% static 'images/logo.png' %}" alt="Lush Dairy Logo">
-        <h2>Lush Dairy Admin</h2>
+        
       </div>
       <div class="nav-menu">
         <a href="{% url 'admin_panel:admin_dashboard' %}" class="nav-item">
@@ -516,7 +516,7 @@
   <script>
     
 let cropper;
-let filesToUpload = [];  // Array to keep track of all cropped images
+let filesToUpload = [];  
 
 function triggerFileInput() {
     document.getElementById('image-upload').click();
@@ -534,20 +534,20 @@ document.getElementById('image-upload').addEventListener('change', function (e) 
 
             if (cropper) cropper.destroy();
             cropper = new Cropper(img, {
-                aspectRatio: 1, // Optional: set to null for free aspect ratio
+                aspectRatio: 1,
                 viewMode: 1,
                 movable: true,
                 zoomable: true,
                 scalable: true,
             });
 
-            // Save the file object to use after cropping
+           
             img.file = file;
         };
         reader.readAsDataURL(file);
     }
 
-    // Clear input so change triggers every time
+    
     e.target.value = '';
 });
 
@@ -561,9 +561,8 @@ function cropImage() {
 
         document.getElementById('uploaded-images').appendChild(preview);
 
-        // Create hidden input to send via form
         const formDataInput = new File([blob], `cropped_${Date.now()}.png`, { type: "image/png" });
-        filesToUpload.push(formDataInput);  // Store for form submission
+        filesToUpload.push(formDataInput); 
 
         closeModal();
     }, 'image/png');
@@ -574,26 +573,26 @@ function closeModal() {
     cropper.destroy();
 }
 
-// Optional: Add cropped files to actual form submission
+
 document.querySelector("form").addEventListener("submit", function (e) {
     const formData = new FormData(this);
     filesToUpload.forEach((file, i) => {
         formData.append('images', file, file.name);
     });
 
-    // Submit via AJAX or standard fetch
+ 
     fetch(this.action, {
         method: "POST",
         body: formData,
     }).then(response => {
         if (response.ok) {
-            window.location.href = "/accounts/products/"; // change this to your success page
+            window.location.href = "/accounts/products/"; 
         } else {
             alert("Upload failed");
         }
     });
 
-    e.preventDefault(); // Stop default submit
+    e.preventDefault(); 
 });
 </script>
 

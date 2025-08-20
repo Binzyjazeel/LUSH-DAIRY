@@ -263,7 +263,7 @@ def product_list(request):
             Q(description__icontains=query)
         )
 
-    paginator = Paginator(products, 6)  # 6 products per page
+    paginator = Paginator(products, 6)  
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
@@ -603,16 +603,15 @@ def reject_return_request(request, request_id):
     order = return_request.order
 
     if not return_request.verified:
-        return_request.verified = True  # Mark complaint verified even if rejected
+        return_request.verified = True
         messages.info(request, "Complaint verified and rejected.")
 
     if not return_request.refunded:
-        return_request.refund_amount = 0  # No refund
+        return_request.refund_amount = 0 
         return_request.refunded = False
         messages.warning(request, "No refund will be issued for this complaint.")
 
-    order.return_status = 'rejected'  # Mark complaint rejected in order
-    # Optionally update order.status if needed, e.g. leave as is or mark differently
+    order.return_status = 'rejected'  
 
     return_request.save()
     order.save()
@@ -666,12 +665,12 @@ def coupon_list_view(request):
     if query:
         coupons = coupons.filter(code__icontains=query)
 
-    paginator = Paginator(coupons, 6)  # 10 coupons per page
+    paginator = Paginator(coupons, 6) 
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
     context = {
-        'page_obj': page_obj,       # This is what the template expects
+        'page_obj': page_obj,    
         'users': User.objects.all(),
         'today': timezone.now().date()
     }
@@ -685,11 +684,11 @@ def create_coupon(request):
         if form.is_valid():
             coupon = form.save()
             
-            print(f"Saved Coupon: {coupon.code}, ID: {coupon.id}")  # Debug print
+            print(f"Saved Coupon: {coupon.code}, ID: {coupon.id}")  
             messages.success(request, "Coupon created successfully!")
             return redirect('admin_panel:coupon_list')
         else:
-            print(form.errors)  # Debugging
+            print(form.errors)  
             messages.error(request, "Please correct the errors below.")
     else:
         form = CouponForm()
@@ -711,7 +710,7 @@ def edit_coupon(request, coupon_id):
             coupon = form.save(commit=False)
             form.save()
             form.save_m2m() 
-            return redirect('admin_panel:coupon_list')  # or your custom success URL
+            return redirect('admin_panel:coupon_list')
     else:
         form = CouponForm(instance=coupon)
     
@@ -736,25 +735,24 @@ from django.db.models import Count, Sum
 from app.models import Order
 
 def sales_report(request):
-    period = request.GET.get('period', 'day')  # day, week, month, year, custom
+    period = request.GET.get('period', 'day')  
     from_date = request.GET.get('start_date')
     to_date = request.GET.get('end_date')
-    status_filter = request.GET.get('status', '')  # optional status filter
+    status_filter = request.GET.get('status', '') 
 
     today = now().date()
 
-    # Start with all orders
     all_orders = Order.objects.all()
-    # Delivered/completed orders only for main stats
+  
     orders = Order.objects.all()
     statuses = [status[0] for status in Order.ORDER_STATUS]
 
-    # Apply status filter if provided (overrides 'Delivered' filter if needed)
+   
     if status_filter:
         orders = orders.filter(status=status_filter)
         all_orders = all_orders.filter(status=status_filter)
 
-    # Filter by date range
+    
     if period == 'custom' and from_date and to_date:
         try:
             start_date = datetime.strptime(from_date, '%Y-%m-%d').date()
@@ -762,10 +760,10 @@ def sales_report(request):
             orders = orders.filter(created_at__date__range=[start_date, end_date])
             all_orders = all_orders.filter(created_at__date__range=[start_date, end_date])
         except ValueError:
-            # Invalid date format, ignore filter or handle error
+            
             pass
     else:
-        # Use period-based filtering
+       
         if period == 'day':
             orders = orders.filter(created_at__date=today)
             all_orders = all_orders.filter(created_at__date=today)
@@ -785,18 +783,18 @@ def sales_report(request):
             orders = orders.filter(created_at__date__range=[start_year, today])
             all_orders = all_orders.filter(created_at__date__range=[start_year, today])
 
-    # Aggregations on filtered 'orders' (completed/delivered)
+    
     aggregated_data = orders.aggregate(
         total_orders=Count('id'),
-        total_sales=Sum('total_amount'),  # change 'total_amount' to your field
-        total_discount=Sum('discount')     # change 'discount' to your field
+        total_sales=Sum('total_amount'),  
+        total_discount=Sum('discount')    
     )
     aggregated_data = {
     key: value if value is not None else 0
     for key, value in aggregated_data.items()
 }
 
-    # Group by status for all filtered orders
+  
     status_summary = (
         all_orders
         .values('status')
@@ -826,7 +824,7 @@ from reportlab.lib.styles import getSampleStyleSheet,ParagraphStyle
 from django.utils import timezone
 from django.db.models import Sum
 from datetime import timedelta
-from app.models import Order  # make sure this is correct
+from app.models import Order 
 from django.http import HttpResponse
 
 from reportlab.lib import colors
@@ -864,7 +862,7 @@ def download_sales_report_pdf(request):
             start_date_obj = datetime.strptime(start_date, "%Y-%m-%d")
             end_date_obj = datetime.strptime(end_date, "%Y-%m-%d")
         
-        # Make them timezone-aware
+ 
             start_date_aware = make_aware(datetime.combine(start_date_obj, datetime.min.time()))
             end_date_aware = make_aware(datetime.combine(end_date_obj, datetime.max.time()))
 
@@ -872,14 +870,14 @@ def download_sales_report_pdf(request):
         except ValueError:
          pass 
 
-# Filtering
+
    
 
     total_orders = orders.count()
     total_sales = orders.aggregate(Sum('total_amount'))['total_amount__sum'] or 0
     total_discount = orders.aggregate(Sum('discount'))['discount__sum'] or 0
 
-    # PDF setup with margins
+
     response = HttpResponse(content_type='application/pdf')
     response['Content-Disposition'] = 'attachment; filename="sales_report.pdf"'
 
@@ -897,11 +895,10 @@ def download_sales_report_pdf(request):
 
     elements = []
 
-    # Title
+
     elements.append(Paragraph(" Sales Report", styles['CenterTitle']))
     elements.append(Spacer(1, 12))
 
-    # Summary Table
     summary_data = [
         ["Total Orders", f"{total_orders}"],
         ["Total Sales", f"Rs. {total_sales:,.2f}"],
@@ -920,7 +917,7 @@ def download_sales_report_pdf(request):
     elements.append(summary_table)
     elements.append(Spacer(1, 20))
 
-    # Orders Table
+  
     order_data = [["Order ID", "User", "Amount", "Discount", "Date"]]
     for order in orders:
         order_data.append([
@@ -935,7 +932,7 @@ def download_sales_report_pdf(request):
     order_table.setStyle(TableStyle([
         ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor("#4F81BD")),
         ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-        ('ALIGN', (2, 1), (3, -1), 'RIGHT'),  # Align currency to right
+        ('ALIGN', (2, 1), (3, -1), 'RIGHT'), 
         ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
         ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
         ('FONTSIZE', (0, 0), (-1, 0), 11),
@@ -946,10 +943,9 @@ def download_sales_report_pdf(request):
 
     elements.append(order_table)
 
-    # Build PDF
     doc.build(elements)
     return response
-    # Build PDF
+   
     
 from openpyxl import Workbook
 from django.utils import timezone
@@ -987,10 +983,9 @@ def download_sales_report_excel(request):
     ws = wb.active
     ws.title = "Sales Report"
 
-    # Header row
+
     ws.append(["Order ID", "User", "Amount", "Discount", "Date"])
 
-    # Data rows
     for order in orders:
         ws.append([
             order.id,
@@ -1000,7 +995,7 @@ def download_sales_report_excel(request):
             order.created_at.strftime('%Y-%m-%d'),
         ])
 
-    # Summary rows
+
     ws.append([])
     ws.append(["Total Orders", total_orders])
     ws.append(["Total Sales", total_sales])
@@ -1012,7 +1007,7 @@ def download_sales_report_excel(request):
     return response
 
 
-# admin_panel/views.py
+
 from django.shortcuts import render, get_object_or_404, redirect
 from django.core.paginator import Paginator
 from django.utils import timezone
@@ -1067,9 +1062,9 @@ from django.shortcuts import render, get_object_or_404
 from app.models import WalletTransaction,Wallet 
 
 
-# List of all transactions (both credit and debit)
+
 def wallet_transactions_list(request):
-    # Fetch all transactions with related user
+  
     transactions = WalletTransaction.objects.select_related('wallet__user').order_by('-created_at')
 
     
@@ -1077,7 +1072,7 @@ def wallet_transactions_list(request):
         'transactions': transactions
     })
 
-# Detail view for a single user's transactions (credit + debit)
+
 @login_required
 def wallet_transaction_detail(request, transaction_id):
     transaction = get_object_or_404(WalletTransaction, id=transaction_id)

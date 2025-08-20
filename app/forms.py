@@ -96,7 +96,7 @@ class AddressForm(forms.ModelForm):
                 raise forms.ValidationError("You already have a default address. Unset it before setting a new one.")
 
         return cleaned_data
-    class Meta:  # ✅ You missed this part
+    class Meta:  
         model = Address
         fields = [
             'address_type', 'street', 'city', 'state',

@@ -1,93 +1,135 @@
-{% extends 'admin_panel/base.html' %}
+{% extends 'admin_panel/bases.html' %}
 {% load static %}
 {% block content %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>{{ title }} Variant - {{ product.name }}</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  <style>
+<div class="variant-form-container">
+    <h2>{{ title }} Variant for <span>“{{ product.name }}”</span></h2>
+
+    <form method="POST">
+        {% csrf_token %}
+        <div class="form-fields">
+            {{ form.as_p }}
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-save">
+                <i class="fas fa-save"></i> {{ title }}
+            </button>
+            <a href="{% url 'admin_panel:manage_variants' product.id %}" class="btn btn-cancel">
+                <i class="fas fa-times"></i> Cancel
+            </a>
+        </div>
+    </form>
+</div>
+
+<style>
     :root {
-      --primary-color: #4d8b31;
-      --text-color: #333;
-      --light-bg: #f5f5f5;
-      --border-color: #ccc;
+        --primary-color: #4d8b31;
+        --danger-color: #dc3545;
+        --text-color: #333;
+        --light-bg: #f5f5f5;
+        --border-color: #ddd;
     }
 
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: var(--light-bg);
-      padding: 40px;
+    /* Card Container */
+    .variant-form-container {
+        max-width: 650px;
+        margin: 30px auto;
+        background: #fff;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+        animation: fadeIn 0.3s ease-in-out;
     }
 
-    .container {
-      max-width: 600px;
-      background: white;
-      margin: auto;
-      padding: 30px;
-      border-radius: 10px;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    .variant-form-container h2 {
+        font-size: 22px;
+        margin-bottom: 25px;
+        color: var(--primary-color);
+        text-align: center;
     }
 
-    h2 {
-      font-size: 20px;
-      color: var(--primary-color);
-      margin-bottom: 25px;
+    .variant-form-container h2 span {
+        color: var(--text-color);
     }
 
-    form label {
-      display: block;
-      margin-bottom: 6px;
-      font-weight: 600;
-      color: var(--text-color);
+    /* Form Fields */
+    .form-fields label {
+        font-weight: 600;
+        margin-bottom: 6px;
+        display: block;
+        color: var(--text-color);
     }
 
-    form input, form select {
-      width: 100%;
-      padding: 10px;
-      margin-bottom: 20px;
-      border: 1px solid var(--border-color);
-      border-radius: 6px;
-      font-size: 14px;
+    .form-fields input,
+    .form-fields select {
+        width: 100%;
+        padding: 12px;
+        margin-bottom: 20px;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        font-size: 14px;
+        transition: border-color 0.3s, box-shadow 0.3s;
+    }
+
+    .form-fields input:focus,
+    .form-fields select:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 6px rgba(77, 139, 49, 0.2);
+        outline: none;
+    }
+
+    /* Buttons */
+    .form-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 15px;
+        margin-top: 10px;
     }
 
     .btn {
-      background-color: var(--primary-color);
-      color: white;
-      padding: 10px 18px;
-      border: none;
-      border-radius: 6px;
-      font-size: 14px;
-      cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 10px 18px;
+        font-size: 14px;
+        font-weight: 600;
+        border-radius: 8px;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .btn i {
+        margin-right: 6px;
+    }
+
+    .btn-save {
+        background: linear-gradient(135deg, #4d8b31, #3b6e25);
+        color: #fff;
+        box-shadow: 0 4px 10px rgba(77, 139, 49, 0.3);
+        border: none;
+    }
+
+    .btn-save:hover {
+        background: linear-gradient(135deg, #3b6e25, #2d541c);
+        transform: translateY(-2px);
     }
 
     .btn-cancel {
-      background-color: #ccc;
-      color: #333;
-      margin-left: 10px;
-      text-decoration: none;
-      padding: 10px 16px;
-      border-radius: 6px;
+        background: #ccc;
+        color: #333;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
     }
 
-    .form-group {
-      margin-bottom: 15px;
+    .btn-cancel:hover {
+        background: #b5b5b5;
+        transform: translateY(-2px);
     }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <h2>{{ title }} Variant for “{{ product.name }}”</h2>
 
-    <form method="POST">
-      {% csrf_token %}
-      {{ form.as_p }}
-
-      <button type="submit" class="btn">{{ title }}</button>
-      <a href="{% url 'admin_panel:manage_variants' product.id %}" class="btn-cancel">Cancel</a>
-    </form>
-  </div>
-</body>
-</html>
+    /* Animation */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
 {% endblock %}

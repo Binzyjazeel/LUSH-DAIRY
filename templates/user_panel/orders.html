@@ -2,122 +2,131 @@
 {% load static %}
 {% block content %}
 <div class="container mt-5 mb-5">
-    <h2 class="mb-4">Orders List</h2>
-
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">Orders List</h2>
+        <a href="{% url 'user_panel:user_profile' %}" class="btn btn-outline-secondary">
+            ← Back to Profile
+        </a>
+    </div>
+    
     <!-- Search Form -->
-    <form method="GET" action="">
-        <input type="text" name="q" placeholder="Search orders by ID" value="{{ query|default:'' }}" class="form-control mb-3" style="max-width: 400px;">
-        <button type="submit" class="btn btn-primary mb-4">Search</button>
+    <form method="GET" action="" class="row g-2 mb-4">
+        <div class="col-md-6 col-lg-4">
+            <input type="text" name="q" placeholder="Search orders by ID" 
+                   value="{{ query|default:'' }}" class="form-control">
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-primary">Search</button>
+        </div>
     </form>
 
     {% if orders %}
         {% if orders.count > 1 or not order %}
             <!-- Show list of orders -->
-            <h4>Search Results ({{ orders.count }})</h4>
-            <ul class="list-group mb-4">
+            <h5 class="mb-3">Search Results ({{ orders.count }})</h5>
+            <div class="list-group mb-5">
                 {% for o in orders %}
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
                         <div>
-                            <strong>Order ID:</strong> {{ o.order_id }} <br>
-                            <strong>Customer:</strong> {{ o.user.username }} <br>
-                            <strong>Date:</strong> {{ o.created_at|date:"M d, Y H:i" }}
+                            <p class="mb-1"><strong>Order ID:</strong> {{ o.order_id }}</p>
+                            <p class="mb-1"><strong>Customer:</strong> {{ o.user.username }}</p>
+                            <small class="text-muted">Placed on {{ o.created_at|date:"M d, Y H:i" }}</small>
                         </div>
-                        <a href="{% url 'user_panel:order_detail' o.order_id %}" class="btn btn-sm btn-outline-primary">View Details</a>
-                    </li>
+                        <a href="{% url 'user_panel:order_detail' o.order_id %}" 
+                           class="btn btn-sm btn-outline-primary">View Details</a>
+                    </div>
                 {% endfor %}
-            </ul>
+            </div>
         {% endif %}
     {% else %}
-        <p>No orders found.</p>
+        <div class="alert alert-warning">No orders found.</div>
     {% endif %}
 
     {% if order %}
-        <!-- Show single order details -->
-        <div class="card mb-4 shadow-sm">
+        <!-- Order Details -->
+        <div class="card shadow-sm mb-4">
             <div class="card-body">
-                <h5 class="card-title">Order ID: {{ order.order_id }}</h5>
+                <h5 class="card-title mb-3">Order ID: {{ order.order_id }}</h5>
                 <p><strong>Status:</strong> {{ order.status }}</p>
                 <p><strong>Placed On:</strong> {{ order.created_at|date:"M d, Y H:i" }}</p>
             </div>
         </div>
 
-        <div class="card mb-4 shadow-sm">
-            <div class="card-header">
-                <h5 class="mb-0">Delivery Address</h5>
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-light">
+                <h6 class="mb-0">Delivery Address</h6>
             </div>
             <div class="card-body">
-                <p><strong>{{ order.address.name }}</strong></p>
-                <p>{{ order.address.phone }}</p>
-                <p>{{ order.address.street }}, {{ order.address.city }}, {{ order.address.state }} - {{ order.address.zip_code }}</p>
+                <p class="mb-1"><strong>{{ order.address.name }}</strong></p>
+                <p class="mb-1">{{ order.address.phone }}</p>
+                <p class="mb-0">{{ order.address.street }}, {{ order.address.city }}, 
+                    {{ order.address.state }} - {{ order.address.zip_code }}</p>
             </div>
         </div>
 
-        <div class="card mb-4 shadow-sm">
-            <div class="card-header">
-                <h5 class="mb-0">Items</h5>
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-light">
+                <h6 class="mb-0">Items</h6>
             </div>
             <div class="card-body">
                 {% for item in order.items.all %}
-                    <div class="row align-items-center mb-3">
+                    <div class="row align-items-center mb-4">
                         <div class="col-md-2">
-                            <img src="{{ item.product_variant.image.url }}" alt="{{ item.product.name }}" class="img-fluid rounded">
+                            <img src="{{ item.product_variant.image.url }}" 
+                                 alt="{{ item.product.name }}" 
+                                 class="img-fluid rounded border">
                         </div>
                         <div class="col-md-6">
-                            <h6>{{ item.product.name }}</h6>
-                            <p class="text-muted">{{ item.product_variant.name }}</p>
-                            <p>Quantity: {{ item.quantity }}</p>
+                            <h6 class="mb-1">{{ item.product.name }}</h6>
+                            <small class="text-muted d-block">{{ item.product_variant.name }}</small>
+                            <small class="d-block">Quantity: {{ item.quantity }}</small>
                         </div>
                         <div class="col-md-4 text-end">
-                            <p>Price: ₹{{ item.product_variant.price }}</p>
-                            <p><strong>Total: ₹{{ item.total_price }}</strong></p>
-                            <p>Status:
-                                <span class="badge bg-{{ item.status|lower }}">
-                                    {{ item.status }}
-                                </span>
-                            </p>
+                            <p class="mb-1">Price: ₹{{ item.product_variant.price }}</p>
+                            <p class="fw-bold mb-1">Total: ₹{{ item.total_price }}</p>
+                            <span class="badge bg-{{ item.status|lower }} mb-2">
+                                {{ item.status }}
+                            </span><br>
                             {% if item.status != "Cancelled" and order.status != "Cancelled" and order.status != "Delivered" %}
-
-                                <a href="{% url 'user_panel:cancel_order_item' item.id %}" class="btn btn-sm btn-outline-danger mt-2">Cancel Item</a>
+                                <a href="{% url 'user_panel:cancel_order_item' item.id %}" 
+                                   class="btn btn-sm btn-outline-danger">Cancel Item</a>
                             {% endif %}
                         </div>
                     </div>
-                    <hr>
+                    {% if not forloop.last %}
+                        <hr>
+                    {% endif %}
                 {% endfor %}
             </div>
         </div>
 
-        <div class="card mb-4 shadow-sm">
+        <div class="card shadow-sm">
             <div class="card-body">
-                <div class="d-flex justify-content-between">
+                <div class="d-flex justify-content-between mb-2">
                     <span>Subtotal</span>
                     <span>₹{{ order.subtotal }}</span>
                 </div>
-                <div class="d-flex justify-content-between">
+                <div class="d-flex justify-content-between mb-2">
                     <span>Discount</span>
                     <span class="text-success">- ₹{{ order.discount }}</span>
                 </div>
-                <div class="d-flex justify-content-between">
+                <div class="d-flex justify-content-between mb-2">
                     <span>Shipping</span>
                     <span>₹{{ order.shipping_charge }}</span>
                 </div>
                 {% if order.tax %}
-                <div class="d-flex justify-content-between">
+                <div class="d-flex justify-content-between mb-2">
                     <span>Tax</span>
                     <span>₹{{ order.tax }}</span>
                 </div>
                 {% endif %}
                 <hr>
-                <div class="d-flex justify-content-between fw-bold">
+                <div class="d-flex justify-content-between fw-bold fs-5">
                     <span>Total</span>
                     <span>₹{{ order.total_amount }}</span>
                 </div>
             </div>
         </div>
-
-        
-
-   
-
-{% endif %}  
+    {% endif %}
 </div>
 {% endblock %}

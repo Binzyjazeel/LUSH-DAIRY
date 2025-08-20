@@ -118,7 +118,7 @@ class Order(models.Model):
     address_state = models.CharField(max_length=100,default='')
     address_zipcode = models.CharField(max_length=10,default='')
     coupon = models.ForeignKey('Coupon', null=True, blank=True, on_delete=models.SET_NULL)
-    # models.py
+  
     wallet_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
  
 

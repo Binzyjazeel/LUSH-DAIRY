@@ -82,7 +82,7 @@ urlpatterns = [
 
     path('payment-failed/', views.payment_failed, name='payment_failed'),
     path('start-payment/', views.razorpay_checkout_view, name='razorpay_checkout'),
-     path('apply-coupon/', views.apply_coupon, name='apply_coupon'),  # ✅ Add this
+     path('apply-coupon/', views.apply_coupon, name='apply_coupon'), 
     path('remove-coupon/', views.remove_coupon, name='remove_coupon'),
 
     

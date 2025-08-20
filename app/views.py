@@ -89,7 +89,7 @@ def otp_verification(request):
         if otp_ == request.session.get("otp"):
             encrypted_password = make_password(request.session['password1'])
 
-            # ✅ Create new user
+            
             nameuser = CustomUser(
                 username=request.session["username"],
                 email=request.session["email"],
@@ -103,7 +103,7 @@ def otp_verification(request):
 
             nameuser.save()
 
-            # ✅ Credit referral bonus only first time
+          
             if referrer_id:
                 wallet, _ = Wallet.objects.get_or_create(user_id=referrer_id)
                 if not WalletTransaction.objects.filter(
@@ -119,7 +119,7 @@ def otp_verification(request):
                         description=f"Referral bonus for {nameuser.username}"
                     )
 
-            # ✅ Clear session
+           
             for key in ["username", "email", "password1", "referrer_id", "otp"]:
                 request.session.pop(key, None)
 
@@ -180,13 +180,13 @@ def home(request):
         "promotions": promotions,
     }
     return render(request, 'user_panel/home.html',context)
-# views.py
+
 from django.shortcuts import render, get_object_or_404
 from accounts.models import Category, Product
 
 def products_by_category(request, category_id):
     category = get_object_or_404(Category, id=category_id)
-    products = Product.objects.filter(category=category)
+    products = Product.objects.filter(is_deleted=False,category=category)
     return render(request, "user_panel/products_by_category.html", {
         "category": category,
         "products": products
@@ -454,7 +454,7 @@ def product_detail(request, pk):
         valid_to__gte=timezone.now().date()
     ).first()
 
-    # If no product-specific offer, check category offer
+
     if not offer and product.category:
         offer = Offer.objects.filter(
             category=product.category,
@@ -718,7 +718,7 @@ from .models import Address
 @never_cache
 @login_required
 def profile_view(request):
-    """Main profile view with all tabs"""
+   
     addresses = Address.objects.filter(user=request.user)
     primary_address = addresses.filter(is_default=True).first()
     orders = Order.objects.filter(user=request.user).order_by('-created_at')
@@ -733,7 +733,7 @@ def profile_view(request):
 @never_cache
 @login_required
 def add_address(request):
-    """Add new address"""
+    
     if request.method == 'POST':
         address_type = request.POST.get('address_type')
         street = request.POST.get('street')
@@ -911,9 +911,28 @@ def change_password(request):
 @never_cache
 @login_required
 def view_order(request, order_id):
-    """View order details"""
-    order = get_object_or_404(Order, id=order_id, user=request.user)
-    return render(request, 'user_panel/user_profile.html', {'order': order})
+    
+    user = request.user
+    query = request.GET.get('q')
+    
+    order = None
+    orders = None
+
+    if query:
+        orders = Order.objects.filter(order_id__icontains=query, user=user)
+        if orders.count() == 1:
+            order = orders.first()
+            orders = None
+    else:
+        orders = Order.objects.filter(user=user).order_by('-created_at')
+
+    return render(request, 'user_panel/order_list.html', {
+        'orders': orders,
+        'order': order,
+        'query': query,
+    })
+
+    
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from .models import Product, Cart, Wishlist
@@ -1096,7 +1115,7 @@ from .forms import AddressForm
 from decimal import Decimal
 import razorpay
 from django.conf import settings
-from app.models import Coupon,Wallet  # ensure you have a Coupon model
+from app.models import Coupon,Wallet 
 from datetime import date
 from django.db import models
 @never_cache
@@ -1126,7 +1145,7 @@ def checkout_view(request):
                 messages.warning(request, f"'{item.product.name}' removed from cart due to out of stock.")
         return redirect('user_panel:cart')
    
-    # === APPLY COUPON ===
+ 
     coupon_discount = 0
     applied_coupon = None
     coupon = None
@@ -1152,7 +1171,7 @@ def checkout_view(request):
             messages.info(request, "Coupon removed successfully.")
             return redirect('user_panel:checkout')
 
-    # === CALCULATE TOTALS ===
+  
     totals = calculate_cart_totals(cart_items)
     sub_total = totals.get('subtotal', 0)
 
@@ -1175,7 +1194,7 @@ def checkout_view(request):
         except Coupon.DoesNotExist:
             request.session.pop('applied_coupon', None)
         
-# 💡 Recalculate totals WITH coupon if valid
+
     totals = calculate_cart_totals(cart_items, coupon=coupon)
 
     addresses = Address.objects.filter(user=request.user)
@@ -1333,7 +1352,7 @@ def place_order(request):
         messages.error(request, "Please select a payment method.")
         return redirect('user_panel:checkout')
 
-    # After calculating total_amount
+   
     if payment_method == "COD" and total_amount > 1000:
         messages.error(request, "Cash on Delivery is not available for orders above ₹1000.")
         return redirect('user_panel:checkout')
@@ -1358,7 +1377,7 @@ def place_order(request):
                 wallet=wallet,
                 amount=wallet_amount_used,
                 transaction_type='debit',
-                description=f'Used in order payment, Order ID: {order.order_id if "order" in locals() else "N/A"}'
+                description=f'Used in order payment'
             )
 
     order = Order.objects.create(
@@ -1409,29 +1428,16 @@ def place_order(request):
 
     return redirect('user_panel:order_success', order_id=order.order_id)
 
-
+from django.db.models import Q
 @never_cache
 @login_required
 def order_list(request):
-    user = request.user
-    query = request.GET.get('q')
-    
-    order = None
-
+    query = request.GET.get('q', '').strip() 
+    orders = Order.objects.filter(user=request.user)
     if query:
-        orders = Order.objects.filter(order_id__icontains=query, user=user)
-        if orders.count() == 1:
-            order = orders.first()
-            orders = None
-    else:
-        orders = Order.objects.filter(user=user).order_by('-created_at')
+        orders = orders.filter(order_id__icontains=query)
 
-    return render(request, 'user_panel/orders.html', {
-        'orders': orders,
-        'order': order,
-        'query': query,
-    })
-
+    return render(request, "user_panel/orders.html", {"orders": orders, "query": query})
 
 @never_cache
 @login_required
@@ -1463,11 +1469,11 @@ def order_detail(request, order_id):
             order.status = "processing"
         order.save()
 
-    # Calculate total, discount, final
+   
     subtotal = sum(item.price * item.quantity for item in order_items)
     shipping = 40 if subtotal < 500 else 0
     coupon_discount = order.coupon.discount_percentage if order.coupon else 0
-    total_discount = coupon_discount  # You can also add other discounts here
+    total_discount = coupon_discount 
     final_price = subtotal + shipping - total_discount
 
     context = {
@@ -1490,8 +1496,24 @@ def order_detail(request, order_id):
 @never_cache
 @login_required
 def my_orders(request):
-    orders = Order.objects.filter(user=request.user).order_by('-created_at')
-    return render(request, 'user_panel/user_profile.html', {'orders': orders})
+    user = request.user
+    query = request.GET.get('q')
+    
+    order = None
+    orders = None
+
+    if query:
+        orders = Order.objects.filter(order_id__icontains=query, user=user)
+        if orders.count() == 1:
+            order = orders.first()
+            orders = None
+    else:
+        orders = Order.objects.filter(user=user).order_by('-created_at')
+    return render(request, 'user_panel/orders.html', {
+        'orders': orders,
+        'order': order,
+        'query': query,
+    })
 @never_cache
 @login_required
 def cancel_entire_order(request, order_id):
@@ -1511,7 +1533,7 @@ def cancel_entire_order(request, order_id):
         order.status = 'Cancelled'
         order.save()
         messages.success(request, "Order cancelled successfully.")
-        return redirect('user_panel:order_list')
+        return redirect('user_panel:orders.html')
 
     return render(request, 'user_panel/cancel_order.html', {'order': order})
 
@@ -1683,10 +1705,10 @@ from django.shortcuts import get_object_or_404, redirect
 from django.http import HttpResponseBadRequest
 from django.conf import settings
 import razorpay
-from .models import Order, Payment  # Adjust if model path differs
+from .models import Order, Payment  
 import logging
 
-logger = logging.getLogger(__name__)  # Enable logging
+logger = logging.getLogger(__name__)  
 
 
 @login_required
@@ -1711,7 +1733,7 @@ from django.urls import reverse
 from decimal import Decimal
 from django.db import transaction
 
-from .utils import calculate_cart_totals  # Assuming you have this function
+from .utils import calculate_cart_totals 
 from django.utils.crypto import get_random_string
 
 @transaction.atomic
@@ -1730,7 +1752,7 @@ def razorpay_checkout_view(request):
         messages.error(request, "Selected address is not available.")
         return redirect('user_panel:checkout')
 
-    # Store in session so payment_handler can also access it if needed
+  
     request.session['checkout_address_id'] = address.id
     coupon_code = request.session.get('applied_coupon')
     
@@ -1746,7 +1768,7 @@ def razorpay_checkout_view(request):
         messages.error(request, "Your cart is empty.")
         return redirect('user_panel:cart')
 
-    # Step 2: Calculate totals
+  
     totals = calculate_cart_totals(cart_items, coupon=coupon)
     total_amount = Decimal(totals['final_total'])
 
@@ -1783,7 +1805,7 @@ def razorpay_checkout_view(request):
             total_amount=wallet_amount_used,
             wallet_amount=wallet_amount_used,
             status='placed',
-            payment_status='Paid',
+            
             payment_method='Wallet',
             subtotal=totals['subtotal'],
             shipping=totals['shipping'],
@@ -1809,10 +1831,10 @@ def razorpay_checkout_view(request):
             )
 
         cart_items.delete()
-        return redirect('user_panel:order_success')
+        return redirect('user_panel:order_success', order_id=order.order_id)
 
 
-    # Step 3: Create Razorpay order
+   
     amount_paise = int(total_amount * 100)
     client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
     try:
@@ -1858,7 +1880,7 @@ def razorpay_checkout_view(request):
             subtotal=cart_item.total_price()
         )
 
-    # Clear cart
+    
    
 
     context = {
@@ -1873,7 +1895,7 @@ def razorpay_checkout_view(request):
 
     return render(request, 'user_panel/razorpay_checkout.html', context)
 
-    # Fallback if method != POST
+ 
     return redirect('user_panel:cart')
 
 import razorpay
@@ -1901,13 +1923,13 @@ def payment_handler(request):
 
     try:
         if not payment_id:
-            # No payment attempt → fail, but keep cart intact
+          
             order_obj.payment_status = "Failed"
             order_obj.status = "pending"
             order_obj.save()
             return redirect('user_panel:payment_failed')
 
-        # Verify signature
+       
         params_dict = {
             'razorpay_payment_id': payment_id,
             'razorpay_order_id': order_id,
@@ -1915,7 +1937,7 @@ def payment_handler(request):
         }
         client.utility.verify_payment_signature(params_dict)
 
-        # Fetch payment from Razorpay
+       
         payment_details = client.payment.fetch(payment_id)
         print("🔍 Razorpay Payment Details:", payment_details)
 
@@ -1925,14 +1947,28 @@ def payment_handler(request):
             order_obj.save()
             return redirect('user_panel:payment_failed')
 
-        # ✅ Payment success
+      
         order_obj.razorpay_payment_id = payment_id
         order_obj.razorpay_signature = signature
         order_obj.payment_status = "Paid"
         order_obj.status = "placed"
         order_obj.save()
 
-        # Clear cart only on success
+
+        for item in order_obj.items.all():  
+            variant = item.product_variant
+            if variant.stock < item.quantity:
+           
+                order_obj.status = "cancelled"
+                order_obj.payment_status = "Refund Pending"
+                order_obj.save()
+                messages.error(request, f"Not enough stock for {item.product_name}.")
+                return redirect("user_panel:cart")
+
+            variant.stock -= item.quantity
+            variant.save()
+
+       
         Cart.objects.filter(user=order_obj.user).delete()
 
         return redirect('user_panel:order_success', order_id=order_obj.order_id)
@@ -1957,7 +1993,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from django.contrib import messages
 from .models import Cart, Coupon
-from .utils import calculate_cart_totals  # Assuming this is your utility function
+from .utils import calculate_cart_totals  
 import json
 
 @csrf_exempt
@@ -1974,10 +2010,7 @@ def apply_coupon(request):
             except Coupon.DoesNotExist:
                 return JsonResponse({'success': False, 'message': 'Invalid coupon code.'})
 
-            # Apply coupon to totals
             
-
-            # Save coupon to session
             request.session['applied_coupon'] = coupon.code
             totals = calculate_cart_totals(cart_items, coupon=coupon)
 
@@ -2002,7 +2035,7 @@ def calculate_cart_subtotal(cart_items):
     return sum(item.quantity * item.product_variant.price for item in cart_items)
 
 def calculate_shipping(subtotal):
-    return 0 if subtotal >= 500 else 50  # Example: free shipping for orders >= ₹500
+    return 0 if subtotal >= 30 else 5  
 
 
 @csrf_exempt

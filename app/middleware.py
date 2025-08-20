@@ -14,7 +14,7 @@ class BlockedUserLogoutMiddleware:
             messages.error(request, "You have been blocked by the admin.")
             return redirect('user_panel:login')
         return self.get_response(request)
-# myapp/middlewares.py
+
 from django.shortcuts import redirect
 from django.urls import reverse
 from django.urls import path
@@ -32,20 +32,20 @@ class AdminAccessMiddleware:
             admin_login_url = reverse('admin_panel:admin_login')
             admin_logout_url = reverse('admin_panel:admin_logout')
         except:
-            # In case reverse fails during early startup
+           
             return self.get_response(request)
 
-        # Skip check for admin login/logout
+    
         if path in [admin_login_url, admin_logout_url]:
             return self.get_response(request)
 
-        # Protect only admin_panel URLs (avoid /accounts/)
+      
         if path.startswith('/admin_panel/'):
             if not request.user.is_authenticated:
                 return redirect(admin_login_url)
             if not request.user.is_staff:
                 return redirect(reverse('user_panel:home'))
 
-        # Always return an HttpResponse
+     
         return self.get_response(request)
 
