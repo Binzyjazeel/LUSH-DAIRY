@@ -9,3 +9,4 @@ app/templatetags/__pycache__/
 LushDairy/__pycache__/
 .vscode/
 djvenv
+.env
