@@ -1,10 +1,12 @@
 {% extends 'admin_panel/base.html' %}
 {% block content %}
 <h2>Complaint Requests</h2>
-<table>
+
+{% if return_requests %}
+<table border="1" cellpadding="8" cellspacing="0">
   <tr>
     <th>User</th>
-    <th>Order</th>
+    <th>Order ID</th>
     <th>Reason</th>
     <th>Verified</th>
     <th>Refunded</th>
@@ -15,21 +17,23 @@
     <td>{{ r.user }}</td>
     <td>{{ r.order.order_id }}</td>
     <td>{{ r.reason }}</td>
-    <td>{{ r.verified }}</td>
-    <td>{{ r.refunded }}</td>
-   <td>
-  {% if not r.verified %}
-    <a href="{% url 'admin_panel:approve_return_request' r.id %}">Verify</a> |
-    <a href="{% url 'admin_panel:reject_return_request' r.id %}">Reject</a>
-  {% elif not r.refunded %}
-    <a href="{% url 'admin_panel:approve_return_request' r.id %}">Proceed</a> |
-    <a href="{% url 'admin_panel:reject_return_request' r.id %}">Reject</a>
-   
-    Done
-  {% endif %}
-</td>
+    <td>{{ r.verified|yesno:"Yes,No" }}</td>
+    <td>{{ r.refunded|yesno:"Yes,No" }}</td>
+    <td>
+      {% if not r.verified %}
+        <a href="{% url 'admin_panel:approve_return_request' r.id %}">Verify</a> |
+        <a href="{% url 'admin_panel:reject_return_request' r.id %}">Reject</a>
+      {% elif not r.refunded %}
+        <a href="{% url 'admin_panel:approve_return_request' r.id %}">Proceed Refund</a> |
+        <a href="{% url 'admin_panel:reject_return_request' r.id %}">Reject</a>
+      {% else %}
+        <span style="color: green; font-weight: bold;">Completed</span>
+      {% endif %}
+    </td>
   </tr>
   {% endfor %}
 </table>
+{% else %}
+<p>No complaint requests found.</p>
+{% endif %}
 {% endblock %}
-

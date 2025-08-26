@@ -162,10 +162,10 @@ def category_add(request):
     else:
         form = CategoryForm()
     return render(request, 'admin_panel/category_form.html', {'form': form})
-
+from django.db import IntegrityError
 def category_edit(request, pk):
     
-    category = get_object_or_404(Category, pk=pk, is_deleted=False)
+    category = get_object_or_404(Category, pk=pk,is_deleted=False)
 
    
     if request.method == 'POST':
@@ -174,21 +174,19 @@ def category_edit(request, pk):
 
         if form.is_valid():
             if form.has_changed():
-                print("✅ Form is valid and has changes:", form.changed_data)
-                form.save()
-                messages.success(request, "Category updated successfully.")
+                try:
+                    form.save()
+                    messages.success(request, "Category updated successfully.")
+                    return redirect('admin_panel:category_list')
+                except IntegrityError:
+                    # Add an error to the form instead of 500 error
+                    form.add_error('name', 'This category already exists.')
             else:
-                print("⚠️ Form submitted but no changes detected.")
                 messages.info(request, "No changes were made to the category.")
-            return redirect('admin_panel:category_list')
-        else:
-            print("❌ Form is invalid:", form.errors)
-
+                return redirect('admin_panel:category_list')
     else:
-        
         form = CategoryForm(instance=category)
 
-   
     return render(request, 'admin_panel/edit_category.html', {'form': form})
 
 def category_delete(request, pk):
@@ -561,91 +559,112 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib import messages
 @login_required
-
-
 def approve_return_request(request, request_id):
     return_request = get_object_or_404(ReturnRequest, id=request_id)
     order = return_request.order
+    order_item = return_request.order_item  # could be None
 
-    
     if not return_request.verified:
         return_request.verified = True
-        messages.info(request, "Complaint verified.")
+        if order_item:
+            messages.info(request, f"Complaint verified for {order_item.product_name}.")
+        else:
+            messages.info(request, "Complaint verified for entire order.")
 
-    
     if not return_request.refunded:
+        # 1️⃣ If complaint is for single product
+        if order_item:
+            refund_amount = order_item.subtotal or order_item.total_price
+            order_item.status = "Returned"
+            order_item.save()
+        # 2️⃣ If complaint is for entire order
+        else:
+            refund_amount = order.total_amount
+            order.items.update(status="Returned")  # mark all items returned
+
+        # Save refund in ReturnRequest
+        return_request.refund_amount = refund_amount
+
+        # Process wallet refund
         wallet, _ = Wallet.objects.get_or_create(user=return_request.user)
-        wallet.credit(return_request.refund_amount)
+        wallet.credit(refund_amount)
+
         WalletTransaction.objects.create(
-        wallet=wallet,
-        amount=return_request.refund_amount,
-        transaction_type='credit',
-        description=f'Refund for Order ID: {return_request.order.order_id}'
-    )
+            wallet=wallet,
+            amount=refund_amount,
+            transaction_type='credit',
+            description=f"Refund for Order {order.order_id}"
+            if not order_item else f"Refund for {order_item.product_name} in Order {order.order_id}"
+        )
+
         return_request.refunded = True
-        messages.success(request, f"₹{return_request.refund_amount} refunded to wallet.")
+        messages.success(request, f"₹{refund_amount} refunded to wallet.")
 
-    
-    if order.status != 'returned' or order.return_status != 'approved':
-        order.status = 'returned'
-        order.return_status = 'approved'
-        messages.info(request, "Complaint processed and fixed.")
+    # Update order status
+    if order_item:
+        order.return_status = "approved"  # partial
+    else:
+        order.status = "Returned"
+        order.return_status = "approved"
 
-  
     return_request.save()
     order.save()
 
-    return redirect('admin_panel:admin_return_requests')
-@login_required
+    return redirect("admin_panel:admin_return_requests")
 
+
+
+@login_required
 def reject_return_request(request, request_id):
     return_request = get_object_or_404(ReturnRequest, id=request_id)
     order = return_request.order
+    order_item = return_request.order_item
 
     if not return_request.verified:
         return_request.verified = True
-        messages.info(request, "Complaint verified and rejected.")
+        if order_item:
+            messages.info(request, f"Complaint rejected for {order_item.product_name}.")
+        else:
+            messages.info(request, "Complaint rejected for full order.")
 
-    if not return_request.refunded:
-        return_request.refund_amount = 0 
-        return_request.refunded = False
-        messages.warning(request, "No refund will be issued for this complaint.")
-
-    order.return_status = 'rejected'  
-
+    return_request.refund_amount = 0
+    return_request.refunded = False
     return_request.save()
+
+    # Update statuses
+    if order_item:
+        order_item.status = "Delivered"  # stays as delivered, no refund
+        order_item.save()
+        order.return_status = "rejected"
+    else:
+        order.return_status = "rejected"
+
     order.save()
+    messages.warning(request, "No refund issued.")
 
-    return redirect('admin_panel:admin_return_requests')
-
-
-
-from django.db.models import Q
-from django.contrib.auth.decorators import user_passes_test, login_required
-from django.shortcuts import render, get_object_or_404
-from app.models import ReturnRequest
-
+    return redirect("admin_panel:admin_return_requests")
 
 def admin_return_requests(request):
     query = request.GET.get('q', '').strip()
-    
-    
-    return_requests = ReturnRequest.objects.select_related('user', 'order')
 
-   
+    return_requests = ReturnRequest.objects.select_related(
+        'user', 'order_item', 'order_item__product', 'order_item__order'
+    )
+
     if query:
         return_requests = return_requests.filter(
             Q(user__email__icontains=query) |
-            Q(order__order_id__icontains=query)
+            Q(order_item__order__order_id__icontains=query) |
+            Q(order_item__product__name__icontains=query)
         )
 
-   
     return_requests = return_requests.order_by('-requested_at')
 
     return render(request, 'admin_panel/return_request.html', {
         'return_requests': return_requests,
         'q': query
     })
+
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import get_user_model
@@ -660,7 +679,7 @@ def coupon_list_view(request):
     User = get_user_model()
     coupons = Coupon.objects.all().order_by('-id')
 
-    # Optional: implement search
+   
     query = request.GET.get('q')
     if query:
         coupons = coupons.filter(code__icontains=query)
@@ -1084,6 +1103,8 @@ def wallet_transaction_detail(request, transaction_id):
         'transaction': transaction,
         'order_id':order_id,
     })
+
+
 
 
 

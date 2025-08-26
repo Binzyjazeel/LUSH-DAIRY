@@ -84,6 +84,9 @@ urlpatterns = [
     path('start-payment/', views.razorpay_checkout_view, name='razorpay_checkout'),
      path('apply-coupon/', views.apply_coupon, name='apply_coupon'), 
     path('remove-coupon/', views.remove_coupon, name='remove_coupon'),
+   
+path('return-item/<int:item_id>/', views.request_item_return, name='request_item_return'),
+
 
     
 

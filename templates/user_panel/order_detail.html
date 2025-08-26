@@ -2,6 +2,13 @@
 {% load static %}
 
 {% block content %}
+<style>
+    .custom-btn {
+    min-width: 50 px;
+    padding: 2px 4px 8px; 
+    font-size: 1 rem; 
+}
+</style>
 <div class="container my-5">
     <div class="row">
         <div class="col-md-8 offset-md-2">
@@ -62,10 +69,26 @@
         {% if item.status == "Cancelled" %}
             This item was cancelled.
         {% elif item.status == "Returned" or order.status == "returned" %}
-            This item was refunded.
+            This item complaint was resolved.
         {% endif %}
     </p>
 {% endif %}
+{% if order.status|lower == "delivered" %}
+    {% if item.id in item_return_requests %}
+        {% with item_return_requests.item.id as complaint %}
+            {% if complaint.verified %}
+                <span class="text-success">Complaint Approved</span>
+            
+                
+            {% endif %}
+        {% endwith %}
+    {% else %}
+        <a href="{% url 'user_panel:request_item_return' item.id %}" class="btn btn-warning btn-sm">Raise Complaint</a>
+    {% endif %}
+{% endif %}
+
+
+
 {% endfor %}
 
 

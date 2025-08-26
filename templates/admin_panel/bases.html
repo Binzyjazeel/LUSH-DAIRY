@@ -202,33 +202,36 @@
       {% block content %}{% endblock %}
     </div>
   </div>
- {% if messages %}
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            {% for message in messages %}
-            Swal.fire({
-                toast: true,
-                position: 'top-end',
-                icon: '{% if "success" in message.tags %}success{% elif "error" in message.tags or "danger" in message.tags %}error{% elif "warning" in message.tags %}warning{% else %}info{% endif %}',
-                title: "{{ message|escapejs|safe }}",
-                showConfirmButton: false,
-                timer: 3000,
-                timerProgressBar: true
-            });
-            {% endfor %}
-        });
-  
-    {% endif %}
-  
-    document.addEventListener('DOMContentLoaded', function() {
-      const currentUrl = window.location.pathname;
-      const navItems = document.querySelectorAll('.nav-item');
-      navItems.forEach(item => {
-        if (currentUrl.includes(item.getAttribute('href'))) {
-          item.classList.add('active');
-        }
-      });
+{% if messages %}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    {% for message in messages %}
+    Swal.fire({
+        toast: true,
+        position: 'top-end',
+        icon: '{% if "success" in message.tags %}success{% elif "error" in message.tags or "danger" in message.tags %}error{% elif "warning" in message.tags %}warning{% else %}info{% endif %}',
+        title: "{{ message|escapejs }}",
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true
     });
-  </script>
+    {% endfor %}
+});
+</script>
+{% endif %}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const currentUrl = window.location.pathname;
+    const navItems = document.querySelectorAll('.nav-item');
+    navItems.forEach(item => {
+        if (currentUrl.includes(item.getAttribute('href'))) {
+            item.classList.add('active');
+        }
+    });
+});
+</script>
+
 </body>
 </html>

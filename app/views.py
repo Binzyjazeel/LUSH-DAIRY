@@ -926,7 +926,7 @@ def view_order(request, order_id):
     else:
         orders = Order.objects.filter(user=user).order_by('-created_at')
 
-    return render(request, 'user_panel/order_list.html', {
+    return render(request, 'user_panel/orders.html', {
         'orders': orders,
         'order': order,
         'query': query,
@@ -1450,16 +1450,20 @@ from decimal import Decimal
 from django.shortcuts import render, get_object_or_404
 from django.views.decorators.cache import never_cache
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.cache import never_cache
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, get_object_or_404
+from .models import Order, ReturnRequest
 
 @never_cache
 @login_required
 def order_detail(request, order_id):
     order = get_object_or_404(Order, order_id=order_id, user=request.user)
-    return_request = ReturnRequest.objects.filter(order=order).first()
     order_items = order.items.all()
    
     all_cancelled = all(item.status == "Cancelled" for item in order_items)
 
+    # Update order status based on items
     if order.status in ['processing', '', None]:
         if all_cancelled:
             order.status = 'Cancelled'
@@ -1469,12 +1473,21 @@ def order_detail(request, order_id):
             order.status = "processing"
         order.save()
 
-   
+    # Calculate subtotal, shipping, discounts
     subtotal = sum(item.price * item.quantity for item in order_items)
     shipping = 40 if subtotal < 500 else 0
     coupon_discount = order.coupon.discount_percentage if order.coupon else 0
     total_discount = coupon_discount 
     final_price = subtotal + shipping - total_discount
+
+    # Get all return requests for this order
+    return_requests = ReturnRequest.objects.filter(order=order)
+
+    # Map per-item return requests
+    item_return_requests = {rr.order_item_id: rr for rr in return_requests if rr.order_item_id}
+
+    # Order-level return request (order_item=None)
+    order_return_request = return_requests.filter(order_item__isnull=True).first()
 
     context = {
         'order': order,
@@ -1484,7 +1497,8 @@ def order_detail(request, order_id):
         'shipping': shipping,
         'coupon_discount': coupon_discount,
         'final_price': final_price,
-        'return_request': return_request,
+        'item_return_requests': item_return_requests,
+        'order_return_request': order_return_request,
     }
 
     return render(request, 'user_panel/order_detail.html', context)
@@ -2056,5 +2070,34 @@ def remove_coupon(request):
         })
 
     return JsonResponse({'success': False, 'message': 'Invalid request method'})
+
+
+# views.py (user_panel)
+from django.shortcuts import get_object_or_404, redirect, render
+from django.contrib import messages
+from .models import OrderItem, ReturnRequest
+from .forms import ReturnRequestForm
+
+@login_required
+def request_item_return(request, item_id):
+    item = get_object_or_404(OrderItem, id=item_id, order__user=request.user)
+
+    if request.method == 'POST':
+        form = ReturnRequestForm(request.POST, request.FILES)
+        if form.is_valid():
+            rr = form.save(commit=False)
+            rr.user = request.user
+            rr.order = item.order
+            rr.order_item = item
+            rr.refund_amount = item.total_price  # refund full price for that item
+            rr.save()
+            item.status = 'Returned'  # mark item as returned
+            item.save()
+            messages.success(request, 'Complaint raised successfully.')
+            return redirect('user_panel:order_detail', order_id=item.order.id)
+    else:
+        form = ReturnRequestForm()
+
+    return render(request, 'user_panel/request_item_return.html', {'form': form, 'item': item})
 
 

@@ -1,11 +1,131 @@
-<h2>Redirecting to Razorpay...</h2>
+{% load static %}
 
-<!-- Optional: Show final price summary before redirect -->
-<div>
-    <p>Subtotal: ₹{{ totals.subtotal }}</p>
-    <p>Coupon Discount: ₹{{ totals.coupon_discount }}</p>
-    <p>Shipping: ₹{{ totals.shipping }}</p>
-    <h3>Total Payable: ₹{{ totals.final_total }}</h3>
+<style>
+    /* Card Custom Styling */
+    .payment-card {
+        background: #ffffff;
+        border-radius: 20px;
+        box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        animation: fadeIn 0.8s ease-in-out;
+    }
+
+    /* Gradient Header */
+    .payment-card .card-header {
+        background: linear-gradient(90deg, #28a745, #34ce57);
+        color: white;
+        padding: 1.5rem;
+    }
+
+    .payment-card .card-header h2 {
+        font-weight: 700;
+    }
+
+    /* Order Summary */
+    .payment-card .card-body h5 {
+        color: #495057;
+        font-size: 1.2rem;
+        border-bottom: 2px solid #eee;
+        padding-bottom: 0.5rem;
+    }
+
+    .payment-card .d-flex span {
+        font-size: 1rem;
+    }
+
+    .payment-card .fw-bold.fs-5 {
+        color: #28a745;
+        font-size: 1.3rem;
+    }
+
+    /* Loader Animation */
+    .spinner-border {
+        width: 3.5rem !important;
+        height: 3.5rem !important;
+    }
+
+    /* Footer */
+    .payment-card .card-footer {
+        background-color: #f8f9fa;
+        font-size: 0.9rem;
+        color: #6c757d;
+    }
+
+    /* Progress Bar */
+    .progress-bar-custom {
+        height: 5px;
+        background: linear-gradient(90deg, #28a745, #34ce57);
+        animation: progress 2s infinite linear;
+    }
+
+    /* Fade-In Animation */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Progress Bar Animation */
+    @keyframes progress {
+        0% { width: 0%; }
+        50% { width: 50%; }
+        100% { width: 100%; }
+    }
+</style>
+
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card payment-card">
+                
+                <!-- Header -->
+                <div class="card-header text-center">
+                    <h2><i class="bi bi-cart-check-fill"></i> Redirecting to Razorpay</h2>
+                    <p class="small mb-0">Please do not refresh or close the page</p>
+                </div>
+
+                <!-- Progress Bar -->
+                <div class="progress">
+                    <div class="progress-bar-custom w-100"></div>
+                </div>
+
+                <!-- Card Body -->
+                <div class="card-body p-4">
+                    <!-- Order Summary -->
+                    <h5 class="fw-bold mb-3">Order Summary</h5>
+                    <div class="d-flex justify-content-between border-bottom pb-2 mb-2">
+                        <span>Subtotal:</span>
+                        <span class="fw-semibold">₹{{ totals.subtotal }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between border-bottom pb-2 mb-2">
+                        <span>Coupon Discount:</span>
+                        <span class="text-danger fw-semibold">- ₹{{ totals.coupon_discount }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between border-bottom pb-2 mb-2">
+                        <span>Shipping:</span>
+                        <span class="fw-semibold">₹{{ totals.shipping }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between fw-bold fs-5">
+                        <span>Total Payable:</span>
+                        <span>₹{{ totals.final_total }}</span>
+                    </div>
+
+                    <!-- Loader -->
+                    <div class="text-center mt-4">
+                        <div class="spinner-border text-success" role="status">
+                            <span class="visually-hidden">Processing...</span>
+                        </div>
+                        <p class="mt-3 fw-semibold">Redirecting to Razorpay...</p>
+                        <p class="text-muted small">If not redirected automatically, wait a few seconds or contact support.</p>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div class="card-footer text-center">
+                    <small>Secure Payment Gateway • <b>Lush Dairy</b></small>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
@@ -13,25 +133,23 @@
     window.onload = function () {
         var address_id = "{{ address_id }}";
         var options = {
-            "key": "{{ razorpay_key }}",  // Razorpay Key ID
-            "amount": "{{ amount }}",     // Amount in paise (already calculated in view)
+            "key": "{{ razorpay_key }}",
+            "amount": "{{ amount }}",
             "currency": "INR",
             "name": "Lush Dairy",
             "description": "Milk Order Payment",
-            "order_id": "{{ razorpay_order_id }}",  // Razorpay Order ID
-
+            "order_id": "{{ razorpay_order_id }}",
             "handler": function (response) {
                 var form = document.createElement("form");
                 form.method = "POST";
-                form.action = "{{ callback_url }}";  // Safer: Pass as context variable
+                form.action = "{{ callback_url }}";
 
                 const csrfToken = "{{ csrf_token }}";
-
                 const fields = {
                     'razorpay_payment_id': response.razorpay_payment_id,
                     'razorpay_order_id': response.razorpay_order_id,
                     'razorpay_signature': response.razorpay_signature,
-                    'address': address_id, 
+                    'address': address_id,
                     'csrfmiddlewaretoken': csrfToken
                 };
 
@@ -46,13 +164,11 @@
                 document.body.appendChild(form);
                 form.submit();
             },
-              "modal": {
-                "ondismiss": function(){
-                    // FAIL / Cancel → redirect
+            "modal": {
+                "ondismiss": function () {
                     window.location.href = "{% url 'user_panel:payment_failed' %}";
                 }
             },
-
             "theme": { "color": "#28a745" }
         };
 

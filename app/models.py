@@ -87,6 +87,7 @@ class Order(models.Model):
         ('cancelled', 'Cancelled'),
         ('returned', 'Returned'), 
         ('Partially Cancelled', 'Partially Cancelled'),
+        ('Resolved', 'Resolved'),
     ]
     RETURN_STATUS_CHOICES = [
     ('not_requested', 'Not Requested'),
@@ -181,6 +182,8 @@ class Wishlist(models.Model):
 class ReturnRequest(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     order = models.ForeignKey(Order, on_delete=models.CASCADE)
+    order_item = models.ForeignKey(OrderItem, on_delete=models.CASCADE, null=True,
+    blank=True)
     reason = models.TextField()
     refund_amount = models.DecimalField(max_digits=10, decimal_places=2)
     verified = models.BooleanField(default=False)
