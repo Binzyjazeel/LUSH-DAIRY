@@ -1,7 +1,7 @@
 {% extends "user_panel/base.html" %}
 {% load static %}
 {% block content %}
-<style>
+    <style>
 
 .card {
   min-height: 350px; 
@@ -11,30 +11,33 @@
   height: 200px;       
   object-fit: cover;   
 }
-</style>
-
-<div class="container my-5">
-  <h3 class="mb-4">Products in {{ category.name }}</h3>
-  <div class="row g-4">
-    {% for product in products %}
-    <div class="col-md-3">
-      <div class="card shadow-sm">
-        {% if product.main_image %}
-  <img src="{{ product.main_image.url }}" class="card-img-top" alt="{{ product.name }}">
-{% else %}
-  <img src="{% static 'images/default.jpg' %}" class="card-img-top" alt="No image available">
-{% endif %}
-
-        <div class="card-body text-center">
-          <h5>{{ product.name }}</h5>
-          <p class="text-success fw-bold">₹{{ product.price }}</p>
-          <a href="{% url 'user_panel:userproduct_list' %}" class="btn btn-outline-success btn-sm">Buy Now</a>
+    </style>
+    <div class="container my-5">
+        <h3 class="mb-4">Products in {{ category.name }}</h3>
+        <div class="row g-4">
+            {% for product in products %}
+                <div class="col-md-3">
+                    <div class="card shadow-sm">
+                        {% if product.main_image %}
+                            <img src="{{ product.main_image.url }}"
+                                 class="card-img-top"
+                                 alt="{{ product.name }}">
+                        {% else %}
+                            <img src="{% static 'images/default.jpg' %}"
+                                 class="card-img-top"
+                                 alt="No image available">
+                        {% endif %}
+                        <div class="card-body text-center">
+                            <h5>{{ product.name }}</h5>
+                            <p class="text-success fw-bold">₹{{ product.price }}</p>
+                            <a href="{% url 'user_panel:userproduct_list' %}"
+                               class="btn btn-outline-success btn-sm">Buy Now</a>
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <p>No products available in this category.</p>
+            {% endfor %}
         </div>
-      </div>
     </div>
-    {% empty %}
-    <p>No products available in this category.</p>
-    {% endfor %}
-  </div>
-</div>
 {% endblock %}

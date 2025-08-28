@@ -2,11 +2,11 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lush Dairy - Sign Up</title>
-    <style>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Lush Dairy - Sign Up</title>
+        <style>
         body {
             font-family: Arial, sans-serif;
             margin: 0;
@@ -122,86 +122,76 @@
             width: 18px;
             height: 18px;
         }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="logo">
-            <img src="{% static 'images/logo.png' %}" alt="Lush Dairy Logo">
-            <span class="logo-text">Lush Dairy</span>
-        </div>
-
-        <div class="signup-container">
-            <h2>Sign Up</h2>
-            <form method="POST" action="{% url 'user_panel:signup' %}">
-                {% csrf_token %}
-                <div class="form-group">
-                    <label for="username">Username</label>
-                    <input type="text" id="username" name="username" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="email">Email</label>
-                    <input type="email" id="email" name="email" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="password">Password</label>
-                    <input type="password" id="password" name="password1" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="confirm-password">Confirm Password</label>
-                    <input type="password" id="confirm-password" name="password2" required>
-                </div>
-                <div>
-                    <input type="text" name="referral" placeholder="Referral Code (Optional)">
-<div>
-                <div class="terms">
-                    By submitting, you agree to Lush Dairy's <a href="#">Conditions of Use</a> and <a href="#">Privacy Notice</a>.
-                </div>
-
-                <button type="submit" class="submit-button">Submit</button>
-
-                <div class="existing-user">
-                    Existing user? <a href="{% url 'user_panel:login' %}">Login here</a>
-                </div>
-            </form>
-
-            <div class="separator">
-                <span>OR</span>
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="logo">
+                <img src="{% static 'images/logo.png' %}" alt="Lush Dairy Logo">
+                <span class="logo-text">Lush Dairy</span>
             </div>
-        <a href="{% provider_login_url 'google' %}" class="google-button" style="text-decoration: none;">
-  <div style="
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      background-color: #ffffff;
-      padding: 12px 24px;
-      border: 1px solid #ddd;
-      border-radius: 6px;
-      cursor: pointer;
-      transition: box-shadow 0.2s, background-color 0.2s;
-      width: fit-content;
-      margin: auto;
-    "
-    onmouseover="this.style.boxShadow='0 2px 8px rgba(0,0,0,0.1)'"
-    onmouseout="this.style.boxShadow='none'">
-    
-    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google Logo" width="20" height="20">
-    <span style="color: #444; font-weight: 500;">Sign in with Google</span>
-  </div>
-</a>
-
-        
-            
-            {% if messages %}
-    {% for message in messages %}
-        <script>alert('{{message}}')</script>
-    {% endfor %}
-{% endif %}
-        </div>
-    </div>
-</body>
-</html>
+            <div class="signup-container">
+                <h2>Sign Up</h2>
+                <form method="POST" action="{% url 'user_panel:signup' %}">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="username">Username</label>
+                        <input type="text" id="username" name="username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" name="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" name="password1" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="confirm-password">Confirm Password</label>
+                        <input type="password" id="confirm-password" name="password2" required>
+                    </div>
+                    <div>
+                        <input type="text" name="referral" placeholder="Referral Code (Optional)">
+                        <div>
+                            <div class="terms">
+                                By submitting, you agree to Lush Dairy's <a href="#">Conditions of Use</a> and <a href="#">Privacy Notice</a>.
+                            </div>
+                            <button type="submit" class="submit-button">Submit</button>
+                            <div class="existing-user">
+                                Existing user? <a href="{% url 'user_panel:login' %}">Login here</a>
+                            </div>
+                        </form>
+                        <div class="separator">
+                            <span>OR</span>
+                        </div>
+                        <a href="{% provider_login_url 'google' %}"
+                           class="google-button"
+                           style="text-decoration: none">
+                            <div style="display: flex;
+                                        align-items: center;
+                                        justify-content: center;
+                                        gap: 10px;
+                                        background-color: #ffffff;
+                                        padding: 12px 24px;
+                                        border: 1px solid #ddd;
+                                        border-radius: 6px;
+                                        cursor: pointer;
+                                        transition: box-shadow 0.2s, background-color 0.2s;
+                                        width: fit-content;
+                                        margin: auto"
+                                 onmouseover="this.style.boxShadow='0 2px 8px rgba(0,0,0,0.1)'"
+                                 onmouseout="this.style.boxShadow='none'">
+                                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
+                                     alt="Google Logo"
+                                     width="20"
+                                     height="20">
+                                <span style="color: #444; font-weight: 500;">Sign in with Google</span>
+                            </div>
+                        </a>
+                        {% if messages %}
+                            {% for message in messages %}<script>alert('{{message}}')</script>{% endfor %}
+                        {% endif %}
+                    </div>
+                </div>
+            </body>
+        </html>

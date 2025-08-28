@@ -1,12 +1,13 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Lush Dairy Admin</title>
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
-  <style>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Lush Dairy Admin</title>
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+              rel="stylesheet">
+        <style>
     :root {
       --primary-color: #4d8b31;
       --secondary-color: #e8f5e9;
@@ -155,56 +156,56 @@
       background-color: rgba(255,255,255,0.3);
       border-radius: 3px;
     }
-  </style>
-</head>
-<body>
-  <div class="container">
-  
-    <div class="sidebar">
-      <div class="logo">
-        <img src="{% static 'images/logo.png' %}" alt="Lush Dairy Logo">
-        
-      </div>
-      <div class="nav-menu">
-        <a href="{% url 'admin_panel:admin_dashboard' %}" class="nav-item"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
-        <a href="{% url 'admin_panel:admin_order_list' %}" class="nav-item"><i class="fas fa-shopping-cart"></i> Orders</a>
-        <a href="{% url 'admin_panel:product_list' %}" class="nav-item"><i class="fas fa-box"></i> Products</a>
-        <a href="{% url 'admin_panel:sales_report' %}" class="nav-item"><i class="fas fa-chart-line"></i> Sales Report</a>
-        <a href="{% url 'admin_panel:user_list' %}" class="nav-item"><i class="fas fa-users"></i> Customers</a>
-        <a href="{% url 'admin_panel:category_list' %}" class="nav-item"><i class="fas fa-tags"></i> Categories</a>
-        <a href="{% url 'admin_panel:inventory_list' %}" class="nav-item"><i class="fas fa-warehouse"></i> Stock</a>
-        <a href="{% url 'admin_panel:coupon_list' %}" class="nav-item"><i class="fas fa-ticket-alt"></i> Coupons</a>
-        <a href="{% url 'admin_panel:offer_list' %}" class="nav-item"><i class="fas fa-bullhorn"></i> Offers</a>
-        <a href="{% url 'admin_panel:wallet_transactions_list' %}" class="nav-item"><i class="fas fa-wallet"></i> Wallet</a>
-        <a href="{% url 'admin_panel:admin_return_requests' %}" class="nav-item"><i class="fas fa-exchange-alt"></i> Complaints</a>
-        <a href="{% url 'admin_panel:admin_logout' %}" class="nav-item"><i class="fas fa-sign-out-alt"></i> Sign Out</a>
-      </div>
-    </div>
-
-    
-    <div class="main-content">
-      <div class="header">
-      
-        <div class="search-bar">
-          <form method="get" action="">
-            <input type="text" name="q" placeholder="Search..." value="{{ request.GET.q }}">
-            <button type="submit"><i class="fas fa-search"></i></button>
-          </form>
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="sidebar">
+                <div class="logo">
+                    <img src="{% static 'images/logo.png' %}" alt="Lush Dairy Logo">
+                </div>
+                <div class="nav-menu">
+                    <a href="{% url 'admin_panel:admin_dashboard' %}" class="nav-item"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+                    <a href="{% url 'admin_panel:admin_order_list' %}" class="nav-item"><i class="fas fa-shopping-cart"></i> Orders</a>
+                    <a href="{% url 'admin_panel:product_list' %}" class="nav-item"><i class="fas fa-box"></i> Products</a>
+                    <a href="{% url 'admin_panel:sales_report' %}" class="nav-item"><i class="fas fa-chart-line"></i> Sales Report</a>
+                    <a href="{% url 'admin_panel:user_list' %}" class="nav-item"><i class="fas fa-users"></i> Customers</a>
+                    <a href="{% url 'admin_panel:category_list' %}" class="nav-item"><i class="fas fa-tags"></i> Categories</a>
+                    <a href="{% url 'admin_panel:inventory_list' %}" class="nav-item"><i class="fas fa-warehouse"></i> Stock</a>
+                    <a href="{% url 'admin_panel:coupon_list' %}" class="nav-item"><i class="fas fa-ticket-alt"></i> Coupons</a>
+                    <a href="{% url 'admin_panel:offer_list' %}" class="nav-item"><i class="fas fa-bullhorn"></i> Offers</a>
+                    <a href="{% url 'admin_panel:wallet_transactions_list' %}"
+                       class="nav-item"><i class="fas fa-wallet"></i> Wallet</a>
+                    <a href="{% url 'admin_panel:admin_return_requests' %}" class="nav-item"><i class="fas fa-exchange-alt"></i> Complaints</a>
+                    <a href="{% url 'admin_panel:admin_logout' %}" class="nav-item"><i class="fas fa-sign-out-alt"></i> Sign Out</a>
+                </div>
+            </div>
+            <div class="main-content">
+                <div class="header">
+                    <div class="search-bar">
+                        <form method="get" action="">
+                            <input type="text"
+                                   name="q"
+                                   placeholder="Search..."
+                                   value="{{ request.GET.q }}">
+                            <button type="submit">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </form>
+                    </div>
+                    <div class="user-info">
+                        <div class="avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <span>Admin</span>
+                    </div>
+                </div>
+                {% block content %}{% endblock %}
+            </div>
         </div>
-      
-        <div class="user-info">
-          <div class="avatar"><i class="fas fa-user"></i></div>
-          <span>Admin</span>
-        </div>
-      </div>
-
-     
-      {% block content %}{% endblock %}
-    </div>
-  </div>
-{% if messages %}
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script>
+        {% if messages %}
+            <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+            <script>
 document.addEventListener("DOMContentLoaded", function () {
     {% for message in messages %}
     Swal.fire({
@@ -218,10 +219,9 @@ document.addEventListener("DOMContentLoaded", function () {
     });
     {% endfor %}
 });
-</script>
-{% endif %}
-
-<script>
+            </script>
+        {% endif %}
+        <script>
 document.addEventListener('DOMContentLoaded', function() {
     const currentUrl = window.location.pathname;
     const navItems = document.querySelectorAll('.nav-item');
@@ -231,7 +231,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
-</script>
-
-</body>
+        </script>
+    </body>
 </html>

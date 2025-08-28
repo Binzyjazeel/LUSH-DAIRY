@@ -1,158 +1,137 @@
 {% extends 'user_panel/base.html' %}
 {% load static %}
-
 {% block content %}
-<style>
-    .custom-btn {
-    min-width: 50 px;
-    padding: 2px 4px 8px; 
-    font-size: 1 rem; 
-}
-</style>
-<div class="container my-5">
-    <div class="row">
-        <div class="col-md-8 offset-md-2">
-            <h3 class="mb-4">Order Details</h3>
-
-            <!-- Order Info -->
-            <div class="card mb-4 p-3">
-                <h5 class="mb-2">Order ID: {{ order.order_id }}</h5>
-                <p>Status: <strong class="text-success">{{ order.status }}</strong></p>
-                {% if order.return_status %}
-                    <p>Complaint Status: <strong class="text-warning">{{ order.return_status }}</strong></p>
-                {% endif %}
-                <p>Order Date: {{ order.created_at|date:"d M Y, h:i A" }}</p>
-            </div>
-
-            <!-- Shipping Address -->
-            <div class="card mb-4 p-3">
-                <h5>Shipping Address</h5>
-                <p>
-                    {{ order.address_name }}<br>
-                    {{ order.address_line1 }}{% if order.address_line2 %}, {{ order.address_line2 }}{% endif %}<br>
-                    {{ order.address_city }}, {{ order.address_state }} - {{ order.address_zipcode }}<br>
-                    Phone: {{ order.address_phone }}
-                </p>
-            </div>
-
-            <!-- Items -->
-            <div class="card mb-4 p-3">
-                <h5>Items</h5>
-                {% for item in order.items.all %}
-                    <div class="d-flex align-items-center mb-3">
-                        {% if item.product_variant.image %}
-                            <img src="{{ item.product_variant.image.url }}" width="60" class="me-3" alt="">
-                        {% endif %}
-                        <div>
-                            <strong>{{ item.product_name }}</strong><br>
-                            Qty: {{ item.quantity }}<br>
-                            Price: ₹{{ item.product_variant.price }}<br> 
-                            {% if order.coupon %}
-                            Coupon Code: {{ order.coupon.code }}<br>
-                            {% endif %}
-                            
-                            Discount: -%{{ order.discount }}<br>
-                            Shipping: ₹{{ order.shipping }}<br>
-                            
-                        </div>
-                    </div>
-                    
-
-                    {% if item.status != "Cancelled" and item.status != "Returned" %}
-    {% if order.status == "Pending" or order.status == "processing" or order.status == "pending" or order.status == "Partially Cancelled" %}
-        <form method="get" action="{% url 'user_panel:cancel_order_item' item.id %}">
-            <button type="submit" class="btn btn-sm btn-outline-danger mb-3">Cancel Product</button>
-        </form>
-    {% endif %}
-{% else %}
-    <p class="text-muted">
-        {% if item.status == "Cancelled" %}
-            This item was cancelled.
-        {% elif item.status == "Returned" or order.status == "returned" %}
-            This item complaint was resolved.
-        {% endif %}
-    </p>
-{% endif %}
-{% if order.status|lower == "delivered" %}
-    {% if item.id in item_return_requests %}
-        {% with item_return_requests.item.id as complaint %}
-            {% if complaint.verified %}
-                <span class="text-success">Complaint Approved</span>
-            
-                
-            {% endif %}
-        {% endwith %}
-    {% else %}
-        <a href="{% url 'user_panel:request_item_return' item.id %}" class="btn btn-warning btn-sm">Raise Complaint</a>
-    {% endif %}
-{% endif %}
-
-
-
-{% endfor %}
-
-
-                    <hr>
-               
-            </div>
-
-            <!-- Total -->
-            <div class="mb-3">
-                <strong>Total: ₹{{ order.total_amount }}</strong>
-            </div>
-
-            <!-- Payment Summary -->
-            <div class="card p-3">
-                <h5>Payment Summary</h5>
-                <div class="d-flex justify-content-between">
-    <span>Total Amount</span>
-    {% if all_cancelled %}
-        <span class="fw-bold text-danger">₹0</span>
-    {% else %}
-        <span class="fw-bold text-success">₹{{ order.total_amount }}</span>
-    {% endif %}
-</div>
-                <p class="mt-2">Payment Method: <strong>{{ order.payment_method }}</strong></p>
-            </div>
-
-            <!-- Action Buttons -->
-            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mt-4">
-                <a href="{% url 'user_panel:order_list' %}" class="btn btn-outline-secondary">
-                    Back to Orders
-                </a>
-
-                <a href="{% url 'user_panel:download_invoice' order.order_id %}" class="btn btn-sm btn-info">
-                    Download Invoice
-                </a>
-
-                <div class="d-flex gap-3 flex-wrap">
-                     {% if item.status != "Cancelled" and item.status != "Returned" and order.status == "Pending" or order.status  == "processing" or order.status == "pending" or order.status == "Partially Cancelled" %}
-                        <a href="{% url 'user_panel:cancel_entire_order' order.order_id %}" class="btn btn-danger">
-                            Cancel Order
-                        </a>
-                    {% endif %}
-
-                    {% if order.status|lower == "delivered" and order.return_status|default_if_none:""|lower == "not_requested" %}
-                        <a href="{% url 'user_panel:request_return' order.order_id %}" class="btn btn-warning">
-                            Raise Compalint
-                        </a>
-                    {% endif %}
-
+    <div class="container my-5">
+        <div class="row">
+            <div class="col-md-8 offset-md-2">
+                <h3 class="mb-4">Order Details</h3>
+                <div class="card mb-4 p-3">
+                    <h5 class="mb-2">Order ID: {{ order.order_id }}</h5>
+                    <p>
+                        Status: <strong class="text-success">{{ order.status }}</strong>
+                    </p>
                     {% if order.return_status %}
-                        {% if order.return_status|lower == "requested" %}
-                            <span class="text-info">Complaint Requested</span>
-                        {% elif order.return_status|lower == "approved" %}
-                            <span class="text-success">Complaint Approved</span>
-                        {% elif order.return_status|lower == "rejected" %}
-                            {% if return_request %}
-                            <span class="text-danger">Complaint Rejected due to {{return_request.reason}}</span>
+                        <p>
+                            Complaint Status: <strong class="text-warning">{{ order.return_status }}</strong>
+                        </p>
+                    {% endif %}
+                    <p>Order Date: {{ order.created_at|date:"d M Y, h:i A" }}</p>
+                </div>
+                <div class="card mb-4 p-3">
+                    <h5>Shipping Address</h5>
+                    <p>
+                        {{ order.address_name }}
+                        <br>
+                        {{ order.address_line1 }}
+                        {% if order.address_line2 %}, {{ order.address_line2 }}{% endif %}
+                        <br>
+                        {{ order.address_city }}, {{ order.address_state }} - {{ order.address_zipcode }}
+                        <br>
+                        Phone: {{ order.address_phone }}
+                    </p>
+                </div>
+                <!-- Items -->
+                <div class="card mb-4 p-3">
+                    <h5>Items</h5>
+                    {% for item in order.items.all %}
+                        <div class="d-flex align-items-center mb-3">
+                            {% if item.product_variant.image %}
+                                <img src="{{ item.product_variant.image.url }}"
+                                     width="60"
+                                     class="me-3"
+                                     alt="">
+                            {% endif %}
+                            <div>
+                                <strong>{{ item.product_name }}</strong>
+                                <br>
+                                Qty: {{ item.quantity }}
+                                <br>
+                                Price: ₹{{ item.product_variant.price }}
+                                <br>
+                                {% if order.coupon %}
+                                    Coupon Code: {{ order.coupon.code }}
+                                    <br>
+                                {% endif %}
+                                Discount: -%{{ order.discount }}
+                                <br>
+                                Shipping: ₹{{ order.shipping }}
+                                <br>
+                            </div>
+                        </div>
+                        {% if item.status != "Cancelled" and item.status != "Returned" %}
+                            {% if order.status == "Pending" or order.status == "processing" or order.status == "pending" or order.status == "Partially Cancelled" %}
+                                <form method="get"
+                                      action="{% url 'user_panel:cancel_order_item' item.id %}">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger mb-3">Cancel Product</button>
+                                </form>
+                            {% endif %}
+                        {% else %}
+                            <p class="text-muted">
+                                {% if item.status == "Cancelled" %}
+                                    This item was cancelled.
+                                {% elif item.status == "Returned" or order.status == "returned" %}
+                                    This item complaint was resolved.
+                                {% endif %}
+                            </p>
+                        {% endif %}
+                        {% if order.status|lower == "delivered" %}
+                            {% if item.id in item_return_requests %}
+                                {% with item_return_requests.item.id as complaint %}
+                                    {% if complaint.verified %}<span class="text-success">Complaint Approved</span>{% endif %}
+                                {% endwith %}
+                            {% else %}
+                                <a href="{% url 'user_panel:request_item_return' item.id %}"
+                                   class="btn btn-warning btn-sm">Raise Complaint</a>
                             {% endif %}
                         {% endif %}
-                    {% endif %}
-                    
+                    {% endfor %}
+                    <hr>
+                </div>
+                <div class="mb-3">
+                    <strong>Total: ₹{{ order.total_amount }}</strong>
+                </div>
+                <div class="card p-3">
+                    <h5>Payment Summary</h5>
+                    <div class="d-flex justify-content-between">
+                        <span>Total Amount</span>
+                        {% if all_cancelled %}
+                            <span class="fw-bold text-danger">₹0</span>
+                        {% else %}
+                            <span class="fw-bold text-success">₹{{ order.total_amount }}</span>
+                        {% endif %}
+                    </div>
+                    <p class="mt-2">
+                        Payment Method: <strong>{{ order.payment_method }}</strong>
+                    </p>
+                </div>
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mt-4">
+                    <a href="{% url 'user_panel:order_list' %}"
+                       class="btn btn-outline-secondary">Back to Orders</a>
+                    <a href="{% url 'user_panel:download_invoice' order.order_id %}"
+                       class="btn btn-sm btn-info">Download Invoice</a>
+                    <div class="d-flex gap-3 flex-wrap">
+                        {% if item.status != "Cancelled" and item.status != "Returned" and order.status == "Pending" or order.status  == "processing" or order.status == "pending" or order.status == "Partially Cancelled" %}
+                            <a href="{% url 'user_panel:cancel_entire_order' order.order_id %}"
+                               class="btn btn-danger">Cancel Order</a>
+                        {% endif %}
+                        {% if order.status|lower == "delivered" and order.return_status|default_if_none:""|lower == "not_requested" %}
+                            <a href="{% url 'user_panel:request_return' order.order_id %}"
+                               class="btn btn-warning">Raise Compalint</a>
+                        {% endif %}
+                        {% if order.return_status %}
+                            {% if order.return_status|lower == "requested" %}
+                                <span class="text-info">Complaint Requested</span>
+                            {% elif order.return_status|lower == "approved" %}
+                                <span class="text-success">Complaint Approved</span>
+                            {% elif order.return_status|lower == "rejected" %}
+                                {% if return_request %}
+                                    <span class="text-danger">Complaint Rejected due to {{ return_request.reason }}</span>
+                                {% endif %}
+                            {% endif %}
+                        {% endif %}
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 {% endblock %}

@@ -1,19 +1,21 @@
 {% extends 'user_panel/base.html' %}
 {% load static %}
-
 {% block content %}
-<div class="container mt-5">
-    <h2>Request Return for {{ order_item.product.name }}</h2>
-    <p><strong>Price:</strong> ₹{{ item.product_variant.price }}</p>
-    <p><strong>Quantity:</strong> {{ order_item.quantity }}</p>
-
-    <form method="post">
-        {% csrf_token %}
-        <div class="mb-3">
-            <label for="reason" class="form-label">Reason for Complaint</label>
-            {{ form.reason }}
-        </div>
-        <button type="submit" class="btn btn-danger">Submit Complaint</button>
-    </form>
-</div>
+    <div class="container mt-5">
+        <h2>Request Return for {{ order_item.product.name }}</h2>
+        <p>
+            <strong>Price:</strong> ₹{{ item.product_variant.price }}
+        </p>
+        <p>
+            <strong>Quantity:</strong> {{ order_item.quantity }}
+        </p>
+        <form method="post">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label for="reason" class="form-label">Reason for Complaint</label>
+                {{ form.reason }}
+            </div>
+            <button type="submit" class="btn btn-danger">Submit Complaint</button>
+        </form>
+    </div>
 {% endblock %}

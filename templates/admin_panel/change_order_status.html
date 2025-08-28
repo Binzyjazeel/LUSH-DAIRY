@@ -1,14 +1,14 @@
 {% extends 'admin_panel/base.html' %}
 {% block content %}
-<h2>Change Status for Order: {{ order.order_id }}</h2>
-<form method="POST">
-    {% csrf_token %}
-    <select name="status" required>
-        {% for key, value in order.ORDER_STATUS_CHOICES %}
-            <option value="{{ key }}" {% if order.status == key %}selected{% endif %}>{{ value }}</option>
-        {% endfor %}
-    </select>
-    <button type="submit" class="btn btn-primary">Update Status</button>
-</form>
-<a href="{% url 'admin_order_detail' order.order_id %}">Back to Order Details</a>
+    <h2>Change Status for Order: {{ order.order_id }}</h2>
+    <form method="POST">
+        {% csrf_token %}
+        <select name="status" required>
+            {% for key, value in order.ORDER_STATUS_CHOICES %}
+                <option value="{{ key }}" {% if order.status == key %}selected{% endif %}>{{ value }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit" class="btn btn-primary">Update Status</button>
+    </form>
+    <a href="{% url 'admin_order_detail' order.order_id %}">Back to Order Details</a>
 {% endblock %}

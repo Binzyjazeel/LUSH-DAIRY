@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Invoice - {{ order.order_id }}</title>
-    <style>
+    <head>
+        <meta charset="UTF-8">
+        <title>Invoice - {{ order.order_id }}</title>
+        <style>
         body {
             font-family: Arial, sans-serif;
             font-size: 13px;
@@ -87,90 +87,99 @@
         .bold {
             font-weight: bold;
         }
-    </style>
-</head>
-<body>
-    <div class="invoice-box">
-        <div class="invoice-header">
-            <h1>Lush Dairy</h1>
-            <p class="company-info">
-                www.lushdairy.com<br>
-                support@lushdairy.com<br>
-                +91-99999-99999
-            </p>
-        </div>
-
-        <div class="details">
-            <table>
-                <tr>
-                    <td class="left">
-                        <strong>Invoice To:</strong><br>
-                        {{ order.user.get_full_name|default:order.user.username }}<br>
-                        {{ order.user.email }}<br>
-                        {{ order.address_name }}<br>
-                         {{ order.address_city }}, {{ order.address_state }}<br>
-                        {{ order.address_zipcode }}<br>
-                       {{ order.user.mobile|default:"N/A" }}
-                    </td>
-                    <td class="right">
-                        <strong>Invoice : </strong> {{ order.order_id }}<br>
-                        <strong>Date: </strong> {{ order.created_at|date:"d M Y, h:i A" }}<br>
-                        <strong>Payment Method: </strong> {{ order.payment_method|title }}
-                    </td>
-                </tr>
-            </table>
-        </div>
-
-        <table class="items">
-            <thead>
-                <tr>
-                    
-                    <th>Product</th>
-                    
-                    <th>Quantity</th>
-                    <th>Unit Price (Rs.)</th>
-                    <th>Total (Rs.)</th>
-                </tr>
-            </thead>
-            <tbody>
-                    {% for item in order.items.all %}
+        </style>
+    </head>
+    <body>
+        <div class="invoice-box">
+            <div class="invoice-header">
+                <h1>Lush Dairy</h1>
+                <p class="company-info">
+                    www.lushdairy.com
+                    <br>
+                    support@lushdairy.com
+                    <br>
+                    +91-99999-99999
+                </p>
+            </div>
+            <div class="details">
+                <table>
                     <tr>
-                        <td class="product-name"><strong>{{ item.product_name }}</strong>({{item.product_variant.variant_name}})</td>
-                        <td><span class="quantity-badge">{{ item.quantity }}</span></td>
-                        <td class="price-cell">Rs.{{ item.price|floatformat:2 }}/-</td>
-                        <td class="price-cell">Rs.{{ order.total_amount|floatformat:2 }}/-</td>
+                        <td class="left">
+                            <strong>Invoice To:</strong>
+                            <br>
+                            {{ order.user.get_full_name|default:order.user.username }}
+                            <br>
+                            {{ order.user.email }}
+                            <br>
+                            {{ order.address_name }}
+                            <br>
+                            {{ order.address_city }}, {{ order.address_state }}
+                            <br>
+                            {{ order.address_zipcode }}
+                            <br>
+                            {{ order.user.mobile|default:"N/A" }}
+                        </td>
+                        <td class="right">
+                            <strong>Invoice :</strong> {{ order.order_id }}
+                            <br>
+                            <strong>Date:</strong> {{ order.created_at|date:"d M Y, h:i A" }}
+                            <br>
+                            <strong>Payment Method:</strong> {{ order.payment_method|title }}
+                        </td>
                     </tr>
+                </table>
+            </div>
+            <table class="items">
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>Quantity</th>
+                        <th>Unit Price (Rs.)</th>
+                        <th>Total (Rs.)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in order.items.all %}
+                        <tr>
+                            <td class="product-name">
+                                <strong>{{ item.product_name }}</strong>({{ item.product_variant.variant_name }})
+                            </td>
+                            <td>
+                                <span class="quantity-badge">{{ item.quantity }}</span>
+                            </td>
+                            <td class="price-cell">Rs.{{ item.price|floatformat:2 }}/-</td>
+                            <td class="price-cell">Rs.{{ order.total_amount|floatformat:2 }}/-</td>
+                        </tr>
                     {% endfor %}
                 </tbody>
-        </table>
-
-        <table class="total">
-            <tr>
-                <td class="bold">Subtotal:</td>
-                <td>Rs.{{ order.subtotal|floatformat:2 }}/-</td>
-            </tr>
-            <tr>
-                <td class="bold">Tax ({{ tax_percent }}%):</td>
-                <td>Rs.00/-</td>
-            </tr>
-            <tr>
-                <td class="bold">Shipping:</td>
-                <td>Rs.{{ order.shipping|floatformat:2 }}/-</td>
-            </tr>
-            <tr>
-                <td class="bold">Discount:</td>
-                <td>-Rs.{{ order.discount|floatformat:2 }}/-</td>
-            </tr>
-            <tr>
-                <td class="bold">Grand Total:</td>
-                <td class="bold">Rs.{{ order.total_amount|floatformat:2 }}/-</td>
-            </tr>
-        </table>
-
-        <div class="footer">
-            Thank you for shopping with Lush Dairy!<br>
-            For queries, contact support@lushdairy.com
+            </table>
+            <table class="total">
+                <tr>
+                    <td class="bold">Subtotal:</td>
+                    <td>Rs.{{ order.subtotal|floatformat:2 }}/-</td>
+                </tr>
+                <tr>
+                    <td class="bold">Tax ({{ tax_percent }}%):</td>
+                    <td>Rs.00/-</td>
+                </tr>
+                <tr>
+                    <td class="bold">Shipping:</td>
+                    <td>Rs.{{ order.shipping|floatformat:2 }}/-</td>
+                </tr>
+                <tr>
+                    <td class="bold">Discount:</td>
+                    <td>-Rs.{{ order.discount|floatformat:2 }}/-</td>
+                </tr>
+                <tr>
+                    <td class="bold">Grand Total:</td>
+                    <td class="bold">Rs.{{ order.total_amount|floatformat:2 }}/-</td>
+                </tr>
+            </table>
+            <div class="footer">
+                Thank you for shopping with Lush Dairy!
+                <br>
+                For queries, contact support@lushdairy.com
+            </div>
         </div>
-    </div>
-</body>
+    </body>
 </html>

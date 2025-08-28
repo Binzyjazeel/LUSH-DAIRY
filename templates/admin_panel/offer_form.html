@@ -1,6 +1,6 @@
 {% extends "admin_panel/base.html" %}
 {% block content %}
-<style>
+    <style>
   body {
     background-color: #e8f5e9; /* light green background */
     font-family: 'Segoe UI', sans-serif;
@@ -146,56 +146,49 @@
   .btn-secondary:hover {
     background-color: #c7c7c7;
   }
-</style>
-
-<div class="admin-container">
-  <!-- Sidebar -->
-  <div class="sidebar">
-    <h3>Admin Panel</h3>
-    <a href="{% url 'admin_panel:admin_dashboard' %}">📊 Dashboard</a>
-    <a href="{% url 'admin_panel:product_list' %}">📦 Products</a>
-    <a href="{% url 'admin_panel:category_list' %}">📂 Categories</a>
-    <a href="{% url 'admin_panel:offer_list' %}">🏷 Offers</a>
-    <a href="{% url 'admin_panel:coupon_list' %}">🎟 Coupons</a>
-    <a href="{% url 'admin_panel:admin_order_list' %}">🛒 Orders</a>
-    <a href="{% url 'admin_panel:sales_report' %}">📂 Sales Report</a>
-    <a href="{% url 'admin_panel:admin_return_requests' %}">🏷 Complaints</a>
-    <a href="{% url 'admin_panel:inventory_list' %}">🎟 Stocks</a>
-    <a href="{% url 'admin_panel:wallet_transactions_list' %}">🛒 Wallet</a>
-    <a href="{% url 'admin_panel:admin_logout' %}">🚪 Logout</a>
-  </div>
-
-  <!-- Main Content -->
-  <div class="content-wrapper">
-    <!-- Navbar -->
-    <div class="navbar">
-      <div class="title">{{ title }}</div>
-      <div class="user-info">👤 {{ request.user.username }}</div>
-    </div>
-
-    <!-- Offer/Coupon Form -->
-    <div class="form-wrapper">
-      <h2>{{ title }}</h2>
-      <form method="post">
-        {% csrf_token %}
-        {% for field in form %}
-          <div class="form-group">
-            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-            {{ field }}
-            {% if field.help_text %}
-              <small class="form-text text-muted">{{ field.help_text }}</small>
-            {% endif %}
-            {% for error in field.errors %}
-              <div class="error-text">{{ error }}</div>
-            {% endfor %}
-          </div>
-        {% endfor %}
-        <div class="form-actions">
-          <button type="submit" class="btn-primary">💾 Save</button>
-          <a href="{% url 'admin_panel:offer_list' %}" class="btn-secondary">Cancel</a>
+    </style>
+    <div class="admin-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <h3>Admin Panel</h3>
+            <a href="{% url 'admin_panel:admin_dashboard' %}">📊 Dashboard</a>
+            <a href="{% url 'admin_panel:product_list' %}">📦 Products</a>
+            <a href="{% url 'admin_panel:category_list' %}">📂 Categories</a>
+            <a href="{% url 'admin_panel:offer_list' %}">🏷 Offers</a>
+            <a href="{% url 'admin_panel:coupon_list' %}">🎟 Coupons</a>
+            <a href="{% url 'admin_panel:admin_order_list' %}">🛒 Orders</a>
+            <a href="{% url 'admin_panel:sales_report' %}">📂 Sales Report</a>
+            <a href="{% url 'admin_panel:admin_return_requests' %}">🏷 Complaints</a>
+            <a href="{% url 'admin_panel:inventory_list' %}">🎟 Stocks</a>
+            <a href="{% url 'admin_panel:wallet_transactions_list' %}">🛒 Wallet</a>
+            <a href="{% url 'admin_panel:admin_logout' %}">🚪 Logout</a>
         </div>
-      </form>
+        <!-- Main Content -->
+        <div class="content-wrapper">
+            <!-- Navbar -->
+            <div class="navbar">
+                <div class="title">{{ title }}</div>
+                <div class="user-info">👤 {{ request.user.username }}</div>
+            </div>
+            <!-- Offer/Coupon Form -->
+            <div class="form-wrapper">
+                <h2>{{ title }}</h2>
+                <form method="post">
+                    {% csrf_token %}
+                    {% for field in form %}
+                        <div class="form-group">
+                            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                            {{ field }}
+                            {% if field.help_text %}<small class="form-text text-muted">{{ field.help_text }}</small>{% endif %}
+                            {% for error in field.errors %}<div class="error-text">{{ error }}</div>{% endfor %}
+                        </div>
+                    {% endfor %}
+                    <div class="form-actions">
+                        <button type="submit" class="btn-primary">💾 Save</button>
+                        <a href="{% url 'admin_panel:offer_list' %}" class="btn-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
-  </div>
-</div>
 {% endblock %}

@@ -1,13 +1,13 @@
-
-{%  load static %}
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Lush Dairy Admin - Wallet Transactions</title>
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
-  <style>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Lush Dairy Admin - Wallet Transactions</title>
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+              rel="stylesheet">
+        <style>
     :root {
       --primary-color: #4d8b31;
       --secondary-color: #e8f5e9;
@@ -137,134 +137,141 @@
 
     .empty-state { text-align: center; padding: 40px 0; }
     .empty-state p { margin-bottom: 20px; color: #666; }
-  </style>
-</head>
-<body>
-<div class="container">
-  <!-- Sidebar -->
-  <div class="sidebar">
-    <div class="logo">
-      <img src="{% static 'images/logo.png' %}" alt="Lush Dairy Logo">
-     
-    </div>
-    <div class="nav-menu">
-      <a href="{% url 'admin_panel:admin_dashboard' %}" class="nav-item">
-  <i class="fas fa-tachometer-alt"></i> Dashboard
-</a>
-<a href="{% url 'admin_panel:admin_order_list' %}" class="nav-item active">
-  <i class="fas fa-shopping-cart"></i> Orders
-</a>
-<a href="{% url 'admin_panel:product_list' %}" class="nav-item">
-  <i class="fas fa-box"></i> Products
-</a>
-<a href="{% url 'admin_panel:sales_report' %}" class="nav-item">
-  <i class="fas fa-chart-line"></i> Sales Report
-</a>
-<a href="{% url 'admin_panel:user_list' %}" class="nav-item">
-  <i class="fas fa-users"></i> Customers
-</a>
-<a href="{% url 'admin_panel:category_list' %}" class="nav-item">
-  <i class="fas fa-tags"></i> Categories
-</a>
-<a href="{% url 'admin_panel:inventory_list' %}" class="nav-item">
-  <i class="fas fa-warehouse"></i> Stock
-</a>
-<a href="{% url 'admin_panel:coupon_list' %}" class="nav-item">
-  <i class="fas fa-ticket-alt"></i> Coupons
-</a>
-<a href="{% url 'admin_panel:offer_list' %}" class="nav-item">
-  <i class="fas fa-bullhorn"></i> Offers
-</a>
-<a href="{% url 'admin_panel:wallet_transactions_list' %}" class="nav-item">
-  <i class="fas fa-wallet"></i> Wallet
-</a>
-<a href="{% url 'admin_panel:admin_return_requests' %}" class="nav-item">
-  <i class="fas fa-exchange-alt"></i> Complaints
-</a>
-<a href="{% url 'admin_panel:admin_logout' %}" class="nav-item">
-  <i class="fas fa-sign-out-alt"></i> Sign Out
-</a>
-    </div>
-  </div>
-
-  <!-- Main Content -->
-  <div class="main-content">
-    <div class="header">
-      <div class="search-bar">
-        <form method="get" action="">
-          <input type="text" name="q" placeholder="Search transactions..." value="{{ request.GET.q }}">
-          <button type="submit"><i class="fas fa-search"></i></button>
-        </form>
-      </div>
-      <div class="user-info">
-        <div class="avatar"><i class="fas fa-user"></i></div>
-        <span>Admin</span>
-      </div>
-    </div>
-
-    <div class="products-section">
-      <div class="section-header">
-        <h2 class="section-title">Wallet Transactions</h2>
-      </div>
-
-      {% if transactions %}
-      <table class="products-table">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Date</th>
-            <th>User</th>
-            <th>Type</th>
-            <th>Amount</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for t in transactions %}
-          <tr>
-            <td>{{ t.id }}</td>
-            <td>{{ t.created_at|date:"d-m-Y H:i" }}</td>
-            <td>{{ t.wallet.user.username }}<br><small>{{ t.wallet.user.email }}</small></td>
-            <td>
-              {% if t.transaction_type == 'credit' %}
-                <span class="badge-credit">Credit</span>
-              {% else %}
-                <span class="badge-debit">Debit</span>
-              {% endif %}
-            </td>
-            <td>₹{{ t.amount }}</td>
-            <td>
-              <a href="{% url 'admin_panel:wallet_transaction_detail' t.id %}" class="action-btn"><i class="fas fa-eye"></i></a>
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-
-      <div class="show-results">
-        Show results:
-        <select onchange="changeResultsPerPage(this.value)">
-          <option value="10">10</option>
-          <option value="20">20</option>
-          <option value="50">50</option>
-        </select>
-      </div>
-
-      {% else %}
-      <div class="empty-state">
-        <p>No transactions found.</p>
-      </div>
-      {% endif %}
-    </div>
-  </div>
-</div>
-
-<script>
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <div class="logo">
+                    <img src="{% static 'images/logo.png' %}" alt="Lush Dairy Logo">
+                </div>
+                <div class="nav-menu">
+                    <a href="{% url 'admin_panel:admin_dashboard' %}" class="nav-item">
+                        <i class="fas fa-tachometer-alt"></i> Dashboard
+                    </a>
+                    <a href="{% url 'admin_panel:admin_order_list' %}"
+                       class="nav-item active">
+                        <i class="fas fa-shopping-cart"></i> Orders
+                    </a>
+                    <a href="{% url 'admin_panel:product_list' %}" class="nav-item">
+                        <i class="fas fa-box"></i> Products
+                    </a>
+                    <a href="{% url 'admin_panel:sales_report' %}" class="nav-item">
+                        <i class="fas fa-chart-line"></i> Sales Report
+                    </a>
+                    <a href="{% url 'admin_panel:user_list' %}" class="nav-item">
+                        <i class="fas fa-users"></i> Customers
+                    </a>
+                    <a href="{% url 'admin_panel:category_list' %}" class="nav-item">
+                        <i class="fas fa-tags"></i> Categories
+                    </a>
+                    <a href="{% url 'admin_panel:inventory_list' %}" class="nav-item">
+                        <i class="fas fa-warehouse"></i> Stock
+                    </a>
+                    <a href="{% url 'admin_panel:coupon_list' %}" class="nav-item">
+                        <i class="fas fa-ticket-alt"></i> Coupons
+                    </a>
+                    <a href="{% url 'admin_panel:offer_list' %}" class="nav-item">
+                        <i class="fas fa-bullhorn"></i> Offers
+                    </a>
+                    <a href="{% url 'admin_panel:wallet_transactions_list' %}"
+                       class="nav-item">
+                        <i class="fas fa-wallet"></i> Wallet
+                    </a>
+                    <a href="{% url 'admin_panel:admin_return_requests' %}" class="nav-item">
+                        <i class="fas fa-exchange-alt"></i> Complaints
+                    </a>
+                    <a href="{% url 'admin_panel:admin_logout' %}" class="nav-item">
+                        <i class="fas fa-sign-out-alt"></i> Sign Out
+                    </a>
+                </div>
+            </div>
+            <!-- Main Content -->
+            <div class="main-content">
+                <div class="header">
+                    <div class="search-bar">
+                        <form method="get" action="">
+                            <input type="text"
+                                   name="q"
+                                   placeholder="Search transactions..."
+                                   value="{{ request.GET.q }}">
+                            <button type="submit">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </form>
+                    </div>
+                    <div class="user-info">
+                        <div class="avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <span>Admin</span>
+                    </div>
+                </div>
+                <div class="products-section">
+                    <div class="section-header">
+                        <h2 class="section-title">Wallet Transactions</h2>
+                    </div>
+                    {% if transactions %}
+                        <table class="products-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Date</th>
+                                    <th>User</th>
+                                    <th>Type</th>
+                                    <th>Amount</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for t in transactions %}
+                                    <tr>
+                                        <td>{{ t.id }}</td>
+                                        <td>{{ t.created_at|date:"d-m-Y H:i" }}</td>
+                                        <td>
+                                            {{ t.wallet.user.username }}
+                                            <br>
+                                            <small>{{ t.wallet.user.email }}</small>
+                                        </td>
+                                        <td>
+                                            {% if t.transaction_type == 'credit' %}
+                                                <span class="badge-credit">Credit</span>
+                                            {% else %}
+                                                <span class="badge-debit">Debit</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>₹{{ t.amount }}</td>
+                                        <td>
+                                            <a href="{% url 'admin_panel:wallet_transaction_detail' t.id %}"
+                                               class="action-btn"><i class="fas fa-eye"></i></a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        <div class="show-results">
+                            Show results:
+                            <select onchange="changeResultsPerPage(this.value)">
+                                <option value="10">10</option>
+                                <option value="20">20</option>
+                                <option value="50">50</option>
+                            </select>
+                        </div>
+                    {% else %}
+                        <div class="empty-state">
+                            <p>No transactions found.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <script>
   function changeResultsPerPage(value) {
     const urlParams = new URLSearchParams(window.location.search);
     urlParams.set('per_page', value);
     window.location.search = urlParams.toString();
   }
-</script>
-</body>
+        </script>
+    </body>
 </html>

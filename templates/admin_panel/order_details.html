@@ -1,15 +1,15 @@
 {% extends 'admin_panel/base.html' %}
 {% load math_filters %}
 {% block content %}
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Order Details - Admin Panel</title>
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
-  <style>
+    <!DOCTYPE html>
+    <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Order Details - Admin Panel</title>
+            <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+                  rel="stylesheet">
+            <style>
     body {
       margin: 0;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -105,106 +105,118 @@
     .return-none {
       color: #6c757d;
     }
-  </style>
-</head>
-<body>
-  <div class="main-content">
-    <div class="orders-section">
-      <div class="section-header">
-        <h2 class="section-title">Order Details: <span class="order-id">{{ order.order_id }}</span></h2>
-        <a href="{% url 'admin_panel:admin_order_list' %}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Back</a>
-      </div>
-
-      <!-- Customer Info -->
-      <div class="card">
-        <div class="card-header">Customer Information</div>
-        <div class="card-body">
-          <p><strong>Name:</strong> {{ order.user.get_full_name|default:order.user.username }}</p>
-          <p><strong>Email:</strong> {{ order.user.email }}</p>
-          <p><strong>Phone:</strong> {{ order.user.mobile|default:"N/A" }}</p>
-        </div>
-      </div>
-
-      <!-- Order Summary -->
-      <div class="card">
-        <div class="card-header">Order Summary</div>
-        <div class="card-body">
-          <form method="post">
-            {% csrf_token %}
-            <p><strong>Order Date:</strong> {{ order.created_at|date:"M d, Y H:i" }}</p>
-            <label for="status" class="form-label">Update Status:</label>
-            <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-              <select name="status" id="status" class="form-select" style="max-width: 250px;">
-                {% for key, label in status_choices %}
-                <option value="{{ key }}" {% if order.status == key %}selected{% endif %}>{{ label }}</option>
-                {% endfor %}
-              </select>
-              <button type="submit" class="btn btn-primary">Update</button>
+            </style>
+        </head>
+        <body>
+            <div class="main-content">
+                <div class="orders-section">
+                    <div class="section-header">
+                        <h2 class="section-title">
+                            Order Details: <span class="order-id">{{ order.order_id }}</span>
+                        </h2>
+                        <a href="{% url 'admin_panel:admin_order_list' %}"
+                           class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Back</a>
+                    </div>
+                    <!-- Customer Info -->
+                    <div class="card">
+                        <div class="card-header">Customer Information</div>
+                        <div class="card-body">
+                            <p>
+                                <strong>Name:</strong> {{ order.user.get_full_name|default:order.user.username }}
+                            </p>
+                            <p>
+                                <strong>Email:</strong> {{ order.user.email }}
+                            </p>
+                            <p>
+                                <strong>Phone:</strong> {{ order.user.mobile|default:"N/A" }}
+                            </p>
+                        </div>
+                    </div>
+                    <!-- Order Summary -->
+                    <div class="card">
+                        <div class="card-header">Order Summary</div>
+                        <div class="card-body">
+                            <form method="post">
+                                {% csrf_token %}
+                                <p>
+                                    <strong>Order Date:</strong> {{ order.created_at|date:"M d, Y H:i" }}
+                                </p>
+                                <label for="status" class="form-label">Update Status:</label>
+                                <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                                    <select name="status"
+                                            id="status"
+                                            class="form-select"
+                                            style="max-width: 250px">
+                                        {% for key, label in status_choices %}
+                                            <option value="{{ key }}" {% if order.status == key %}selected{% endif %}>{{ label }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <button type="submit" class="btn btn-primary">Update</button>
+                                </div>
+                                <p>
+                                    <strong>Complaint Status:</strong>
+                                    {% if order.return_status %}
+                                        <span class="return-status">{{ order.return_status }}</span>
+                                    {% else %}
+                                        <span class="return-status return-none">No Complaints raised</span>
+                                    {% endif %}
+                                </p>
+                                <p>
+                                    <strong>Total Amount:</strong> ₹{{ order.total_amount|floatformat:2 }}
+                                </p>
+                            </form>
+                        </div>
+                    </div>
+                    <!-- Shipping Address -->
+                    <div class="card">
+                        <div class="card-header">Shipping Address</div>
+                        <div class="card-body">
+                            <p>
+                                {{ order.address_name }}
+                                <br>
+                                {{ order.address_line1 }}
+                                {% if order.address_line2 %}, {{ order.address_line2 }}{% endif %}
+                                <br>
+                                {{ order.address_city }}, {{ order.address_state }} - {{ order.address_zipcode }}
+                                <br>
+                                Phone: {{ order.address_phone }}
+                            </p>
+                        </div>
+                    </div>
+                    <!-- Items Ordered -->
+                    <div class="card">
+                        <div class="card-header">Items Ordered</div>
+                        <div class="card-body p-0">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Product</th>
+                                        <th>Quantity</th>
+                                        <th>Price (₹)</th>
+                                        <th>Discount (₹)</th>
+                                        <th>Subtotal (₹)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in order.items.all %}
+                                        <tr>
+                                            <td>{{ item.product_name }} ({{ item.product_variant.variant_name }})</td>
+                                            <td>{{ item.quantity }}</td>
+                                            <td>₹{{ item.price|floatformat:2 }}</td>
+                                            <td>-₹{{ order.discount }}</td>
+                                            <td>₹{{ order.total_amount|mul:item.quantity }}</td>
+                                        </tr>
+                                    {% empty %}
+                                        <tr>
+                                            <td colspan="4" style="text-align:center; color:#999;">No items found for this order.</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <p><strong>Complaint Status:</strong>
-              {% if order.return_status %}
-                <span class="return-status">{{ order.return_status }}</span>
-              {% else %}
-                <span class="return-status return-none">No Complaints raised</span>
-              {% endif %}
-            </p>
-            <p><strong>Total Amount:</strong> ₹{{ order.total_amount|floatformat:2 }}</p>
-          </form>
-        </div>
-      </div>
-
-      <!-- Shipping Address -->
-<div class="card">
-  <div class="card-header">Shipping Address</div>
-  <div class="card-body">
-    <p>
-                    {{ order.address_name }}<br>
-                    {{ order.address_line1 }}{% if order.address_line2 %}, {{ order.address_line2 }}{% endif %}<br>
-                    {{ order.address_city }}, {{ order.address_state }} - {{ order.address_zipcode }}<br>
-                    Phone: {{ order.address_phone }}
-                </p>
-  </div>
-</div>
-
-
-      <!-- Items Ordered -->
-      <div class="card">
-        <div class="card-header">Items Ordered</div>
-        <div class="card-body p-0">
-          <table class="table table-striped">
-            <thead>
-              <tr>
-                <th>Product</th>
-                <th>Quantity</th>
-                <th>Price (₹)</th>
-                <th>Discount (₹)</th>
-                
-                <th>Subtotal (₹)</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for item in order.items.all %}
-              <tr>
-              
-                 <td>{{ item.product_name }} ({{item.product_variant.variant_name}})</td>
-                <td>{{ item.quantity }}</td>
-                <td>₹{{ item.price|floatformat:2 }}</td>
-                <td>-₹{{ order.discount }}</td>
-                
-               <td>₹{{ order.total_amount|mul:item.quantity }}</td>
-
-              </tr>
-              {% empty %}
-              <tr>
-                <td colspan="4" style="text-align:center; color:#999;">No items found for this order.</td>
-              </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  </div>
-</body>
-</html>
+        </body>
+    </html>
 {% endblock %}

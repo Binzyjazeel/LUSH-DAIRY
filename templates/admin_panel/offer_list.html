@@ -1,12 +1,13 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Offer Management - Admin Panel</title>
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
-<style>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Offer Management - Admin Panel</title>
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+              rel="stylesheet">
+        <style>
   :root {
     --primary-color: #4d8b31;
     --secondary-color: #e8f5e9;
@@ -269,147 +270,155 @@
     padding: 50px 0;
     color: #777;
   }
-</style>
-</head>
-<body>
-
-<div class="container">
-  <!-- Sidebar -->
-  <div class="sidebar">
-    <div class="logo">
-      <img src="{% static 'images/logo.png' %}" alt="Logo">
-      
-    </div>
-    <div class="nav-menu">
-      <a href="{% url 'admin_panel:admin_dashboard' %}" class="nav-item">
-  <i class="fas fa-tachometer-alt"></i> Dashboard
-</a>
-<a href="{% url 'admin_panel:admin_order_list' %}" class="nav-item active">
-  <i class="fas fa-shopping-cart"></i> Orders
-</a>
-<a href="{% url 'admin_panel:product_list' %}" class="nav-item">
-  <i class="fas fa-box"></i> Products
-</a>
-<a href="{% url 'admin_panel:sales_report' %}" class="nav-item">
-  <i class="fas fa-chart-line"></i> Sales Report
-</a>
-<a href="{% url 'admin_panel:user_list' %}" class="nav-item">
-  <i class="fas fa-users"></i> Customers
-</a>
-<a href="{% url 'admin_panel:category_list' %}" class="nav-item">
-  <i class="fas fa-tags"></i> Categories
-</a>
-<a href="{% url 'admin_panel:inventory_list' %}" class="nav-item">
-  <i class="fas fa-warehouse"></i> Stock
-</a>
-<a href="{% url 'admin_panel:coupon_list' %}" class="nav-item">
-  <i class="fas fa-ticket-alt"></i> Coupons
-</a>
-<a href="{% url 'admin_panel:offer_list' %}" class="nav-item">
-  <i class="fas fa-bullhorn"></i> Offers
-</a>
-<a href="{% url 'admin_panel:wallet_transactions_list' %}" class="nav-item">
-  <i class="fas fa-wallet"></i> Wallet
-</a>
-<a href="{% url 'admin_panel:admin_return_requests' %}" class="nav-item">
-  <i class="fas fa-exchange-alt"></i> Complaints
-</a>
-<a href="{% url 'admin_panel:admin_logout' %}" class="nav-item">
-  <i class="fas fa-sign-out-alt"></i> Sign Out
-</a>
-    </div>
-  </div>
-
-  <!-- Main Content -->
-  <div class="main-content">
-    <div class="header">
-      <div class="search-bar">
-        <form method="get">
-          <input type="text" name="q" placeholder="Search offers..." value="{{ request.GET.q }}">
-          <button type="submit"><i class="fas fa-search"></i></button>
-        </form>
-      </div>
-      <div class="user-info">
-        <div class="avatar"><i class="fas fa-user"></i></div>
-        <span>Admin</span>
-      </div>
-    </div>
-
-    <div class="products-section">
-      <div class="section-header">
-        <h2 class="section-title">Offer Management</h2>
-        <a href="{% url 'admin_panel:create_offer' %}" class="btn btn-primary"><i class="fas fa-plus"></i> New Offer</a>
-      </div>
-
-      {% if page_obj %}
-        <table class="products-table">
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Discount</th>
-              <th>Applies To</th>
-              <th>Valid From</th>
-              <th>Valid Till</th>
-              <th>Status</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for offer in page_obj %}
-            <tr>
-              <td>{{ offer.name }}</td>
-              <td>{{ offer.discount_percent }}%</td>
-              <td>
-                {% if offer.product %} Product: {{ offer.product.name }}
-                {% elif offer.category %} Category: {{ offer.category.name }}
-                {% else %} All Products {% endif %}
-              </td>
-              <td>{{ offer.valid_from|date:"d-m-Y" }}</td>
-              <td>{{ offer.valid_to|date:"d-m-Y" }}</td>
-              <td>
-                {% if offer.is_valid %}
-                  <span class="category-tag active-status">Active</span>
-                {% elif today > offer.valid_to %}
-                  <span class="category-tag expired-status">Expired</span>
-                {% else %}
-                  <span class="category-tag inactive-status">Inactive</span>
-                {% endif %}
-              </td>
-              <td>
-                <a href="{% url 'admin_panel:edit_offer' offer.id %}" class="action-btn"><i class="fas fa-edit"></i></a>
-                <a href="{% url 'admin_panel:delete_offer' offer.id %}" class="action-btn" onclick="return confirm('Delete this offer?')"><i class="fas fa-trash-alt"></i></a>
-              </td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-
-        <div class="pagination">
-          {% if page_obj.has_previous %}
-            <a href="?q={{ request.GET.q }}&page={{ page_obj.previous_page_number }}"><i class="fas fa-chevron-left"></i></a>
-          {% endif %}
-          {% for num in page_obj.paginator.page_range %}
-            {% if page_obj.number == num %}
-              <span class="current">{{ num }}</span>
-            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-              <a href="?q={{ request.GET.q }}&page={{ num }}">{{ num }}</a>
-            {% endif %}
-          {% endfor %}
-          {% if page_obj.has_next %}
-            <a href="?q={{ request.GET.q }}&page={{ page_obj.next_page_number }}"><i class="fas fa-chevron-right"></i></a>
-          {% endif %}
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <div class="logo">
+                    <img src="{% static 'images/logo.png' %}" alt="Logo">
+                </div>
+                <div class="nav-menu">
+                    <a href="{% url 'admin_panel:admin_dashboard' %}" class="nav-item">
+                        <i class="fas fa-tachometer-alt"></i> Dashboard
+                    </a>
+                    <a href="{% url 'admin_panel:admin_order_list' %}"
+                       class="nav-item active">
+                        <i class="fas fa-shopping-cart"></i> Orders
+                    </a>
+                    <a href="{% url 'admin_panel:product_list' %}" class="nav-item">
+                        <i class="fas fa-box"></i> Products
+                    </a>
+                    <a href="{% url 'admin_panel:sales_report' %}" class="nav-item">
+                        <i class="fas fa-chart-line"></i> Sales Report
+                    </a>
+                    <a href="{% url 'admin_panel:user_list' %}" class="nav-item">
+                        <i class="fas fa-users"></i> Customers
+                    </a>
+                    <a href="{% url 'admin_panel:category_list' %}" class="nav-item">
+                        <i class="fas fa-tags"></i> Categories
+                    </a>
+                    <a href="{% url 'admin_panel:inventory_list' %}" class="nav-item">
+                        <i class="fas fa-warehouse"></i> Stock
+                    </a>
+                    <a href="{% url 'admin_panel:coupon_list' %}" class="nav-item">
+                        <i class="fas fa-ticket-alt"></i> Coupons
+                    </a>
+                    <a href="{% url 'admin_panel:offer_list' %}" class="nav-item">
+                        <i class="fas fa-bullhorn"></i> Offers
+                    </a>
+                    <a href="{% url 'admin_panel:wallet_transactions_list' %}"
+                       class="nav-item">
+                        <i class="fas fa-wallet"></i> Wallet
+                    </a>
+                    <a href="{% url 'admin_panel:admin_return_requests' %}" class="nav-item">
+                        <i class="fas fa-exchange-alt"></i> Complaints
+                    </a>
+                    <a href="{% url 'admin_panel:admin_logout' %}" class="nav-item">
+                        <i class="fas fa-sign-out-alt"></i> Sign Out
+                    </a>
+                </div>
+            </div>
+            <!-- Main Content -->
+            <div class="main-content">
+                <div class="header">
+                    <div class="search-bar">
+                        <form method="get">
+                            <input type="text"
+                                   name="q"
+                                   placeholder="Search offers..."
+                                   value="{{ request.GET.q }}">
+                            <button type="submit">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </form>
+                    </div>
+                    <div class="user-info">
+                        <div class="avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <span>Admin</span>
+                    </div>
+                </div>
+                <div class="products-section">
+                    <div class="section-header">
+                        <h2 class="section-title">Offer Management</h2>
+                        <a href="{% url 'admin_panel:create_offer' %}" class="btn btn-primary"><i class="fas fa-plus"></i> New Offer</a>
+                    </div>
+                    {% if page_obj %}
+                        <table class="products-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Discount</th>
+                                    <th>Applies To</th>
+                                    <th>Valid From</th>
+                                    <th>Valid Till</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for offer in page_obj %}
+                                    <tr>
+                                        <td>{{ offer.name }}</td>
+                                        <td>{{ offer.discount_percent }}%</td>
+                                        <td>
+                                            {% if offer.product %}
+                                                Product: {{ offer.product.name }}
+                                            {% elif offer.category %}
+                                                Category: {{ offer.category.name }}
+                                            {% else %}
+                                                All Products
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ offer.valid_from|date:"d-m-Y" }}</td>
+                                        <td>{{ offer.valid_to|date:"d-m-Y" }}</td>
+                                        <td>
+                                            {% if offer.is_valid %}
+                                                <span class="category-tag active-status">Active</span>
+                                            {% elif today > offer.valid_to %}
+                                                <span class="category-tag expired-status">Expired</span>
+                                            {% else %}
+                                                <span class="category-tag inactive-status">Inactive</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <a href="{% url 'admin_panel:edit_offer' offer.id %}" class="action-btn"><i class="fas fa-edit"></i></a>
+                                            <a href="{% url 'admin_panel:delete_offer' offer.id %}"
+                                               class="action-btn"
+                                               onclick="return confirm('Delete this offer?')"><i class="fas fa-trash-alt"></i></a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        <div class="pagination">
+                            {% if page_obj.has_previous %}
+                                <a href="?q={{ request.GET.q }}&page={{ page_obj.previous_page_number }}"><i class="fas fa-chevron-left"></i></a>
+                            {% endif %}
+                            {% for num in page_obj.paginator.page_range %}
+                                {% if page_obj.number == num %}
+                                    <span class="current">{{ num }}</span>
+                                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                    <a href="?q={{ request.GET.q }}&page={{ num }}">{{ num }}</a>
+                                {% endif %}
+                            {% endfor %}
+                            {% if page_obj.has_next %}
+                                <a href="?q={{ request.GET.q }}&page={{ page_obj.next_page_number }}"><i class="fas fa-chevron-right"></i></a>
+                            {% endif %}
+                        </div>
+                    {% else %}
+                        <div class="empty-state">
+                            <p>No offers found.</p>
+                            <a href="{% url 'admin_panel:create_offer' %}" class="btn btn-primary">Add your first offer</a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
         </div>
-      {% else %}
-        <div class="empty-state">
-          <p>No offers found.</p>
-          <a href="{% url 'admin_panel:create_offer' %}" class="btn btn-primary">Add your first offer</a>
-        </div>
-      {% endif %}
-    </div>
-  </div>
-</div>
-
-<script>
+        <script>
   document.addEventListener('DOMContentLoaded', function() {
     const currentUrl = window.location.pathname;
     document.querySelectorAll('.nav-item').forEach(item => {
@@ -418,7 +427,6 @@
       }
     });
   });
-</script>
-
-</body>
+        </script>
+    </body>
 </html>

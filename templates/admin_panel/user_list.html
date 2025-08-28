@@ -1,14 +1,15 @@
 {% extends 'admin_panel/base.html' %}
 {% load static %}
 {% block content %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Lush Dairy Admin - Users Management</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
-  <style>
+    <!DOCTYPE html>
+    <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <title>Lush Dairy Admin - Users Management</title>
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+                  rel="stylesheet">
+            <style>
     :root {
       --primary-color: #4d8b31;
       --secondary-color: #e8f5e9;
@@ -261,142 +262,149 @@
       margin-bottom: 20px;
       color: #666;
     }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <!-- Sidebar -->
-    <div class="sidebar">
-      <div class="logo">
-         <img src="{% static 'images/logo.png' %}" alt="Lush Dairy Logo">
-        
-      </div>
-      <div class="nav-menu">
-        <a href="{% url 'admin_panel:admin_dashboard' %}" class="nav-item">
-  <i class="fas fa-tachometer-alt"></i> Dashboard
-</a>
-<a href="{% url 'admin_panel:admin_order_list' %}" class="nav-item active">
-  <i class="fas fa-shopping-cart"></i> Orders
-</a>
-<a href="{% url 'admin_panel:product_list' %}" class="nav-item">
-  <i class="fas fa-box"></i> Products
-</a>
-<a href="{% url 'admin_panel:sales_report' %}" class="nav-item">
-  <i class="fas fa-chart-line"></i> Sales Report
-</a>
-<a href="{% url 'admin_panel:user_list' %}" class="nav-item">
-  <i class="fas fa-users"></i> Customers
-</a>
-<a href="{% url 'admin_panel:category_list' %}" class="nav-item">
-  <i class="fas fa-tags"></i> Categories
-</a>
-<a href="{% url 'admin_panel:inventory_list' %}" class="nav-item">
-  <i class="fas fa-warehouse"></i> Stock
-</a>
-<a href="{% url 'admin_panel:coupon_list' %}" class="nav-item">
-  <i class="fas fa-ticket-alt"></i> Coupons
-</a>
-<a href="{% url 'admin_panel:offer_list' %}" class="nav-item">
-  <i class="fas fa-bullhorn"></i> Offers
-</a>
-<a href="{% url 'admin_panel:wallet_transactions_list' %}" class="nav-item">
-  <i class="fas fa-wallet"></i> Wallet
-</a>
-<a href="{% url 'admin_panel:admin_return_requests' %}" class="nav-item">
-  <i class="fas fa-exchange-alt"></i> Complaints
-</a>
-<a href="{% url 'admin_panel:admin_logout' %}" class="nav-item">
-  <i class="fas fa-sign-out-alt"></i> Sign Out
-</a>
-      </div>
-    </div>
-
-    <!-- Main Content -->
-    <div class="main-content">
-      <div class="header">
-        <div class="search-bar">
-          <form method="get" action="{% url 'admin_panel:user_list' %}">
-            <input type="text" name="q" placeholder="Search users..." value="{{ request.GET.q }}">
-            <button type="submit"><i class="fas fa-search"></i></button>
-          </form>
-        </div>
-        <div class="user-info">
-          <div class="avatar">
-            <i class="fas fa-user"></i>
-          </div>
-          <span>Admin</span>
-        </div>
-      </div>
-
-      <div class="users-section">
-        <h2 class="section-title">User Management</h2>
-
-        {% if page_obj %}
-        <table class="users-table">
-          <thead>
-            <tr>
-              <th>User ID</th>
-              <th>Username</th>
-              <th>Email</th>
-              <th>Joined</th>
-              <th>Status</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for user in page_obj %}
-            <tr>
-              <td>{{ user.id }}</td>
-              <td>{{ user.username }}</td>
-              <td>{{ user.email }}</td>
-              <td>{{ user.date_joined|date:"d-m-Y" }}</td>
-              <td>
-                <span class="{% if user.is_blocked %}status-blocked{% else %}status-active{% endif %}">
-                  {% if user.is_blocked %}Blocked{% else %}Active{% endif %}
-                </span>
-              </td>
-              <td>
-                <form method="post" action="{% url 'admin_panel:toggle_block_user' user.id %}" onsubmit="return confirm('Are you sure?');">
-                  {% csrf_token %}
-                  <button type="submit" class="action-btn">
-                    {% if user.is_blocked %}
-                      <i class="fas fa-unlock"></i>
-                    {% else %}
-                      <i class="fas fa-ban"></i>
-                    {% endif %}
-                  </button>
-                </form>
-              </td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-
-        <div class="pagination">
-          {% if page_obj.has_previous %}
-            <a href="?q={{ request.GET.q }}&page={{ page_obj.previous_page_number }}"><i class="fas fa-chevron-left"></i></a>
-          {% endif %}
-          {% for num in page_obj.paginator.page_range %}
-            {% if page_obj.number == num %}
-              <span class="current">{{ num }}</span>
-            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-              <a href="?q={{ request.GET.q }}&page={{ num }}">{{ num }}</a>
-            {% endif %}
-          {% endfor %}
-          {% if page_obj.has_next %}
-            <a href="?q={{ request.GET.q }}&page={{ page_obj.next_page_number }}"><i class="fas fa-chevron-right"></i></a>
-          {% endif %}
-        </div>
-
-        {% else %}
-        <div class="empty-state">
-          <p>No users found.</p>
-          <a href="#" class="btn btn-primary">Add your first user</a>
-        </div>
-        {% endif %}
-      </div>
-    </div>
-  </div>
-</body>
-</html>
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <!-- Sidebar -->
+                <div class="sidebar">
+                    <div class="logo">
+                        <img src="{% static 'images/logo.png' %}" alt="Lush Dairy Logo">
+                    </div>
+                    <div class="nav-menu">
+                        <a href="{% url 'admin_panel:admin_dashboard' %}" class="nav-item">
+                            <i class="fas fa-tachometer-alt"></i> Dashboard
+                        </a>
+                        <a href="{% url 'admin_panel:admin_order_list' %}"
+                           class="nav-item active">
+                            <i class="fas fa-shopping-cart"></i> Orders
+                        </a>
+                        <a href="{% url 'admin_panel:product_list' %}" class="nav-item">
+                            <i class="fas fa-box"></i> Products
+                        </a>
+                        <a href="{% url 'admin_panel:sales_report' %}" class="nav-item">
+                            <i class="fas fa-chart-line"></i> Sales Report
+                        </a>
+                        <a href="{% url 'admin_panel:user_list' %}" class="nav-item">
+                            <i class="fas fa-users"></i> Customers
+                        </a>
+                        <a href="{% url 'admin_panel:category_list' %}" class="nav-item">
+                            <i class="fas fa-tags"></i> Categories
+                        </a>
+                        <a href="{% url 'admin_panel:inventory_list' %}" class="nav-item">
+                            <i class="fas fa-warehouse"></i> Stock
+                        </a>
+                        <a href="{% url 'admin_panel:coupon_list' %}" class="nav-item">
+                            <i class="fas fa-ticket-alt"></i> Coupons
+                        </a>
+                        <a href="{% url 'admin_panel:offer_list' %}" class="nav-item">
+                            <i class="fas fa-bullhorn"></i> Offers
+                        </a>
+                        <a href="{% url 'admin_panel:wallet_transactions_list' %}"
+                           class="nav-item">
+                            <i class="fas fa-wallet"></i> Wallet
+                        </a>
+                        <a href="{% url 'admin_panel:admin_return_requests' %}" class="nav-item">
+                            <i class="fas fa-exchange-alt"></i> Complaints
+                        </a>
+                        <a href="{% url 'admin_panel:admin_logout' %}" class="nav-item">
+                            <i class="fas fa-sign-out-alt"></i> Sign Out
+                        </a>
+                    </div>
+                </div>
+                <!-- Main Content -->
+                <div class="main-content">
+                    <div class="header">
+                        <div class="search-bar">
+                            <form method="get" action="{% url 'admin_panel:user_list' %}">
+                                <input type="text"
+                                       name="q"
+                                       placeholder="Search users..."
+                                       value="{{ request.GET.q }}">
+                                <button type="submit">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </form>
+                        </div>
+                        <div class="user-info">
+                            <div class="avatar">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <span>Admin</span>
+                        </div>
+                    </div>
+                    <div class="users-section">
+                        <h2 class="section-title">User Management</h2>
+                        {% if page_obj %}
+                            <table class="users-table">
+                                <thead>
+                                    <tr>
+                                        <th>User ID</th>
+                                        <th>Username</th>
+                                        <th>Email</th>
+                                        <th>Joined</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for user in page_obj %}
+                                        <tr>
+                                            <td>{{ user.id }}</td>
+                                            <td>{{ user.username }}</td>
+                                            <td>{{ user.email }}</td>
+                                            <td>{{ user.date_joined|date:"d-m-Y" }}</td>
+                                            <td>
+                                                <span class="{% if user.is_blocked %}status-blocked{% else %}status-active{% endif %}">
+                                                    {% if user.is_blocked %}
+                                                        Blocked
+                                                    {% else %}
+                                                        Active
+                                                    {% endif %}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <form method="post"
+                                                      action="{% url 'admin_panel:toggle_block_user' user.id %}"
+                                                      onsubmit="return confirm('Are you sure?');">
+                                                    {% csrf_token %}
+                                                    <button type="submit" class="action-btn">
+                                                        {% if user.is_blocked %}
+                                                            <i class="fas fa-unlock"></i>
+                                                        {% else %}
+                                                            <i class="fas fa-ban"></i>
+                                                        {% endif %}
+                                                    </button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                            <div class="pagination">
+                                {% if page_obj.has_previous %}
+                                    <a href="?q={{ request.GET.q }}&page={{ page_obj.previous_page_number }}"><i class="fas fa-chevron-left"></i></a>
+                                {% endif %}
+                                {% for num in page_obj.paginator.page_range %}
+                                    {% if page_obj.number == num %}
+                                        <span class="current">{{ num }}</span>
+                                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                        <a href="?q={{ request.GET.q }}&page={{ num }}">{{ num }}</a>
+                                    {% endif %}
+                                {% endfor %}
+                                {% if page_obj.has_next %}
+                                    <a href="?q={{ request.GET.q }}&page={{ page_obj.next_page_number }}"><i class="fas fa-chevron-right"></i></a>
+                                {% endif %}
+                            </div>
+                        {% else %}
+                            <div class="empty-state">
+                                <p>No users found.</p>
+                                <a href="#" class="btn btn-primary">Add your first user</a>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </body>
+    </html>
 {% endblock %}

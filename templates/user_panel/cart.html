@@ -1,21 +1,19 @@
-
 {% extends "user_panel/base.html" %}
 {% load static %}
-
 {% block content %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fresh Milk Cart - Premium Dairy Delivery</title>
-    
-    <!-- Bootstrap CSS -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Bootstrap Icons -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.0/font/bootstrap-icons.min.css" rel="stylesheet">
-    
-    <style>
+    <!DOCTYPE html>
+    <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Fresh Milk Cart - Premium Dairy Delivery</title>
+            <!-- Bootstrap CSS -->
+            <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css"
+                  rel="stylesheet">
+            <!-- Bootstrap Icons -->
+            <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.0/font/bootstrap-icons.min.css"
+                  rel="stylesheet">
+            <style>
         :root {
             --primary-color: #2563eb;
             --secondary-color: #1e40af;
@@ -350,177 +348,153 @@
             border-width: 0 2px 2px 0;
             transform: rotate(45deg);
         }
-    </style>
-</head>
-<body>
-    <div class="container-fluid main-container">
-        <!-- Cart Header -->
-        <div class="cart-header fade-in">
-    <div class="row align-items-center">
-        <div class="col-md-8">
-            <div class="d-flex align-items-center">
-                <div class="cart-icon">
-                    <i class="bi bi-cart3"></i>
-                </div>
-                <div>
-                    <h1 class="h2 mb-1 fw-bold text-dark">Your Milk Cart</h1>
-                    <p class="mb-0 text-muted" id="cart-items-count"  >
-                        {{ total_items }} item{{ total_items|pluralize }} • Fresh & Cold Delivery
-                    </p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4 text-md-end mt-3 mt-md-0">
-            <div class="total-amount" id="cart-total-amount">₹{{ total}}</div>
-            <p class="mb-0 text-muted small">Total Amount</p>
-        </div>
-    </div>
-</div>
-
-      <div class="card-premium mb-4 fade-in">
-    <div class="card-body p-4">
-        <h3 class="card-title mb-4 d-flex align-items-center">
-            <i class="bi bi-bag-check me-2 text-primary"></i>Cart Items
-        </h3>
-
-        {% if cart_items %}
-        <div class="table-responsive">
-            <table class="table align-middle text-center">
-                <thead class="table-light">
-                    <tr>
-                        <th>Product</th>
-                        <th>Details</th>
-                        <th>Quantity</th>
-                        <th>Price</th>
-                        <th>Remove</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for item in cart_items %}
-                    <tr class="cart-item">
-                        <td>
-                            <img src="{{ item.product.main_image.url }}" alt="{{ item.product.name }}" class="img-fluid rounded" style="max-height: 80px;" />
-                        </td>
-                        <td>
-                            <h6 class="mb-0">{{ item.product.name }}</h6>
-                            <small class="text-muted">{{ item.product.category }}</small><br>
-                            <small class="text-muted">{{ item.product_variant.variant_name }}</small>
-                        </td>
-                        <td>
-                            <div class="d-flex justify-content-center align-items-center gap-2 quantity-control">
-                                <button class="quantity-btn btn btn-outline-secondary btn-sm"
-                                        type="button"
-                                        data-id="{{ item.id }}"
-                                        data-action="decrement"
-                                        aria-label="Decrease quantity">
-                                    <i class="bi bi-dash"></i>
-                                </button>
-
-                                <span id="quantity-{{ item.id }}" class="quantity-display px-2">
-                                    {{ item.quantity }}
-                                </span>
-
-                                <button class="quantity-btn btn btn-outline-secondary btn-sm"
-                                        type="button"
-                                        data-id="{{ item.id }}"
-                                        data-action="increment"
-                                        aria-label="Increase quantity">
-                                    <i class="bi bi-plus"></i>
-                                </button>
+            </style>
+        </head>
+        <body>
+            <div class="container-fluid main-container">
+                <!-- Cart Header -->
+                <div class="cart-header fade-in">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <div class="d-flex align-items-center">
+                                <div class="cart-icon">
+                                    <i class="bi bi-cart3"></i>
+                                </div>
+                                <div>
+                                    <h1 class="h2 mb-1 fw-bold text-dark">Your Milk Cart</h1>
+                                    <p class="mb-0 text-muted" id="cart-items-count">
+                                        {{ total_items }} item{{ total_items|pluralize }} • Fresh & Cold Delivery
+                                    </p>
+                                </div>
                             </div>
-                        </td>
-                        <td>
-                            <div id="item-total-{{ item.id }}" class="price-highlight">₹{{ item.total_price }}</div>
-                            <small class="text-muted">₹{{ item.product_variant.price }} each</small>
-                        </td>
-                        <td>
-                            <form method="post" action="{% url 'user_panel:remove_cart_item' item.id %}">
-                                {% csrf_token %}
-                                <button class="btn btn-outline-danger btn-sm" type="submit">
-                                    <i class="bi bi-trash"></i>
-                                </button>
-                            </form>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        {% else %}
-        <p>Your cart is empty.</p>
-        {% endif %}
-    </div>
-</div>
-
-
-                        
-
-                
-  
-          
-
+                        </div>
+                        <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                            <div class="total-amount" id="cart-total-amount">₹{{ total }}</div>
+                            <p class="mb-0 text-muted small">Total Amount</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-premium mb-4 fade-in">
+                    <div class="card-body p-4">
+                        <h3 class="card-title mb-4 d-flex align-items-center">
+                            <i class="bi bi-bag-check me-2 text-primary"></i>Cart Items
+                        </h3>
+                        {% if cart_items %}
+                            <div class="table-responsive">
+                                <table class="table align-middle text-center">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Product</th>
+                                            <th>Details</th>
+                                            <th>Quantity</th>
+                                            <th>Price</th>
+                                            <th>Remove</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for item in cart_items %}
+                                            <tr class="cart-item">
+                                                <td>
+                                                    <img src="{{ item.product.main_image.url }}"
+                                                         alt="{{ item.product.name }}"
+                                                         class="img-fluid rounded"
+                                                         style="max-height: 80px" />
+                                                </td>
+                                                <td>
+                                                    <h6 class="mb-0">{{ item.product.name }}</h6>
+                                                    <small class="text-muted">{{ item.product.category }}</small>
+                                                    <br>
+                                                    <small class="text-muted">{{ item.product_variant.variant_name }}</small>
+                                                </td>
+                                                <td>
+                                                    <div class="d-flex justify-content-center align-items-center gap-2 quantity-control">
+                                                        <button class="quantity-btn btn btn-outline-secondary btn-sm"
+                                                                type="button"
+                                                                data-id="{{ item.id }}"
+                                                                data-action="decrement"
+                                                                aria-label="Decrease quantity">
+                                                            <i class="bi bi-dash"></i>
+                                                        </button>
+                                                        <span id="quantity-{{ item.id }}" class="quantity-display px-2">{{ item.quantity }}</span>
+                                                        <button class="quantity-btn btn btn-outline-secondary btn-sm"
+                                                                type="button"
+                                                                data-id="{{ item.id }}"
+                                                                data-action="increment"
+                                                                aria-label="Increase quantity">
+                                                            <i class="bi bi-plus"></i>
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div id="item-total-{{ item.id }}" class="price-highlight">₹{{ item.total_price }}</div>
+                                                    <small class="text-muted">₹{{ item.product_variant.price }} each</small>
+                                                </td>
+                                                <td>
+                                                    <form method="post"
+                                                          action="{% url 'user_panel:remove_cart_item' item.id %}">
+                                                        {% csrf_token %}
+                                                        <button class="btn btn-outline-danger btn-sm" type="submit">
+                                                            <i class="bi bi-trash"></i>
+                                                        </button>
+                                                    </form>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <p>Your cart is empty.</p>
+                        {% endif %}
+                    </div>
+                </div>
                 <!-- Order Summary -->
                 <div class="card-premium mb-4 fade-in">
-    <div class="card-body p-4">
-        <h4 class="card-title mb-4">
-            <i class="bi bi-receipt me-2 text-primary" id="items-count"></i>
-            Order Summary
-        </h4>
-
-        <div class="d-flex justify-content-between mb-2">
-    <span class="text-muted"> Subtotal </span>
-    <span id="cart-subtotal">₹{{ total_price }}</span>
-</div>
-
-        <div class="d-flex justify-content-between mb-2">
-            <span class="text-success">Discount </span>
-            <span id="cart-discount" class="text-success">-₹{{ discount }}</span>
-        </div>
-
-        <div class="d-flex justify-content-between mb-2">
-            <span class="text-muted">Delivery Fee</span>
-            <span>₹{{ delivery_fee }}</span>
-        </div>
-
-        <div class="small text-muted mb-3">
-            <i class="bi bi-info-circle me-1"></i>
-            {% if delivery_fee == 0 %}
-                Free delivery on orders over ₹30
-            {% else %}
-                Spend ₹{{ 30|floatformat:2 }} to get free delivery
-            {% endif %}
-        </div>
-
-        <hr>
-        <div class="d-flex justify-content-between mb-4">
-            <span class="h5 fw-bold">Total</span>
-            <span  id="cart-total" class="h5 fw-bold text-success">₹{{ total }}</span>
-        </div>
-
-        <a href="{% url 'user_panel:checkout' %}" class="btn btn-gradient w-100 mb-3">
-    <i class="bi bi-credit-card me-2"></i>
-    Proceed to Checkout
-</a>
-
-        <div class="text-center small text-success">
-            <i class="bi bi-check-circle me-1"></i>
-            Ready to checkout - All requirements met
-        </div>
-    </div>
-</div>
-
-                
-
-                
-
-    <!-- Bootstrap JS (Optional - for tooltips, modals, etc.) -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
-
-
-
-<script>
+                    <div class="card-body p-4">
+                        <h4 class="card-title mb-4">
+                            <i class="bi bi-receipt me-2 text-primary" id="items-count"></i>
+                            Order Summary
+                        </h4>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Subtotal</span>
+                            <span id="cart-subtotal">₹{{ total_price }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-success">Discount</span>
+                            <span id="cart-discount" class="text-success">-₹{{ discount }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Delivery Fee</span>
+                            <span>₹{{ delivery_fee }}</span>
+                        </div>
+                        <div class="small text-muted mb-3">
+                            <i class="bi bi-info-circle me-1"></i>
+                            {% if delivery_fee == 0 %}
+                                Free delivery on orders over ₹30
+                            {% else %}
+                                Spend ₹{{ 30|floatformat:2 }} to get free delivery
+                            {% endif %}
+                        </div>
+                        <hr>
+                        <div class="d-flex justify-content-between mb-4">
+                            <span class="h5 fw-bold">Total</span>
+                            <span id="cart-total" class="h5 fw-bold text-success">₹{{ total }}</span>
+                        </div>
+                        <a href="{% url 'user_panel:checkout' %}"
+                           class="btn btn-gradient w-100 mb-3">
+                            <i class="bi bi-credit-card me-2"></i>
+                            Proceed to Checkout
+                        </a>
+                        <div class="text-center small text-success">
+                            <i class="bi bi-check-circle me-1"></i>
+                            Ready to checkout - All requirements met
+                        </div>
+                    </div>
+                </div>
+                <!-- Bootstrap JS (Optional - for tooltips, modals, etc.) -->
+                <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+                <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+                <script>
 $(document).ready(function() {
     $(document).on('click', '.quantity-btn', function() {
         const btn = $(this);
@@ -569,12 +543,7 @@ $(document).ready(function() {
         });
     });
 });
-</script>
-
-
-
-</body>
-</html>
-
-
-{% endblock %}
+                </script>
+            </body>
+        </html>
+    {% endblock %}

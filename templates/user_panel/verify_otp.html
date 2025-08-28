@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html>
-<head>
-    <title>Account Confirmation</title>
-    <style>
+    <head>
+        <title>Account Confirmation</title>
+        <style>
         body {
             background-color: #1a1a1a;
             color: white;
@@ -34,33 +34,32 @@
         button[type="submit"]:hover {
             background-color: #666;
         }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h2>CONFIRM YOUR ACCOUNT</h2>
-        <p>check the inbox of your email - {{email}} - and enter the otp</p>
-        
-        <form action="{% url 'user_panel:verify_otp'%}" method="POST">
-            {% csrf_token %}
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h2>CONFIRM YOUR ACCOUNT</h2>
+            <p>check the inbox of your email - {{ email }} - and enter the otp</p>
+            <form action="{% url 'user_panel:verify_otp' %}" method="POST">
+                {% csrf_token %}
+                <div>
+                    Enter the otp :
+                    <input type="text" placeholder="enter the otp" name="otp">
+                </div>
+                <br>
+                <br>
+                <button type="submit">Verify</button>
+            </form>
+            <p id="timer">
+                Resend OTP in <span id="countdown">30</span> seconds
+            </p>
+            <button id="resendBtn" onclick="resendOTP()" disabled>Resend OTP</button>
             <div>
-                Enter the otp : <input type="text" placeholder="enter the otp" name="otp">
+                {% if messages %}
+                    {% for message in messages %}<script>alert('{{message}}')</script>{% endfor %}
+                {% endif %}
             </div>
-            <br><br>
-            <button type="submit">Verify</button>
-        </form>
-        <p id="timer">Resend OTP in <span id="countdown">30</span> seconds</p>
-<button id="resendBtn" onclick="resendOTP()" disabled>Resend OTP</button>
-
-<div>
-   {% if messages %}
-    {% for message in messages %}
-        <script>alert('{{message}}')</script>
-    {% endfor %}
-{% endif %}
-</div>
-
-<script>
+            <script>
     let seconds = 30;
     const countdownSpan = document.getElementById("countdown");
     const resendBtn = document.getElementById("resendBtn");
@@ -120,8 +119,7 @@ function resendOTP() {
     })
     .catch(error => console.error("Error:", error));
 }
-</script>
-
-    </div>
-</body>
+            </script>
+        </div>
+    </body>
 </html>

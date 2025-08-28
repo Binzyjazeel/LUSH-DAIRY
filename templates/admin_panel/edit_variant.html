@@ -1,27 +1,25 @@
 {% extends 'admin_panel/bases.html' %}
 {% load static %}
 {% block content %}
-<div class="variant-form-container">
-    <h2>{{ title }} Variant for <span>“{{ product.name }}”</span></h2>
-
-    <form method="POST">
-        {% csrf_token %}
-        <div class="form-fields">
-            {{ form.as_p }}
-        </div>
-
-        <div class="form-actions">
-            <button type="submit" class="btn btn-save">
-                <i class="fas fa-save"></i> {{ title }}
-            </button>
-            <a href="{% url 'admin_panel:manage_variants' product.id %}" class="btn btn-cancel">
-                <i class="fas fa-times"></i> Cancel
-            </a>
-        </div>
-    </form>
-</div>
-
-<style>
+    <div class="variant-form-container">
+        <h2>
+            {{ title }} Variant for <span>“{{ product.name }}”</span>
+        </h2>
+        <form method="POST">
+            {% csrf_token %}
+            <div class="form-fields">{{ form.as_p }}</div>
+            <div class="form-actions">
+                <button type="submit" class="btn btn-save">
+                    <i class="fas fa-save"></i> {{ title }}
+                </button>
+                <a href="{% url 'admin_panel:manage_variants' product.id %}"
+                   class="btn btn-cancel">
+                    <i class="fas fa-times"></i> Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+    <style>
     :root {
         --primary-color: #4d8b31;
         --danger-color: #dc3545;
@@ -131,5 +129,5 @@
         from { opacity: 0; transform: translateY(10px); }
         to { opacity: 1; transform: translateY(0); }
     }
-</style>
+    </style>
 {% endblock %}

@@ -1,14 +1,14 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lush Dairy Admin Dashboard</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
-
-    <style>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Lush Dairy Admin Dashboard</title>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap"
+              rel="stylesheet">
+        <style>
         :root {
             --primary: #4d8b31;
             --primary-dark: #3a6d26;
@@ -120,76 +120,70 @@
             font-size: 18px;
             color: var(--primary-dark);
         }
-    </style>
-</head>
-<body>
-<div class="container">
-
-    <div class="sidebar">
-        <div class="logo">
-            <img src="{% static 'images/logo.png' %}" alt="Logo">
-            
-        </div>
-        <div class="nav-menu">
-            <a href="{% url 'admin_panel:admin_dashboard' %}" class="nav-item active"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
-            <a href="{% url 'admin_panel:admin_order_list' %}" class="nav-item"><i class="fas fa-shopping-cart"></i> Orders</a>
-            <a href="{% url 'admin_panel:product_list' %}" class="nav-item"><i class="fas fa-box"></i> Products</a>
-            <a href="{% url 'admin_panel:sales_report' %}" class="nav-item"><i class="fas fa-chart-line"></i> Sales Report</a>
-            <a href="{% url 'admin_panel:user_list' %}" class="nav-item"><i class="fas fa-users"></i> Customers</a>
-            <a href="{% url 'admin_panel:category_list' %}" class="nav-item"><i class="fas fa-tags"></i> Categories</a>
-            <a href="{% url 'admin_panel:inventory_list' %}" class="nav-item"><i class="fas fa-warehouse"></i> Stock</a>
-            <a href="{% url 'admin_panel:coupon_list' %}" class="nav-item"><i class="fas fa-ticket-alt"></i> Coupons</a>
-            <a href="{% url 'admin_panel:offer_list' %}" class="nav-item"><i class="fas fa-bullhorn"></i> Offers</a>
-            <a href="{% url 'admin_panel:wallet_transactions_list' %}" class="nav-item"><i class="fas fa-wallet"></i> Wallet</a>
-            <a href="{% url 'admin_panel:admin_return_requests' %}" class="nav-item"><i class="fas fa-exchange-alt"></i> Complaints</a>
-            <a href="{% url 'admin_panel:admin_logout' %}" class="nav-item"><i class="fas fa-sign-out-alt"></i> Sign Out</a>
-        </div>
-    </div>
-
-    <div class="main-content">
-        <div class="header">
-            <h1>Dashboard</h1>
-            <form method="get" class="filter-bar">
-                <label for="filter">Filter: </label>
-                <select name="filter" id="filter" onchange="this.form.submit()">
-                    <option value="yearly" {% if filter_type == 'yearly' %}selected{% endif %}>Yearly</option>
-                    <option value="monthly" {% if filter_type == 'monthly' %}selected{% endif %}>Monthly</option>
-                    <option value="weekly" {% if filter_type == 'weekly' %}selected{% endif %}>Weekly</option>
-                </select>
-            </form>
-        </div>
-
-        
-        <div class="stats">
-            <div class="card">
-                <h3>₹{{ total_revenue }}</h3>
-                <p>Total Revenue</p>
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="sidebar">
+                <div class="logo">
+                    <img src="{% static 'images/logo.png' %}" alt="Logo">
+                </div>
+                <div class="nav-menu">
+                    <a href="{% url 'admin_panel:admin_dashboard' %}"
+                       class="nav-item active"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+                    <a href="{% url 'admin_panel:admin_order_list' %}" class="nav-item"><i class="fas fa-shopping-cart"></i> Orders</a>
+                    <a href="{% url 'admin_panel:product_list' %}" class="nav-item"><i class="fas fa-box"></i> Products</a>
+                    <a href="{% url 'admin_panel:sales_report' %}" class="nav-item"><i class="fas fa-chart-line"></i> Sales Report</a>
+                    <a href="{% url 'admin_panel:user_list' %}" class="nav-item"><i class="fas fa-users"></i> Customers</a>
+                    <a href="{% url 'admin_panel:category_list' %}" class="nav-item"><i class="fas fa-tags"></i> Categories</a>
+                    <a href="{% url 'admin_panel:inventory_list' %}" class="nav-item"><i class="fas fa-warehouse"></i> Stock</a>
+                    <a href="{% url 'admin_panel:coupon_list' %}" class="nav-item"><i class="fas fa-ticket-alt"></i> Coupons</a>
+                    <a href="{% url 'admin_panel:offer_list' %}" class="nav-item"><i class="fas fa-bullhorn"></i> Offers</a>
+                    <a href="{% url 'admin_panel:wallet_transactions_list' %}"
+                       class="nav-item"><i class="fas fa-wallet"></i> Wallet</a>
+                    <a href="{% url 'admin_panel:admin_return_requests' %}" class="nav-item"><i class="fas fa-exchange-alt"></i> Complaints</a>
+                    <a href="{% url 'admin_panel:admin_logout' %}" class="nav-item"><i class="fas fa-sign-out-alt"></i> Sign Out</a>
+                </div>
             </div>
-            <div class="card">
-                <h3>{{ total_orders }}</h3>
-                <p>Total Orders</p>
+            <div class="main-content">
+                <div class="header">
+                    <h1>Dashboard</h1>
+                    <form method="get" class="filter-bar">
+                        <label for="filter">Filter:</label>
+                        <select name="filter" id="filter" onchange="this.form.submit()">
+                            <option value="yearly" {% if filter_type == 'yearly' %}selected{% endif %}>Yearly</option>
+                            <option value="monthly" {% if filter_type == 'monthly' %}selected{% endif %}>Monthly</option>
+                            <option value="weekly" {% if filter_type == 'weekly' %}selected{% endif %}>Weekly</option>
+                        </select>
+                    </form>
+                </div>
+                <div class="stats">
+                    <div class="card">
+                        <h3>₹{{ total_revenue }}</h3>
+                        <p>Total Revenue</p>
+                    </div>
+                    <div class="card">
+                        <h3>{{ total_orders }}</h3>
+                        <p>Total Orders</p>
+                    </div>
+                    <div class="card">
+                        <h3>{{ total_customers }}</h3>
+                        <p>Customers</p>
+                    </div>
+                </div>
+                <!-- Charts -->
+                <div class="chart-section">
+                    <h2>Best Selling Products</h2>
+                    <canvas id="productsChart"></canvas>
+                </div>
+                <div class="chart-section">
+                    <h2>Best Selling Categories</h2>
+                    <canvas id="categoriesChart"></canvas>
+                </div>
             </div>
-            <div class="card">
-                <h3>{{ total_customers }}</h3>
-                <p>Customers</p>
-            </div>
-            
         </div>
-
-        <!-- Charts -->
-        <div class="chart-section">
-            <h2>Best Selling Products</h2>
-            <canvas id="productsChart"></canvas>
-        </div>
-        <div class="chart-section">
-            <h2>Best Selling Categories</h2>
-            <canvas id="categoriesChart"></canvas>
-        </div>
-    </div>
-</div>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/js/all.min.js"></script>
-<script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/js/all.min.js"></script>
+        <script>
     const bestProducts = {{ best_products|safe }} || [];
     const bestCategories = {{ best_categories|safe }} || [];
 
@@ -238,6 +232,6 @@
         bestCategories.map(c => c.total_sold),
         'Units Sold'
     );
-</script>
-</body>
+        </script>
+    </body>
 </html>

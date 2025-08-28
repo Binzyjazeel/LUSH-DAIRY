@@ -1,12 +1,12 @@
 {% extends 'admin_panel/base.html' %}
 {% block content %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lush Dairy Admin</title>
-    <style>
+    <!DOCTYPE html>
+    <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Lush Dairy Admin</title>
+            <style>
         body {
             font-family: Arial, sans-serif;
             background-color: #e8f5e9;
@@ -99,45 +99,32 @@
         .login-btn:hover {
             background-color: #146c2a;
         }
-    </style>
-</head>
-<body>
-    <div class="login-container">
-        
-        <div class="admin-title">ADMIN</div>
-        
-       
-        
-        <div class="divider">
-            
-        </div>
-        
-        <form method="POST" action="{% url 'admin_panel:admin_login' %}">
-            {% csrf_token %}
-            <input type="text" placeholder="Username"  name="username" required>
-            <input type="password" placeholder="Password" name="password" required>
-            <button type="submit" class="login-btn">Login</button>
-        </form>
-    </div>
-    <div>
-        {% if messages %}
-    <ul>
-        {% for message in messages %}
-            <li style="color: red;">{{ message }}</li>
-        {% endfor %}
-    </ul>
-{% endif %}
-
-    </div>
-
-    <script>
-       
-
+            </style>
+        </head>
+        <body>
+            <div class="login-container">
+                <div class="admin-title">ADMIN</div>
+                <div class="divider"></div>
+                <form method="POST" action="{% url 'admin_panel:admin_login' %}">
+                    {% csrf_token %}
+                    <input type="text" placeholder="Username"  name="username" required>
+                    <input type="password" placeholder="Password" name="password" required>
+                    <button type="submit" class="login-btn">Login</button>
+                </form>
+            </div>
+            <div>
+                {% if messages %}
+                    <ul>
+                        {% for message in messages %}<li style="color: red;">{{ message }}</li>{% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+            <script>
         document.querySelector('.google-btn').addEventListener('click', function() {
             // In a real application, this would redirect to Google OAuth
             alert('Google login clicked! In a real application, this would redirect to Google authentication.');
         });
-    </script>
-</body>
-</html>
+            </script>
+        </body>
+    </html>
 {% endblock %}

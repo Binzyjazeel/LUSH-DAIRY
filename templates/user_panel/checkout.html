@@ -1,9 +1,8 @@
 {% extends 'user_panel/base.html' %}
 {% load static %}
 {% load form_tags %}
-
 {% block content %}
-<style>
+    <style>
     /* Smooth hover for cards */
     .card-hover:hover {
         transform: translateY(-3px);
@@ -31,202 +30,221 @@
         font-size: 1rem;
         font-weight: bold;
     }
-</style>
-
-<div class="container my-5">
-  <div class="row g-4">
-
-    <!-- Address Section -->
-    <div class="col-md-6">
-      <div class="section-box">
-        <h3 class="mb-4 text-primary fw-bold">📍 Select Delivery Address</h3>
-        <form id="orderForm" method="POST" action="{% url 'user_panel:place_order' %}">
-          {% csrf_token %}
-          
-          {% if addresses %}
-            {% for address in addresses %}
-              <div class="card card-hover mb-3 border-0 shadow-sm {% if address.id == default_address.id %}border-success border-2{% endif %} rounded-4">
-                <div class="card-body d-flex align-items-start">
-                  <input type="radio" id="address{{ address.id }}" name="address" value="{{ address.id }}" 
-                         class="form-check-input me-3 mt-1"
-                         {% if address.id == default_address.id %}checked{% endif %}>
-                  <div>
-                    <h6 class="fw-bold mb-1">{{ address.name }}</h6>
-                    <p class="mb-0 text-muted small">
-                      {{ address.house }}, {{ address.street }}, {{ address.city }}<br>
-                      {{ address.state }}, {{ address.pincode }}<br>
-                      📞 {{ address.phone }}
-                    </p>
-                  </div>
-                  <a href="{% url 'user_panel:edit_address' address.id %}" class="ms-auto btn btn-outline-primary btn-sm rounded-circle">
-                    <i class="bi bi-pencil"></i>
-                  </a>
+    </style>
+    <div class="container my-5">
+        <div class="row g-4">
+            <!-- Address Section -->
+            <div class="col-md-6">
+                <div class="section-box">
+                    <h3 class="mb-4 text-primary fw-bold">📍 Select Delivery Address</h3>
+                    <form id="orderForm"
+                          method="POST"
+                          action="{% url 'user_panel:place_order' %}">
+                        {% csrf_token %}
+                        {% if addresses %}
+                            {% for address in addresses %}
+                                <div class="card card-hover mb-3 border-0 shadow-sm {% if address.id == default_address.id %}border-success border-2{% endif %} rounded-4">
+                                    <div class="card-body d-flex align-items-start">
+                                        <input type="radio"
+                                               id="address{{ address.id }}"
+                                               name="address"
+                                               value="{{ address.id }}"
+                                               class="form-check-input me-3 mt-1"
+                                               {% if address.id == default_address.id %}checked{% endif %}>
+                                        <div>
+                                            <h6 class="fw-bold mb-1">{{ address.name }}</h6>
+                                            <p class="mb-0 text-muted small">
+                                                {{ address.house }}, {{ address.street }}, {{ address.city }}
+                                                <br>
+                                                {{ address.state }}, {{ address.pincode }}
+                                                <br>
+                                                📞 {{ address.phone }}
+                                            </p>
+                                        </div>
+                                        <a href="{% url 'user_panel:edit_address' address.id %}"
+                                           class="ms-auto btn btn-outline-primary btn-sm rounded-circle">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <p class="text-warning fst-italic">No address found. Please add one below.</p>
+                        {% endif %}
+                        <!-- Add New Address Trigger -->
+                        <button type="button"
+                                class="btn btn-outline-primary btn-sm w-100 mt-3"
+                                data-bs-toggle="modal"
+                                data-bs-target="#addAddressModal">
+                            <i class="bi bi-plus-circle me-2"></i> Add New Address
+                        </button>
+                        {% if wallet and wallet.balance > 0 %}
+                            <div class="mt-4 p-3 border rounded shadow-sm bg-light">
+                                <p class="mb-1 fw-semibold text-success">💰 Wallet Balance: ₹{{ wallet.balance }}</p>
+                                <label class="form-check-label">
+                                    <input type="checkbox"
+                                           name="use_wallet"
+                                           value="true"
+                                           class="form-check-input me-2">
+                                    Use Wallet Balance for this order
+                                </label>
+                            </div>
+                        {% endif %}
+                        {% if final_total <= 1000 %}
+                            <!-- COD Button -->
+                            <button type="submit"
+                                    name="payment_method"
+                                    value="COD"
+                                    class="btn w-100 py-3 fw-bold text-white mt-4"
+                                    style="background: linear-gradient(90deg, #28a745, #218838)">
+                                <i class="bi bi-cash-coin me-2"></i> Place Order (Cash on Delivery)
+                            </button>
+                        {% else %}
+                            <button class="btn w-100 py-3 fw-bold text-white mt-4"
+                                    disabled
+                                    style="background: gray">COD not available for orders above ₹1000</button>
+                        {% endif %}
+                        <!-- Online Payment Button -->
+                        <button type="submit"
+                                formaction="{% url 'user_panel:razorpay_checkout' %}"
+                                class="btn w-100 py-3 fw-bold text-white mt-3"
+                                style="background: linear-gradient(90deg, #dc3545, #c82333)">
+                            💳 Pay Now (Online)
+                        </button>
+                    </form>
                 </div>
-              </div>
-            {% endfor %}
-          {% else %}
-            <p class="text-warning fst-italic">
-              No address found. Please add one below.
-            </p>
-          {% endif %}
-
-          <!-- Add New Address Trigger -->
-          <button type="button" class="btn btn-outline-primary btn-sm w-100 mt-3" data-bs-toggle="modal" data-bs-target="#addAddressModal">
-            <i class="bi bi-plus-circle me-2"></i> Add New Address
-          </button>
-
-          {% if wallet and wallet.balance > 0 %}
-            <div class="mt-4 p-3 border rounded shadow-sm bg-light">
-              <p class="mb-1 fw-semibold text-success">💰 Wallet Balance: ₹{{ wallet.balance }}</p>
-              <label class="form-check-label">
-                <input type="checkbox" name="use_wallet" value="true" class="form-check-input me-2">
-                Use Wallet Balance for this order
-              </label>
             </div>
-          {% endif %}
-
-          {% if final_total <= 1000 %}
-  <!-- COD Button -->
-  <button type="submit" name="payment_method" value="COD"
-          class="btn w-100 py-3 fw-bold text-white mt-4"
-          style="background: linear-gradient(90deg, #28a745, #218838);">
-      <i class="bi bi-cash-coin me-2"></i> Place Order (Cash on Delivery)
-  </button>
-{% else %}
-  <button class="btn w-100 py-3 fw-bold text-white mt-4" disabled
-          style="background: gray;">
-      COD not available for orders above ₹1000
-  </button>
-{% endif %}
-
-
-          <!-- Online Payment Button -->
-          <button type="submit" formaction="{% url 'user_panel:razorpay_checkout' %}" class="btn w-100 py-3 fw-bold text-white mt-3" style="background: linear-gradient(90deg, #dc3545, #c82333);">
-            💳 Pay Now (Online)
-          </button>
-        </form>
-      </div>
-    </div>
-
-    <!-- Order Summary -->
-    <div class="col-md-6">
-      <div class="section-box">
-        <h3 class="mb-4 text-primary fw-bold">🛒 Order Summary</h3>
-
-        <!-- Coupons For You -->
-        <div class="coupon-box border p-3 rounded-4 mb-4 bg-light shadow-sm">
-          <h5 class="fw-bold mb-3"><i class="bi bi-ticket-perforated-fill text-warning me-2"></i>Coupons For You</h5>
-          {% if available_coupons %}
-              <ul class="list-unstyled mb-0">
-                  {% for c in available_coupons %}
-                      <li class="mb-2 p-2 bg-white rounded-3 shadow-sm d-flex justify-content-between align-items-center">
-                          <div>
-                              <strong>{{ c.code }}</strong> 
-                              <span class="badge bg-success">{{ c.discount_percentage }}% OFF</span>
-                          </div>
-                      </li>
-                  {% endfor %}
-              </ul>
-          {% else %}
-              <p class="text-muted">No coupons available at the moment.</p>
-          {% endif %}
-        </div>
-
-        <!-- Apply Coupon -->
-        <form id="coupon-form" method="POST" class="mb-4">
-          {% csrf_token %}
-          <div class="input-group">
-            <input type="text" id="coupon_code" name="coupon_code" class="form-control"
-                   placeholder="Enter coupon code"
-                   {% if applied_coupon %}value="{{ applied_coupon_code }}" disabled{% endif %}>
-            {% if applied_coupon %}
-              <button type="submit" name="remove_coupon" class="btn btn-danger" id="remove-coupon-btn">Remove</button>
-            {% else %}
-              <button type="submit" name="apply_coupon" class="btn btn-primary" id="apply-coupon-btn">Apply</button>
-            {% endif %}
-          </div>
-        </form>
-
-        <!-- Cart Items -->
-        <div class="card shadow-sm p-4 rounded-4 mb-4">
-          {% for item in cart_items %}
-            <div class="d-flex align-items-center mb-4">
-              <img src="{{ item.product.main_image.url }}" alt="{{ item.product.name }}" width="70" height="70" class="rounded-3 border me-3 object-fit-cover">
-              <div class="flex-grow-1">
-                <h6 class="mb-1 fw-bold">{{ item.product.name }}</h6>
-                <small class="text-muted">{{ item.product_variant.variant_name }}</small><br>
-                <small>Qty: <span class="fw-semibold">{{ item.quantity }}</span></small><br>
-                <small>Price: ₹{{ item.product_variant.price|floatformat:2 }}</small>
-              </div>
+            <!-- Order Summary -->
+            <div class="col-md-6">
+                <div class="section-box">
+                    <h3 class="mb-4 text-primary fw-bold">🛒 Order Summary</h3>
+                    <!-- Coupons For You -->
+                    <div class="coupon-box border p-3 rounded-4 mb-4 bg-light shadow-sm">
+                        <h5 class="fw-bold mb-3">
+                            <i class="bi bi-ticket-perforated-fill text-warning me-2"></i>Coupons For You
+                        </h5>
+                        {% if available_coupons %}
+                            <ul class="list-unstyled mb-0">
+                                {% for c in available_coupons %}
+                                    <li class="mb-2 p-2 bg-white rounded-3 shadow-sm d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <strong>{{ c.code }}</strong>
+                                            <span class="badge bg-success">{{ c.discount_percentage }}% OFF</span>
+                                        </div>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p class="text-muted">No coupons available at the moment.</p>
+                        {% endif %}
+                    </div>
+                    <!-- Apply Coupon -->
+                    <form id="coupon-form" method="POST" class="mb-4">
+                        {% csrf_token %}
+                        <div class="input-group">
+                            <input type="text"
+                                   id="coupon_code"
+                                   name="coupon_code"
+                                   class="form-control"
+                                   placeholder="Enter coupon code"
+                                   {% if applied_coupon %}value="{{ applied_coupon_code }}" disabled{% endif %}>
+                            {% if applied_coupon %}
+                                <button type="submit"
+                                        name="remove_coupon"
+                                        class="btn btn-danger"
+                                        id="remove-coupon-btn">Remove</button>
+                            {% else %}
+                                <button type="submit"
+                                        name="apply_coupon"
+                                        class="btn btn-primary"
+                                        id="apply-coupon-btn">Apply</button>
+                            {% endif %}
+                        </div>
+                    </form>
+                    <!-- Cart Items -->
+                    <div class="card shadow-sm p-4 rounded-4 mb-4">
+                        {% for item in cart_items %}
+                            <div class="d-flex align-items-center mb-4">
+                                <img src="{{ item.product.main_image.url }}"
+                                     alt="{{ item.product.name }}"
+                                     width="70"
+                                     height="70"
+                                     class="rounded-3 border me-3 object-fit-cover">
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-1 fw-bold">{{ item.product.name }}</h6>
+                                    <small class="text-muted">{{ item.product_variant.variant_name }}</small>
+                                    <br>
+                                    <small>Qty: <span class="fw-semibold">{{ item.quantity }}</span></small>
+                                    <br>
+                                    <small>Price: ₹{{ item.product_variant.price|floatformat:2 }}</small>
+                                </div>
+                            </div>
+                            {% if not forloop.last %}<hr class="my-3">{% endif %}
+                        {% endfor %}
+                    </div>
+                    <!-- Price Breakdown -->
+                    <div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="price-label">Subtotal</span>
+                            <span id="subtotal" class="price-value text-dark">₹{{ subtotal|floatformat:2 }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2 text-success"
+                             id="discount-row"
+                             style="{% if not coupon_discount %}display: none;
+                                    {% endif %}">
+                            <span class="price-label">
+                                Coupon Discount
+                                {% if applied_coupon_code %}({{ applied_coupon_code }}){% endif %}
+                            </span>
+                            <span id="coupon-discount">-₹{{ coupon_discount|floatformat:2 }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="price-label">Shipping</span>
+                            <span id="shipping" class="price-value text-dark">₹{{ shipping|default_if_none:"0.00" }}</span>
+                        </div>
+                        <hr>
+                        <div class="d-flex justify-content-between fs-5 fw-bold text-primary">
+                            <span>Total</span>
+                            <span id="final-total">₹{{ final_total|floatformat:2 }}</span>
+                        </div>
+                    </div>
+                </div>
             </div>
-            {% if not forloop.last %}
-              <hr class="my-3">
-            {% endif %}
-          {% endfor %}
         </div>
-
-        <!-- Price Breakdown -->
-        <div>
-          <div class="d-flex justify-content-between mb-2">
-            <span class="price-label">Subtotal</span>
-            <span id="subtotal" class="price-value text-dark">₹{{ subtotal|floatformat:2 }}</span>
-          </div>
-
-          <div class="d-flex justify-content-between mb-2 text-success" id="discount-row" style="{% if not coupon_discount %}display: none;{% endif %}">
-            <span class="price-label">
-                Coupon Discount {% if applied_coupon_code %} ({{ applied_coupon_code }}){% endif %}
-            </span>
-            <span id="coupon-discount">-₹{{ coupon_discount|floatformat:2 }}</span>
-          </div>
-
-          <div class="d-flex justify-content-between mb-2">
-            <span class="price-label">Shipping</span>
-            <span id="shipping" class="price-value text-dark">₹{{ shipping|default_if_none:"0.00" }}</span>
-          </div>
-
-          <hr>
-          <div class="d-flex justify-content-between fs-5 fw-bold text-primary">
-            <span>Total</span>
-            <span id="final-total">₹{{ final_total|floatformat:2 }}</span>
-          </div>
-        </div>
-      </div>
     </div>
-  </div>
-</div>
-
-<!-- Add Address Modal -->
-<div class="modal fade" id="addAddressModal" tabindex="-1" aria-labelledby="addAddressModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg modal-dialog-centered">
-    <div class="modal-content">
-      <form method="POST" action="{% url 'user_panel:add_address_checkout' %}">
-        {% csrf_token %}
-        <div class="modal-header">
-          <h5 class="modal-title text-primary fw-bold">Add New Address</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-        </div>
-        <div class="modal-body">
-          {% for field in address_form %}
-            <div class="mb-3">
-              <label class="form-label">{{ field.label }}</label>
-              {{ field|add_class:"form-control" }}
-              {% for error in field.errors %}
-                <div class="text-danger small">{{ error }}</div>
-              {% endfor %}
+    <!-- Add Address Modal -->
+    <div class="modal fade"
+         id="addAddressModal"
+         tabindex="-1"
+         aria-labelledby="addAddressModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <form method="POST" action="{% url 'user_panel:add_address_checkout' %}">
+                    {% csrf_token %}
+                    <div class="modal-header">
+                        <h5 class="modal-title text-primary fw-bold">Add New Address</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        {% for field in address_form %}
+                            <div class="mb-3">
+                                <label class="form-label">{{ field.label }}</label>
+                                {{ field|add_class:"form-control" }}
+                                {% for error in field.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-save me-1"></i> Save Address
+                        </button>
+                    </div>
+                </form>
             </div>
-          {% endfor %}
         </div>
-        <div class="modal-footer">
-          <button type="submit" class="btn btn-primary">
-            <i class="bi bi-save me-1"></i> Save Address
-          </button>
-        </div>
-      </form>
     </div>
-  </div>
-</div>
-
-<script>
+    <script>
 document.getElementById('coupon-form').addEventListener('submit', function(e) {
     e.preventDefault();
     const couponCode = document.getElementById('coupon_code').value;
@@ -268,5 +286,5 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 });
-</script>
+    </script>
 {% endblock %}

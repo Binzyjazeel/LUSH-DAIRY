@@ -1,56 +1,58 @@
 {% extends 'admin_panel/bases.html' %}
 {% load static %}
 {% block content %}
-<div class="variant-container">
-    <h2>Manage Variants for <strong>{{ product.name }}</strong></h2>
-
-    <div class="variant-actions">
-        <a href="{% url 'admin_panel:product_list' %}" class="btn btn-secondary btn-lg">
-            <i class="fas fa-arrow-left"></i> Back to Products
-        </a>
-        <a href="{% url 'admin_panel:add_variant' product.id %}" class="btn btn-add btn-lg">
-            <i class="fas fa-plus"></i> Add Variant
-        </a>
+    <div class="variant-container">
+        <h2>
+            Manage Variants for <strong>{{ product.name }}</strong>
+        </h2>
+        <div class="variant-actions">
+            <a href="{% url 'admin_panel:product_list' %}"
+               class="btn btn-secondary btn-lg">
+                <i class="fas fa-arrow-left"></i> Back to Products
+            </a>
+            <a href="{% url 'admin_panel:add_variant' product.id %}"
+               class="btn btn-add btn-lg">
+                <i class="fas fa-plus"></i> Add Variant
+            </a>
+        </div>
+        {% if variants %}
+            <div class="variant-table-wrapper">
+                <table class="variant-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Price</th>
+                            <th>Stock</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for variant in variants %}
+                            <tr>
+                                <td>{{ variant.variant_name }}</td>
+                                <td>₹{{ variant.price }}</td>
+                                <td>{{ variant.stock }}</td>
+                                <td>
+                                    <a href="{% url 'admin_panel:edit_variant' variant.id %}"
+                                       class="btn btn-edit">
+                                        <i class="fas fa-edit"></i> Edit
+                                    </a>
+                                    <a href="{% url 'admin_panel:delete_variant' variant.id %}"
+                                       class="btn btn-delete"
+                                       onclick="return confirm('Are you sure you want to delete this variant?');">
+                                        <i class="fas fa-trash"></i> Delete
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="no-data">No variants available for this product.</div>
+        {% endif %}
     </div>
-
-    {% if variants %}
-    <div class="variant-table-wrapper">
-        <table class="variant-table">
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Price</th>
-                    <th>Stock</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for variant in variants %}
-                <tr>
-                    <td>{{ variant.variant_name }}</td>
-                    <td>₹{{ variant.price }}</td>
-                    <td>{{ variant.stock }}</td>
-                    <td>
-                        <a href="{% url 'admin_panel:edit_variant' variant.id %}" class="btn btn-edit">
-                            <i class="fas fa-edit"></i> Edit
-                        </a>
-                        <a href="{% url 'admin_panel:delete_variant' variant.id %}" 
-                           class="btn btn-delete"
-                           onclick="return confirm('Are you sure you want to delete this variant?');">
-                            <i class="fas fa-trash"></i> Delete
-                        </a>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-    {% else %}
-    <div class="no-data">No variants available for this product.</div>
-    {% endif %}
-</div>
-
-<style>
+    <style>
     /* Container styling */
     .variant-container {
         background: #fff;
@@ -171,5 +173,5 @@
         padding: 25px;
         font-style: italic;
     }
-</style>
+    </style>
 {% endblock %}

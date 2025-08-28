@@ -1,12 +1,13 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sales Report - Lush Dairy Admin</title>
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
-  <style>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Sales Report - Lush Dairy Admin</title>
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+              rel="stylesheet">
+        <style>
     :root {
       --primary-color: #4d8b31;
       --secondary-color: #f3fdf4;
@@ -174,139 +175,138 @@
     .user-info .avatar {
       font-size: 16px;
     }
-  </style>
-</head>
-<body>
-<div class="container">
-
-  <!-- Sidebar -->
-  <div class="sidebar">
-    <div class="logo">
-      <img src="{% static 'images/logo.png' %}" alt="Lush Dairy Logo">
-    </div>
-    <div class="nav-menu">
-     <a href="{% url 'admin_panel:admin_dashboard' %}" class="nav-item">
-  <i class="fas fa-tachometer-alt"></i> Dashboard
-</a>
-<a href="{% url 'admin_panel:admin_order_list' %}" class="nav-item active">
-  <i class="fas fa-shopping-cart"></i> Orders
-</a>
-<a href="{% url 'admin_panel:product_list' %}" class="nav-item">
-  <i class="fas fa-box"></i> Products
-</a>
-<a href="{% url 'admin_panel:sales_report' %}" class="nav-item">
-  <i class="fas fa-chart-line"></i> Sales Report
-</a>
-<a href="{% url 'admin_panel:user_list' %}" class="nav-item">
-  <i class="fas fa-users"></i> Customers
-</a>
-<a href="{% url 'admin_panel:category_list' %}" class="nav-item">
-  <i class="fas fa-tags"></i> Categories
-</a>
-<a href="{% url 'admin_panel:inventory_list' %}" class="nav-item">
-  <i class="fas fa-warehouse"></i> Stock
-</a>
-<a href="{% url 'admin_panel:coupon_list' %}" class="nav-item">
-  <i class="fas fa-ticket-alt"></i> Coupons
-</a>
-<a href="{% url 'admin_panel:offer_list' %}" class="nav-item">
-  <i class="fas fa-bullhorn"></i> Offers
-</a>
-<a href="{% url 'admin_panel:wallet_transactions_list' %}" class="nav-item">
-  <i class="fas fa-wallet"></i> Wallet
-</a>
-<a href="{% url 'admin_panel:admin_return_requests' %}" class="nav-item">
-  <i class="fas fa-exchange-alt"></i> Complaints
-</a>
-<a href="{% url 'admin_panel:admin_logout' %}" class="nav-item">
-  <i class="fas fa-sign-out-alt"></i> Sign Out
-</a>
-    </div>
-  </div>
-
-  <!-- Main Content -->
-  <div class="main-content">
-    <div class="header">
-      <h2>Sales Report</h2>
-      <div class="user-info">
-        <div class="avatar"><i class="fas fa-user"></i><span> Admin</span></div>
-      </div>
-    </div>
-
-    <div class="section">
-      <!-- Filter Form -->
-      <form method="get" class="filter-form">
-        <label>Date Range:</label>
-        <input type="date" name="start_date" value="{{ request.GET.start_date }}">
-        <input type="date" name="end_date" value="{{ request.GET.end_date }}">
-         <input type="hidden" name="period" value="custom">
-<label>Status:</label>
-<select name="status">
-  <option value="">All</option>
-  {% for s in statuses %}
-    <option value="{{ s }}" {% if s == selected_status %}selected{% endif %}>{{ s }}</option>
-  {% endfor %}
-</select>
-        <button type="submit">Filter</button>
-      </form>
-        <form method="get" class="filter-form">
-        <label>Quick Filter:</label>
-        <select name="period" onchange="this.form.submit()">
-          <option value="">-- Select --</option>
-          <option value="day" {% if request.GET.period == 'day' %}selected{% endif %}>Today</option>
-          <option value="week" {% if request.GET.period == 'week' %}selected{% endif %}>This Week</option>
-          <option value="month" {% if request.GET.period == 'month' %}selected{% endif %}>This Month</option>
-          <option value="year" {% if request.GET.period == 'year' %}selected{% endif %}>This Year</option>
-        </select>
-      </form>
-
-      <!-- Stats Summary -->
-      <div class="stats">
-        <h4>Total Orders: {{ aggregated_data.total_orders|default:"0" }}</h4>
-<h4>Total Sales: ₹{{ aggregated_data.total_sales|default:"0.00"|floatformat:2 }}</h4>
-<h4>Total Discount: ₹{{ aggregated_data.total_discount|default:"0.00"|floatformat:2 }}</h4>
-      </div>
-
-      <!-- Sales by Status Table -->
-      <h2 style="font-size: 20px; margin-top: 30px;">Sales by Order Status</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Status</th>
-            <th>Total Orders</th>
-            <th>Total Revenue</th>
-            <th>Total Discount</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for status in status_summary %}
-          <tr>
-            <td>{{ status.status }}</td>
-            <td>{{ status.total_orders }}</td>
-            <td>₹{{ status.total_revenue|floatformat:2 }}</td>
-            <td>₹{{ status.total_discount|floatformat:2 }}</td>
-          </tr>
-          {% empty %}
-          <tr>
-            <td colspan="4" style="text-align:center; color: #888; padding: 15px;">No data available for this period.</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-
-      <!-- Download Buttons -->
-      <div class="download-links">
-        <a href="{% url 'admin_panel:download_sales_pdf' %}?{{ request.GET.urlencode }}">
-          <i class="fas fa-file-pdf"></i> Download PDF
-        </a>
-        <a href="{% url 'admin_panel:download_sales_excel' %}?{{ request.GET.urlencode }}">
-          <i class="fas fa-file-excel"></i> Download Excel
-        </a>
-      </div>
-    </div>
-  </div>
-</div>
-<script>
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <div class="logo">
+                    <img src="{% static 'images/logo.png' %}" alt="Lush Dairy Logo">
+                </div>
+                <div class="nav-menu">
+                    <a href="{% url 'admin_panel:admin_dashboard' %}" class="nav-item">
+                        <i class="fas fa-tachometer-alt"></i> Dashboard
+                    </a>
+                    <a href="{% url 'admin_panel:admin_order_list' %}"
+                       class="nav-item active">
+                        <i class="fas fa-shopping-cart"></i> Orders
+                    </a>
+                    <a href="{% url 'admin_panel:product_list' %}" class="nav-item">
+                        <i class="fas fa-box"></i> Products
+                    </a>
+                    <a href="{% url 'admin_panel:sales_report' %}" class="nav-item">
+                        <i class="fas fa-chart-line"></i> Sales Report
+                    </a>
+                    <a href="{% url 'admin_panel:user_list' %}" class="nav-item">
+                        <i class="fas fa-users"></i> Customers
+                    </a>
+                    <a href="{% url 'admin_panel:category_list' %}" class="nav-item">
+                        <i class="fas fa-tags"></i> Categories
+                    </a>
+                    <a href="{% url 'admin_panel:inventory_list' %}" class="nav-item">
+                        <i class="fas fa-warehouse"></i> Stock
+                    </a>
+                    <a href="{% url 'admin_panel:coupon_list' %}" class="nav-item">
+                        <i class="fas fa-ticket-alt"></i> Coupons
+                    </a>
+                    <a href="{% url 'admin_panel:offer_list' %}" class="nav-item">
+                        <i class="fas fa-bullhorn"></i> Offers
+                    </a>
+                    <a href="{% url 'admin_panel:wallet_transactions_list' %}"
+                       class="nav-item">
+                        <i class="fas fa-wallet"></i> Wallet
+                    </a>
+                    <a href="{% url 'admin_panel:admin_return_requests' %}" class="nav-item">
+                        <i class="fas fa-exchange-alt"></i> Complaints
+                    </a>
+                    <a href="{% url 'admin_panel:admin_logout' %}" class="nav-item">
+                        <i class="fas fa-sign-out-alt"></i> Sign Out
+                    </a>
+                </div>
+            </div>
+            <!-- Main Content -->
+            <div class="main-content">
+                <div class="header">
+                    <h2>Sales Report</h2>
+                    <div class="user-info">
+                        <div class="avatar">
+                            <i class="fas fa-user"></i><span>Admin</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="section">
+                    <!-- Filter Form -->
+                    <form method="get" class="filter-form">
+                        <label>Date Range:</label>
+                        <input type="date" name="start_date" value="{{ request.GET.start_date }}">
+                        <input type="date" name="end_date" value="{{ request.GET.end_date }}">
+                        <input type="hidden" name="period" value="custom">
+                        <label>Status:</label>
+                        <select name="status">
+                            <option value="">All</option>
+                            {% for s in statuses %}
+                                <option value="{{ s }}" {% if s == selected_status %}selected{% endif %}>{{ s }}</option>
+                            {% endfor %}
+                        </select>
+                        <button type="submit">Filter</button>
+                    </form>
+                    <form method="get" class="filter-form">
+                        <label>Quick Filter:</label>
+                        <select name="period" onchange="this.form.submit()">
+                            <option value="">-- Select --</option>
+                            <option value="day" {% if request.GET.period == 'day' %}selected{% endif %}>Today</option>
+                            <option value="week" {% if request.GET.period == 'week' %}selected{% endif %}>This Week</option>
+                            <option value="month"
+                                    {% if request.GET.period == 'month' %}selected{% endif %}>This Month</option>
+                            <option value="year" {% if request.GET.period == 'year' %}selected{% endif %}>This Year</option>
+                        </select>
+                    </form>
+                    <!-- Stats Summary -->
+                    <div class="stats">
+                        <h4>Total Orders: {{ aggregated_data.total_orders|default:"0" }}</h4>
+                        <h4>Total Sales: ₹{{ aggregated_data.total_sales|default:"0.00"|floatformat:2 }}</h4>
+                        <h4>Total Discount: ₹{{ aggregated_data.total_discount|default:"0.00"|floatformat:2 }}</h4>
+                    </div>
+                    <!-- Sales by Status Table -->
+                    <h2 style="font-size: 20px; margin-top: 30px;">Sales by Order Status</h2>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Status</th>
+                                <th>Total Orders</th>
+                                <th>Total Revenue</th>
+                                <th>Total Discount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for status in status_summary %}
+                                <tr>
+                                    <td>{{ status.status }}</td>
+                                    <td>{{ status.total_orders }}</td>
+                                    <td>₹{{ status.total_revenue|floatformat:2 }}</td>
+                                    <td>₹{{ status.total_discount|floatformat:2 }}</td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="4" style="text-align:center; color: #888; padding: 15px;">No data available for this period.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    <!-- Download Buttons -->
+                    <div class="download-links">
+                        <a href="{% url 'admin_panel:download_sales_pdf' %}?{{ request.GET.urlencode }}">
+                            <i class="fas fa-file-pdf"></i> Download PDF
+                        </a>
+                        <a href="{% url 'admin_panel:download_sales_excel' %}?{{ request.GET.urlencode }}">
+                            <i class="fas fa-file-excel"></i> Download Excel
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script>
   const periodSelect = document.querySelector('select[name="period"]');
   const hiddenPeriodInput = document.querySelector('input[name="period"][type="hidden"]');
 
@@ -316,8 +316,6 @@
       hiddenPeriodInput.remove();
     }
   });
-</script>
-
-</body>
-
+        </script>
+    </body>
 </html>

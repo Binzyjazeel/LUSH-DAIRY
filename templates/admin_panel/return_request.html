@@ -1,160 +1,173 @@
 {% extends 'admin_panel/base.html' %}
 {% load static %}
 {% block content %}
-<div class="container">
-  <!-- Sidebar -->
-  <div class="sidebar">
-    <div class="logo">
-      <img src="{% static 'images/logo.png' %}" alt="Lush Dairy Logo">
-      
-    </div>
-    <div class="nav-menu">
-      <a href="{% url 'admin_panel:admin_dashboard' %}" class="nav-item">
-  <i class="fas fa-tachometer-alt"></i> Dashboard
-</a>
-<a href="{% url 'admin_panel:admin_order_list' %}" class="nav-item active">
-  <i class="fas fa-shopping-cart"></i> Orders
-</a>
-<a href="{% url 'admin_panel:product_list' %}" class="nav-item">
-  <i class="fas fa-box"></i> Products
-</a>
-<a href="{% url 'admin_panel:sales_report' %}" class="nav-item">
-  <i class="fas fa-chart-line"></i> Sales Report
-</a>
-<a href="{% url 'admin_panel:user_list' %}" class="nav-item">
-  <i class="fas fa-users"></i> Customers
-</a>
-<a href="{% url 'admin_panel:category_list' %}" class="nav-item">
-  <i class="fas fa-tags"></i> Categories
-</a>
-<a href="{% url 'admin_panel:inventory_list' %}" class="nav-item">
-  <i class="fas fa-warehouse"></i> Stock
-</a>
-<a href="{% url 'admin_panel:coupon_list' %}" class="nav-item">
-  <i class="fas fa-ticket-alt"></i> Coupons
-</a>
-<a href="{% url 'admin_panel:offer_list' %}" class="nav-item">
-  <i class="fas fa-bullhorn"></i> Offers
-</a>
-<a href="{% url 'admin_panel:wallet_transactions_list' %}" class="nav-item">
-  <i class="fas fa-wallet"></i> Wallet
-</a>
-<a href="{% url 'admin_panel:admin_return_requests' %}" class="nav-item">
-  <i class="fas fa-exchange-alt"></i> Complaints
-</a>
-<a href="{% url 'admin_panel:admin_logout' %}" class="nav-item">
-  <i class="fas fa-sign-out-alt"></i> Sign Out
-</a>
-    </div>
-  </div>
-
-  <!-- Main content -->
-  <div class="main-content">
-    <!-- Header -->
-    <div class="header d-flex justify-content-between align-items-center mb-4">
-      <form class="search-bar" method="get" action="{% url 'admin_panel:admin_return_requests' %}">
-        <input type="text" name="search" placeholder="Search complaints or orders...">
-        <button type="submit"><i class="fas fa-search"></i></button>
-      </form>
-      <div class="user-info d-flex align-items-center">
-        <div class="avatar"><i class="fas fa-user"></i></div>
-        <span class="ms-2">Admin</span>
-      </div>
-    </div>
-
-    <!-- Complaints Section -->
-    <div class="categories-section">
-      <div class="section-header d-flex justify-content-between align-items-center mb-3">
-        <h2 class="section-title">Complaints & Issues</h2>
-      </div>
-      <div class="table-responsive">
-        <table class="categories-table table-hover">
-          <thead>
-            <tr>
-              <th>#ID</th>
-              <th>User</th>
-              <th>Order ID</th>
-              <th>Type</th>
-              <th>Product / Reason</th>
-              <th>Amount</th>
-              <th>Image</th>
-              <th>Status</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for r in return_requests %}
-            <tr>
-              <td>#{{ r.id }}</td>
-              <td>{{ r.user.email }}</td>
-              <td>{{ r.order.order_id }}</td>
-              <td class="text-center">
-                {% if r.order_item %}
-                  <span class="badge badge-warning">Item Refund</span>
-                {% else %}
-                  <span class="badge badge-info">Full Order</span>
-                {% endif %}
-              </td>
-              <td>
-                {% if r.order_item %}
-                  {{ r.order_item.product.name }}<br>
-                  <small>{{ r.reason|truncatechars:50 }}</small>
-                {% else %}
-                  {{ r.reason|truncatechars:60 }}
-                {% endif %}
-              </td>
-              <td class="text-center">₹{{ r.refund_amount }}</td>
-              <td class="text-center">
-                {% if r.image %}
-                  <img src="{{ r.image.url }}" class="img-thumbnail" style="width:50px; height:50px;">
-                {% else %}
-                  <span class="text-muted small">No Image</span>
-                {% endif %}
-              </td>
-              <td class="text-center">
-                {% if r.verified %}
-                  {% if r.refunded %}
-                    <span class="badge badge-success">Refunded</span>
-                  {% else %}
-                    <span class="badge badge-danger">Rejected</span>
-                  {% endif %}
-                {% else %}
-                  <span class="badge badge-secondary">Pending</span>
-                {% endif %}
-              </td>
-              <td class="text-center">
-                <a href="{% url 'admin_panel:approve_return_request' r.id %}" class="btn btn-primary btn-sm mb-1">
-                  {% if not r.verified %}Verify{% elif not r.refunded %}Proceed{% else %}Done{% endif %}
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="logo">
+                <img src="{% static 'images/logo.png' %}" alt="Lush Dairy Logo">
+            </div>
+            <div class="nav-menu">
+                <a href="{% url 'admin_panel:admin_dashboard' %}" class="nav-item">
+                    <i class="fas fa-tachometer-alt"></i> Dashboard
                 </a>
-                {% if r.verified and not r.refunded %}
-                <a href="{% url 'admin_panel:reject_return_request' r.id %}" class="btn btn-secondary btn-sm mb-1">Reject</a>
-                {% endif %}
-              </td>
-            </tr>
-            {% empty %}
-            <tr>
-              <td colspan="9" class="text-center">No complaints found.</td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-
-      <!-- Pagination -->
-      <div class="pagination mt-3">
-        {% if return_requests.has_previous %}
-          <a href="?page={{ return_requests.previous_page_number }}">&laquo;</a>
-        {% endif %}
-        <span class="current">{{ return_requests.number }}</span>
-        {% if return_requests.has_next %}
-          <a href="?page={{ return_requests.next_page_number }}">&raquo;</a>
-        {% endif %}
-      </div>
+                <a href="{% url 'admin_panel:admin_order_list' %}"
+                   class="nav-item active">
+                    <i class="fas fa-shopping-cart"></i> Orders
+                </a>
+                <a href="{% url 'admin_panel:product_list' %}" class="nav-item">
+                    <i class="fas fa-box"></i> Products
+                </a>
+                <a href="{% url 'admin_panel:sales_report' %}" class="nav-item">
+                    <i class="fas fa-chart-line"></i> Sales Report
+                </a>
+                <a href="{% url 'admin_panel:user_list' %}" class="nav-item">
+                    <i class="fas fa-users"></i> Customers
+                </a>
+                <a href="{% url 'admin_panel:category_list' %}" class="nav-item">
+                    <i class="fas fa-tags"></i> Categories
+                </a>
+                <a href="{% url 'admin_panel:inventory_list' %}" class="nav-item">
+                    <i class="fas fa-warehouse"></i> Stock
+                </a>
+                <a href="{% url 'admin_panel:coupon_list' %}" class="nav-item">
+                    <i class="fas fa-ticket-alt"></i> Coupons
+                </a>
+                <a href="{% url 'admin_panel:offer_list' %}" class="nav-item">
+                    <i class="fas fa-bullhorn"></i> Offers
+                </a>
+                <a href="{% url 'admin_panel:wallet_transactions_list' %}"
+                   class="nav-item">
+                    <i class="fas fa-wallet"></i> Wallet
+                </a>
+                <a href="{% url 'admin_panel:admin_return_requests' %}" class="nav-item">
+                    <i class="fas fa-exchange-alt"></i> Complaints
+                </a>
+                <a href="{% url 'admin_panel:admin_logout' %}" class="nav-item">
+                    <i class="fas fa-sign-out-alt"></i> Sign Out
+                </a>
+            </div>
+        </div>
+        <!-- Main content -->
+        <div class="main-content">
+            <!-- Header -->
+            <div class="header d-flex justify-content-between align-items-center mb-4">
+                <form class="search-bar"
+                      method="get"
+                      action="{% url 'admin_panel:admin_return_requests' %}">
+                    <input type="text"
+                           name="search"
+                           placeholder="Search complaints or orders...">
+                    <button type="submit">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </form>
+                <div class="user-info d-flex align-items-center">
+                    <div class="avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <span class="ms-2">Admin</span>
+                </div>
+            </div>
+            <!-- Complaints Section -->
+            <div class="categories-section">
+                <div class="section-header d-flex justify-content-between align-items-center mb-3">
+                    <h2 class="section-title">Complaints & Issues</h2>
+                </div>
+                <div class="table-responsive">
+                    <table class="categories-table table-hover">
+                        <thead>
+                            <tr>
+                                <th>#ID</th>
+                                <th>User</th>
+                                <th>Order ID</th>
+                                <th>Type</th>
+                                <th>Product / Reason</th>
+                                <th>Amount</th>
+                                <th>Image</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for r in return_requests %}
+                                <tr>
+                                    <td>#{{ r.id }}</td>
+                                    <td>{{ r.user.email }}</td>
+                                    <td>{{ r.order.order_id }}</td>
+                                    <td class="text-center">
+                                        {% if r.order_item %}
+                                            <span class="badge badge-warning">Item Refund</span>
+                                        {% else %}
+                                            <span class="badge badge-info">Full Order</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if r.order_item %}
+                                            {{ r.order_item.product.name }}
+                                            <br>
+                                            <small>{{ r.reason|truncatechars:50 }}</small>
+                                        {% else %}
+                                            {{ r.reason|truncatechars:60 }}
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center">₹{{ r.refund_amount }}</td>
+                                    <td class="text-center">
+                                        {% if r.image %}
+                                            <img src="{{ r.image.url }}"
+                                                 class="img-thumbnail"
+                                                 style="width:50px;
+                                                        height:50px">
+                                        {% else %}
+                                            <span class="text-muted small">No Image</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center">
+                                        {% if r.verified %}
+                                            {% if r.refunded %}
+                                                <span class="badge badge-success">Refunded</span>
+                                            {% else %}
+                                                <span class="badge badge-danger">Rejected</span>
+                                            {% endif %}
+                                        {% else %}
+                                            <span class="badge badge-secondary">Pending</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center">
+                                        <a href="{% url 'admin_panel:approve_return_request' r.id %}"
+                                           class="btn btn-primary btn-sm mb-1">
+                                            {% if not r.verified %}
+                                                Verify
+                                            {% elif not r.refunded %}
+                                                Proceed
+                                            {% else %}
+                                                Done
+                                            {% endif %}
+                                        </a>
+                                        {% if r.verified and not r.refunded %}
+                                            <a href="{% url 'admin_panel:reject_return_request' r.id %}"
+                                               class="btn btn-secondary btn-sm mb-1">Reject</a>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="9" class="text-center">No complaints found.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <!-- Pagination -->
+                <div class="pagination mt-3">
+                    {% if return_requests.has_previous %}<a href="?page={{ return_requests.previous_page_number }}">&laquo;</a>{% endif %}
+                    <span class="current">{{ return_requests.number }}</span>
+                    {% if return_requests.has_next %}<a href="?page={{ return_requests.next_page_number }}">&raquo;</a>{% endif %}
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
-</div>
-
-<style>
+    <style>
 /* Container & Layout */
 .container {
   display: flex;
@@ -316,5 +329,5 @@
   .header { flex-direction: column; align-items: flex-start; }
   .search-bar { width: 100%; margin-bottom: 10px; }
 }
-</style>
+    </style>
 {% endblock %}

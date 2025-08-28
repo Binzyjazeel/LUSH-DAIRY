@@ -1,12 +1,13 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Lush Dairy Admin - Transaction Details</title>
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
-  <style>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Lush Dairy Admin - Transaction Details</title>
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+              rel="stylesheet">
+        <style>
     :root {
       --primary-color: #4d8b31;
       --secondary-color: #e8f5e9;
@@ -54,92 +55,104 @@
     .btn-primary { background-color: var(--primary-color); color:white; border:none; }
     .btn-secondary { background-color: var(--light-gray); color:var(--text-color); border:1px solid var(--border-color); }
     .btn i { margin-right:5px; }
-  </style>
-</head>
-<body>
-<div class="container">
-  <!-- Sidebar -->
-  <div class="sidebar">
-    <div class="logo">
-      <img src="{% static 'images/logo.png' %}" alt="Lush Dairy Logo">
-     
-    </div>
-    <div class="nav-menu">
-      <a href="{% url 'admin_panel:admin_dashboard' %}" class="nav-item"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
-      
-      <a href="{% url 'admin_panel:admin_order_list' %}" class="nav-item"><i class="fas fa-shopping-cart"></i> Order</a>
-      <a href="{% url 'admin_panel:product_list' %}" class="nav-item"><i class="fas fa-box"></i> Products</a>
-      <a href="#" class="nav-item"><i class="fas fa-chart-line"></i> Sales report</a>
-      <a href="{% url 'admin_panel:user_list' %}" class="nav-item"><i class="fas fa-users"></i> Customer</a>
-      <a href="{% url 'admin_panel:category_list' %}" class="nav-item"><i class="fas fa-tags"></i> Category</a>
-      <a href="{% url 'admin_panel:inventory_list' %}" class="nav-item"><i class="fas fa-warehouse"></i> Stock</a>
-      <a href="{% url 'admin_panel:admin_return_requests' %}" class="nav-item"><i class="fas fa-exchange-alt"></i>Complaints</a>
-      <a href="{% url 'admin_panel:wallet_transactions_list' %}" class="nav-item active"><i class="fas fa-wallet"></i> Wallet</a>
-      
-      <a href="{% url 'admin_panel:admin_logout' %}" class="nav-item"><i class="fas fa-sign-out-alt"></i> Sign Out</a>
-    </div>
-  </div>
-
-  <!-- Main Content -->
-  <div class="main-content">
-    <div class="header">
-      <div class="search-bar">
-        <form method="get" action="{% url 'admin_panel:wallet_transactions_list' %}">
-          <input type="text" name="q" placeholder="Search transactions..." value="{{ request.GET.q }}">
-          <button type="submit"><i class="fas fa-search"></i></button>
-        </form>
-      </div>
-      <div class="user-info">
-        <div class="avatar"><i class="fas fa-user"></i></div>
-        <span>Admin</span>
-      </div>
-    </div>
-
-    <div class="card-section">
-      <h2 class="section-title">Transaction Details</h2>
-      <table class="detail-table">
-        <tr>
-          <th>User</th>
-          <td>{{ transaction.wallet.user.username }}<br><small>{{ transaction.wallet.user.email }}</small></td>
-        </tr>
-        <tr>
-          <th>Transaction ID</th>
-          <td>{{ transaction.id }}</td>
-        </tr>
-        <tr>
-          <th>Date</th>
-          <td>{{ transaction.created_at|date:"d-m-Y H:i" }}</td>
-        </tr>
-        <tr>
-          <th>Type</th>
-          <td>
-            {% if transaction.transaction_type == 'credit' %}
-              <span class="badge-credit">Credit</span>
-            {% else %}
-              <span class="badge-debit">Debit</span>
-            {% endif %}
-          </td>
-        </tr>
-        <tr>
-          <th>Amount</th>
-          <td>₹{{ transaction.amount }}</td>
-        </tr>
-        <tr>
-          <th>Description</th>
-          <td>
-            {{ transaction.description }}<br><br>
-            {% if order_id %}
-    <a href="{% url 'admin_panel:admin_order_detail' order_id %}" class="btn btn-primary mt-2">
-        <i class="fas fa-eye"></i> View Related Order
-    </a>
-{% endif %}
-          </td>
-        </tr>
-      </table>
-      <br>
-      <a href="{% url 'admin_panel:wallet_transactions_list' %}" class="btn btn-secondary mt-3">Back</a>
-    </div>
-  </div>
-</div>
-</body>
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <div class="logo">
+                    <img src="{% static 'images/logo.png' %}" alt="Lush Dairy Logo">
+                </div>
+                <div class="nav-menu">
+                    <a href="{% url 'admin_panel:admin_dashboard' %}" class="nav-item"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+                    <a href="{% url 'admin_panel:admin_order_list' %}" class="nav-item"><i class="fas fa-shopping-cart"></i> Order</a>
+                    <a href="{% url 'admin_panel:product_list' %}" class="nav-item"><i class="fas fa-box"></i> Products</a>
+                    <a href="#" class="nav-item"><i class="fas fa-chart-line"></i> Sales report</a>
+                    <a href="{% url 'admin_panel:user_list' %}" class="nav-item"><i class="fas fa-users"></i> Customer</a>
+                    <a href="{% url 'admin_panel:category_list' %}" class="nav-item"><i class="fas fa-tags"></i> Category</a>
+                    <a href="{% url 'admin_panel:inventory_list' %}" class="nav-item"><i class="fas fa-warehouse"></i> Stock</a>
+                    <a href="{% url 'admin_panel:admin_return_requests' %}" class="nav-item"><i class="fas fa-exchange-alt"></i>Complaints</a>
+                    <a href="{% url 'admin_panel:wallet_transactions_list' %}"
+                       class="nav-item active"><i class="fas fa-wallet"></i> Wallet</a>
+                    <a href="{% url 'admin_panel:admin_logout' %}" class="nav-item"><i class="fas fa-sign-out-alt"></i> Sign Out</a>
+                </div>
+            </div>
+            <!-- Main Content -->
+            <div class="main-content">
+                <div class="header">
+                    <div class="search-bar">
+                        <form method="get"
+                              action="{% url 'admin_panel:wallet_transactions_list' %}">
+                            <input type="text"
+                                   name="q"
+                                   placeholder="Search transactions..."
+                                   value="{{ request.GET.q }}">
+                            <button type="submit">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </form>
+                    </div>
+                    <div class="user-info">
+                        <div class="avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <span>Admin</span>
+                    </div>
+                </div>
+                <div class="card-section">
+                    <h2 class="section-title">Transaction Details</h2>
+                    <table class="detail-table">
+                        <tr>
+                            <th>User</th>
+                            <td>
+                                {{ transaction.wallet.user.username }}
+                                <br>
+                                <small>{{ transaction.wallet.user.email }}</small>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Transaction ID</th>
+                            <td>{{ transaction.id }}</td>
+                        </tr>
+                        <tr>
+                            <th>Date</th>
+                            <td>{{ transaction.created_at|date:"d-m-Y H:i" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Type</th>
+                            <td>
+                                {% if transaction.transaction_type == 'credit' %}
+                                    <span class="badge-credit">Credit</span>
+                                {% else %}
+                                    <span class="badge-debit">Debit</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Amount</th>
+                            <td>₹{{ transaction.amount }}</td>
+                        </tr>
+                        <tr>
+                            <th>Description</th>
+                            <td>
+                                {{ transaction.description }}
+                                <br>
+                                <br>
+                                {% if order_id %}
+                                    <a href="{% url 'admin_panel:admin_order_detail' order_id %}"
+                                       class="btn btn-primary mt-2">
+                                        <i class="fas fa-eye"></i> View Related Order
+                                    </a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    </table>
+                    <br>
+                    <a href="{% url 'admin_panel:wallet_transactions_list' %}"
+                       class="btn btn-secondary mt-3">Back</a>
+                </div>
+            </div>
+        </div>
+    </body>
 </html>
