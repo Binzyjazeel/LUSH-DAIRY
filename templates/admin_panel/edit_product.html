@@ -601,28 +601,41 @@ function closeModal() {
 }
 
 
-document.querySelector("form").addEventListener("submit", function (e) {
+document.querySelector("form").addEventListener("submit", async function (e) {
+    e.preventDefault();
+
+    const fileInput = document.getElementById("image-upload");
     const formData = new FormData(this);
-    filesToUpload.forEach((file, i) => {
-        formData.append('images', file, file.name);
+
+  
+    filesToUpload.forEach((file) => {
+        formData.append("images", file, file.name);
     });
 
- 
-    fetch(this.action, {
-        method: "POST",
-        body: formData,
-    }).then(response => {
-        if (response.ok) {
-            window.location.href = "/accounts/products/"; 
+    try {
+        const response = await fetch(this.action, {
+            method: "POST",
+            body: formData,
+        });
+
+        if (response.redirected) {
+           
+            window.location.href = response.url;
+        } else if (response.ok) {
+            
+            alert("Changes saved successfully!");
+            window.location.reload();  
         } else {
             alert("Upload failed");
         }
-    });
-
-    e.preventDefault(); 
+    } catch (err) {
+        alert("Something went wrong: " + err);
+    }
 });
+
+
             </script>
-            <!-- Cropper.js JS -->
+          
             <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
             </script>
             <img id="preview-main-img"

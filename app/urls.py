@@ -55,9 +55,9 @@ urlpatterns = [
     path("cart/decrement/", views.decrement_cart, name="decrement_cart"),
     path("cart/remove/<int:cart_id>/", views.remove_cart_item, name="remove_cart_item"),
     path("checkout/", views.checkout_view, name="checkout"),
-    path(
-        "add-address-checkout/", views.add_address_checkout, name="add_address_checkout"
-    ),
+    path("add-address-checkout/", views.add_address_checkout, name="add_address_checkout"),
+
+   
     path("wishlist/", views.wishlist_view, name="wishlist"),
     path(
         "wishlist/add/<int:product_id>/", views.add_to_wishlist, name="add_to_wishlist"

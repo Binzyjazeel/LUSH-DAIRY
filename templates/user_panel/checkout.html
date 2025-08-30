@@ -2,26 +2,22 @@
 {% load static %}
 {% load form_tags %}
 {% block content %}
-    <style>
-    /* Smooth hover for cards */
+<style>
     .card-hover:hover {
         transform: translateY(-3px);
         transition: all 0.2s ease-in-out;
     }
-    /* Premium section style */
     .section-box {
         background: #ffffff;
         border-radius: 1rem;
         box-shadow: 0 2px 8px rgba(0,0,0,0.05);
         padding: 1.5rem;
     }
-    /* Highlight discount row */
     #discount-row {
         background-color: #e8f9f0;
         border-radius: 0.5rem;
         padding: 0.5rem 0.75rem;
     }
-    /* Price labels */
     .price-label {
         font-size: 0.95rem;
         font-weight: 600;
@@ -30,261 +26,254 @@
         font-size: 1rem;
         font-weight: bold;
     }
-    </style>
-    <div class="container my-5">
-        <div class="row g-4">
-            <!-- Address Section -->
-            <div class="col-md-6">
-                <div class="section-box">
-                    <h3 class="mb-4 text-primary fw-bold">📍 Select Delivery Address</h3>
-                    <form id="orderForm"
-                          method="POST"
-                          action="{% url 'user_panel:place_order' %}">
-                        {% csrf_token %}
-                        {% if addresses %}
-                            {% for address in addresses %}
-                                <div class="card card-hover mb-3 border-0 shadow-sm {% if address.id == default_address.id %}border-success border-2{% endif %} rounded-4">
-                                    <div class="card-body d-flex align-items-start">
-                                        <input type="radio"
-                                               id="address{{ address.id }}"
-                                               name="address"
-                                               value="{{ address.id }}"
-                                               class="form-check-input me-3 mt-1"
-                                               {% if address.id == default_address.id %}checked{% endif %}>
-                                        <div>
-                                            <h6 class="fw-bold mb-1">{{ address.name }}</h6>
-                                            <p class="mb-0 text-muted small">
-                                                {{ address.house }}, {{ address.street }}, {{ address.city }}
-                                                <br>
-                                                {{ address.state }}, {{ address.pincode }}
-                                                <br>
-                                                📞 {{ address.phone }}
-                                            </p>
-                                        </div>
-                                        <a href="{% url 'user_panel:edit_address' address.id %}"
-                                           class="ms-auto btn btn-outline-primary btn-sm rounded-circle">
-                                            <i class="bi bi-pencil"></i>
-                                        </a>
-                                    </div>
-                                </div>
-                            {% endfor %}
-                        {% else %}
-                            <p class="text-warning fst-italic">No address found. Please add one below.</p>
-                        {% endif %}
-                        <!-- Add New Address Trigger -->
-                        <button type="button"
-                                class="btn btn-outline-primary btn-sm w-100 mt-3"
-                                data-bs-toggle="modal"
-                                data-bs-target="#addAddressModal">
-                            <i class="bi bi-plus-circle me-2"></i> Add New Address
-                        </button>
-                        {% if wallet and wallet.balance > 0 %}
-                            <div class="mt-4 p-3 border rounded shadow-sm bg-light">
-                                <p class="mb-1 fw-semibold text-success">💰 Wallet Balance: ₹{{ wallet.balance }}</p>
-                                <label class="form-check-label">
-                                    <input type="checkbox"
-                                           name="use_wallet"
-                                           value="true"
-                                           class="form-check-input me-2">
-                                    Use Wallet Balance for this order
+</style>
+
+<div class="container my-5">
+    <div class="row g-4">
+     
+        <div class="col-md-6">
+            <h3 class="mb-4 text-primary fw-bold">Select Delivery Address</h3>
+
+         
+            <form id="orderForm" method="POST" action="{% url 'user_panel:place_order' %}">
+                {% csrf_token %}
+                {% if addresses %}
+                    {% for address in addresses %}
+                        <div class="card mb-3 shadow-sm {% if address.id == default_address.id %}border-success{% endif %}" style="cursor: pointer;">
+                            <div class="card-body d-flex justify-content-between align-items-center">
+                                <label class="flex-grow-1 mb-0" for="address{{ address.id }}">
+                                    <input type="radio" id="address{{ address.id }}" name="address" value="{{ address.id }}"
+                                           class="form-check-input me-3"
+                                           {% if address.id == default_address.id %}checked{% endif %}>
+                                    <span class="fw-semibold">{{ address.name }}</span><br>
+                                    <small class="text-muted">
+                                        {{ address.house }}, {{ address.street }}, {{ address.city }}<br>
+                                        {{ address.state }}, {{ address.pincode }}<br>
+                                        📞 {{ address.phone }}
+                                    </small>
                                 </label>
+                                <a href="{% url 'user_panel:edit_address' address.id %}"
+                                   class="btn btn-outline-secondary btn-sm ms-3" title="Edit Address">
+                                    <i class="bi bi-pencil-fill"></i>
+                                </a>
                             </div>
-                        {% endif %}
-                        {% if final_total <= 1000 %}
-                            <!-- COD Button -->
-                            <button type="submit"
-                                    name="payment_method"
-                                    value="COD"
-                                    class="btn w-100 py-3 fw-bold text-white mt-4"
-                                    style="background: linear-gradient(90deg, #28a745, #218838)">
-                                <i class="bi bi-cash-coin me-2"></i> Place Order (Cash on Delivery)
-                            </button>
-                        {% else %}
-                            <button class="btn w-100 py-3 fw-bold text-white mt-4"
-                                    disabled
-                                    style="background: gray">COD not available for orders above ₹1000</button>
-                        {% endif %}
-                        <!-- Online Payment Button -->
-                        <button type="submit"
-                                formaction="{% url 'user_panel:razorpay_checkout' %}"
-                                class="btn w-100 py-3 fw-bold text-white mt-3"
-                                style="background: linear-gradient(90deg, #dc3545, #c82333)">
-                            💳 Pay Now (Online)
-                        </button>
-                    </form>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-warning fst-italic">
+                        No address found. Please <a href="{% url 'user_panel:add_address_checkout' %}">add one</a>.
+                    </p>
+                {% endif %}
+
+                
+                {% if wallet and wallet.balance > 0 %}
+                <div class="mt-4 p-3 border rounded shadow-sm bg-light">
+                    <p class="mb-1 fw-semibold text-success">💰 Wallet Balance: ₹{{ wallet.balance }}</p>
+                    <label class="form-check-label">
+                        <input type="checkbox" name="use_wallet" value="true" class="form-check-input me-2">
+                        Use Wallet Balance for this order
+                    </label>
                 </div>
-            </div>
-            <!-- Order Summary -->
-            <div class="col-md-6">
-                <div class="section-box">
-                    <h3 class="mb-4 text-primary fw-bold">🛒 Order Summary</h3>
-                    <!-- Coupons For You -->
-                    <div class="coupon-box border p-3 rounded-4 mb-4 bg-light shadow-sm">
-                        <h5 class="fw-bold mb-3">
-                            <i class="bi bi-ticket-perforated-fill text-warning me-2"></i>Coupons For You
-                        </h5>
-                        {% if available_coupons %}
-                            <ul class="list-unstyled mb-0">
-                                {% for c in available_coupons %}
-                                    <li class="mb-2 p-2 bg-white rounded-3 shadow-sm d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <strong>{{ c.code }}</strong>
-                                            <span class="badge bg-success">{{ c.discount_percentage }}% OFF</span>
-                                        </div>
-                                    </li>
-                                {% endfor %}
-                            </ul>
-                        {% else %}
-                            <p class="text-muted">No coupons available at the moment.</p>
-                        {% endif %}
-                    </div>
-                    <!-- Apply Coupon -->
-                    <form id="coupon-form" method="POST" class="mb-4">
-                        {% csrf_token %}
-                        <div class="input-group">
-                            <input type="text"
-                                   id="coupon_code"
-                                   name="coupon_code"
-                                   class="form-control"
-                                   placeholder="Enter coupon code"
-                                   {% if applied_coupon %}value="{{ applied_coupon_code }}" disabled{% endif %}>
-                            {% if applied_coupon %}
-                                <button type="submit"
-                                        name="remove_coupon"
-                                        class="btn btn-danger"
-                                        id="remove-coupon-btn">Remove</button>
-                            {% else %}
-                                <button type="submit"
-                                        name="apply_coupon"
-                                        class="btn btn-primary"
-                                        id="apply-coupon-btn">Apply</button>
-                            {% endif %}
-                        </div>
-                    </form>
-                    <!-- Cart Items -->
-                    <div class="card shadow-sm p-4 rounded-4 mb-4">
-                        {% for item in cart_items %}
-                            <div class="d-flex align-items-center mb-4">
-                                <img src="{{ item.product.main_image.url }}"
-                                     alt="{{ item.product.name }}"
-                                     width="70"
-                                     height="70"
-                                     class="rounded-3 border me-3 object-fit-cover">
-                                <div class="flex-grow-1">
-                                    <h6 class="mb-1 fw-bold">{{ item.product.name }}</h6>
-                                    <small class="text-muted">{{ item.product_variant.variant_name }}</small>
-                                    <br>
-                                    <small>Qty: <span class="fw-semibold">{{ item.quantity }}</span></small>
-                                    <br>
-                                    <small>Price: ₹{{ item.product_variant.price|floatformat:2 }}</small>
-                                </div>
-                            </div>
-                            {% if not forloop.last %}<hr class="my-3">{% endif %}
-                        {% endfor %}
-                    </div>
-                    <!-- Price Breakdown -->
-                    <div>
-                        <div class="d-flex justify-content-between mb-2">
-                            <span class="price-label">Subtotal</span>
-                            <span id="subtotal" class="price-value text-dark">₹{{ subtotal|floatformat:2 }}</span>
-                        </div>
-                        <div class="d-flex justify-content-between mb-2 text-success"
-                             id="discount-row"
-                             style="{% if not coupon_discount %}display: none;
-                                    {% endif %}">
-                            <span class="price-label">
-                                Coupon Discount
-                                {% if applied_coupon_code %}({{ applied_coupon_code }}){% endif %}
-                            </span>
-                            <span id="coupon-discount">-₹{{ coupon_discount|floatformat:2 }}</span>
-                        </div>
-                        <div class="d-flex justify-content-between mb-2">
-                            <span class="price-label">Shipping</span>
-                            <span id="shipping" class="price-value text-dark">₹{{ shipping|default_if_none:"0.00" }}</span>
-                        </div>
-                        <hr>
-                        <div class="d-flex justify-content-between fs-5 fw-bold text-primary">
-                            <span>Total</span>
-                            <span id="final-total">₹{{ final_total|floatformat:2 }}</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
+                {% endif %}
+
+               
+                {% if final_total <= 1000 %}
+                <button type="submit"
+                        name="payment_method"
+                        value="COD"
+                        class="btn w-100 py-3 fw-bold text-white mt-4"
+                        style="background: linear-gradient(90deg, #28a745, #218838)">
+                    <i class="bi bi-cash-coin me-2"></i> Place Order (Cash on Delivery)
+                </button>
+                {% else %}
+                <button class="btn w-100 py-3 fw-bold text-white mt-4" disabled style="background: gray">
+                    COD not available for orders above ₹1000
+                </button>
+                {% endif %}
+
+                <button type="submit"
+                        formaction="{% url 'user_panel:razorpay_checkout' %}"
+                        class="btn w-100 py-3 fw-bold text-white mt-3"
+                        style="background: linear-gradient(90deg, #dc3545, #c82333)">
+                    💳 Pay Now (Online)
+                </button>
+            </form>
+
+          
+            <button type="button" class="btn btn-outline-primary btn-sm w-100 mt-3"
+                    data-bs-toggle="modal" data-bs-target="#addAddressModal">
+                <i class="bi bi-plus-circle me-2"></i> Add New Address
+            </button>
         </div>
-    </div>
-    <!-- Add Address Modal -->
-    <div class="modal fade"
-         id="addAddressModal"
-         tabindex="-1"
-         aria-labelledby="addAddressModalLabel"
-         aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-centered">
-            <div class="modal-content">
-                <form method="POST" action="{% url 'user_panel:add_address_checkout' %}">
+
+       
+        <div class="col-md-6">
+            <div class="section-box">
+                <h3 class="mb-4 text-primary fw-bold">🛒 Order Summary</h3>
+
+               
+                <div class="coupon-box border p-3 rounded-4 mb-4 bg-light shadow-sm">
+                    <h5 class="fw-bold mb-3">
+                        <i class="bi bi-ticket-perforated-fill text-warning me-2"></i>Coupons For You
+                    </h5>
+                    {% if available_coupons %}
+                        <ul class="list-unstyled mb-0">
+                            {% for c in available_coupons %}
+                                <li class="mb-2 p-2 bg-white rounded-3 shadow-sm d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>{{ c.code }}</strong>
+                                        <span class="badge bg-success">{{ c.discount_percentage }}% OFF</span>
+                                    </div>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="text-muted">No coupons available at the moment.</p>
+                    {% endif %}
+                </div>
+
+               
+                <form id="coupon-form" method="POST" class="mb-4">
                     {% csrf_token %}
-                    <div class="modal-header">
-                        <h5 class="modal-title text-primary fw-bold">Add New Address</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                    </div>
-                    <div class="modal-body">
-                        {% for field in address_form %}
-                            <div class="mb-3">
-                                <label class="form-label">{{ field.label }}</label>
-                                {{ field|add_class:"form-control" }}
-                                {% for error in field.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
-                            </div>
-                        {% endfor %}
-                    </div>
-                    <div class="modal-footer">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-save me-1"></i> Save Address
-                        </button>
+                    <div class="input-group">
+                        <input type="text" id="coupon_code" name="coupon_code"
+                               class="form-control"
+                               placeholder="Enter coupon code"
+                               {% if applied_coupon %}value="{{ applied_coupon_code }}" disabled{% endif %}>
+                        {% if applied_coupon %}
+                        <button type="submit" name="remove_coupon" class="btn btn-danger" id="remove-coupon-btn">Remove</button>
+                        {% else %}
+                        <button type="submit" name="apply_coupon" class="btn btn-primary" id="apply-coupon-btn">Apply</button>
+                        {% endif %}
                     </div>
                 </form>
+
+             
+                <div class="card shadow-sm p-4 rounded-4 mb-4">
+                    {% for item in cart_items %}
+                        <div class="d-flex align-items-center mb-4">
+                            <img src="{{ item.product.main_image.url }}" alt="{{ item.product.name }}"
+                                 width="70" height="70" class="rounded-3 border me-3 object-fit-cover">
+                            <div class="flex-grow-1">
+                                <h6 class="mb-1 fw-bold">{{ item.product.name }}</h6>
+                                <small class="text-muted">{{ item.product_variant.variant_name }}</small><br>
+                                <small>Qty: <span class="fw-semibold">{{ item.quantity }}</span></small><br>
+                                <small>Price: ₹{{ item.product_variant.price|floatformat:2 }}</small>
+                            </div>
+                        </div>
+                        {% if not forloop.last %}<hr class="my-3">{% endif %}
+                    {% endfor %}
+                </div>
+
+              
+                <div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="price-label">Subtotal</span>
+                        <span id="subtotal" class="price-value text-dark">₹{{ subtotal|floatformat:2 }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2 text-success"
+                         id="discount-row"
+                         style="{% if not coupon_discount %}display: none;{% endif %}">
+                        <span class="price-label">
+                          Coupon Discount {% if applied_coupon_code %}({{ applied_coupon_code }}){% endif %}
+                        </span>
+                        <span id="coupon-discount">-₹{{ coupon_discount|floatformat:2 }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="price-label">Shipping</span>
+                        <span id="shipping" class="price-value text-dark">₹{{ shipping|default_if_none:"0.00" }}</span>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between fs-5 fw-bold text-primary">
+                        <span>Total</span>
+                        <span id="final-total">₹{{ final_total|floatformat:2 }}</span>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-    <script>
-document.getElementById('coupon-form').addEventListener('submit', function(e) {
-    e.preventDefault();
-    const couponCode = document.getElementById('coupon_code').value;
-    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-    fetch("{% url 'user_panel:apply_coupon' %}", {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
-        body: JSON.stringify({ coupon_code: couponCode })
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (data.success) {
-            document.getElementById('subtotal').textContent = `₹${parseFloat(data.subtotal).toFixed(2)}`;
-            document.getElementById('shipping').textContent = `₹${parseFloat(data.shipping).toFixed(2)}`;
-            document.getElementById('final-total').textContent = `₹${parseFloat(data.final_total).toFixed(2)}`;
-            const discountRow = document.getElementById('discount-row');
-            discountRow.style.display = 'flex';
-            document.getElementById('coupon-discount').textContent = `-₹${parseFloat(data.coupon_discount).toFixed(2)}`;
-        } else {
-            alert(data.message);
-        }
-    })
-    .catch(err => console.error('Coupon Apply Error:', err));
-});
+</div>
 
-document.addEventListener('DOMContentLoaded', function () {
-  const removeBtn = document.getElementById('remove-coupon-btn');
-  if (removeBtn) {
-    removeBtn.addEventListener('click', function () {
-      const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-      fetch("{% url 'user_panel:remove_coupon' %}", {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
-        body: JSON.stringify({})
-      })
-      .then(res => res.json())
-      .then(data => { if (data.success) location.reload(); else alert(data.message); })
-      .catch(err => console.error('Remove Coupon Error:', err));
+
+<div class="modal fade" id="addAddressModal" tabindex="-1" aria-labelledby="addAddressModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <form id="addAddressForm" method="POST" action="{% url 'user_panel:add_address_checkout' %}">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title text-primary fw-bold" id="addAddressModalLabel">Add New Address</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body">
+                    {% for field in address_form %}
+                        <div class="mb-3">
+                            <label class="form-label">{{ field.label }}</label>
+                            {{ field|add_class:"form-control" }}
+                            {% for error in field.errors %}
+                                <div class="text-danger small">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-save me-1"></i> Save Address
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+$(document).ready(function(){
+   
+    $("#coupon-form").submit(function(e){
+        e.preventDefault();
+        const couponCode = $("#coupon_code").val();
+        const csrfToken = $('[name=csrfmiddlewaretoken]').val();
+        $.ajax({
+            url: "{% url 'user_panel:apply_coupon' %}",
+            type: "POST",
+            headers: {"X-CSRFToken": csrfToken},
+            contentType: "application/json",
+            data: JSON.stringify({coupon_code: couponCode}),
+            success: function(data){
+                if(data.success){
+                    $("#subtotal").text(`₹${parseFloat(data.subtotal).toFixed(2)}`);
+                    $("#shipping").text(`₹${parseFloat(data.shipping).toFixed(2)}`);
+                    $("#final-total").text(`₹${parseFloat(data.final_total).toFixed(2)}`);
+                    $("#discount-row").show();
+                    $("#coupon-discount").text(`-₹${parseFloat(data.coupon_discount).toFixed(2)}`);
+                } else {
+                    alert(data.message);
+                }
+            }
+        });
     });
-  }
+
+    $("#remove-coupon-btn").click(function(e){
+        e.preventDefault();
+        const csrfToken = $('[name=csrfmiddlewaretoken]').val();
+        $.ajax({
+            url: "{% url 'user_panel:remove_coupon' %}",
+            type: "POST",
+            headers: {"X-CSRFToken": csrfToken},
+            contentType: "application/json",
+            data: JSON.stringify({}),
+            success: function(data){
+                if(data.success) location.reload();
+                else alert(data.message);
+            }
+        });
+    });
 });
-    </script>
+</script>
+
 {% endblock %}

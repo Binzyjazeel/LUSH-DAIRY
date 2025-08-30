@@ -61,8 +61,15 @@ class ProductForm(forms.ModelForm):
         cleaned_data = super().clean()
         name = cleaned_data.get("name")
         category = cleaned_data.get("category")
-        if Product.objects.filter(name__iexact=name, category=category).exists():
+
+     
+        qs = Product.objects.filter(name__iexact=name, category=category)
+        if self.instance and self.instance.pk:  
+            qs = qs.exclude(pk=self.instance.pk)
+
+        if qs.exists():
             raise forms.ValidationError("This product already exists in this category.")
+
         return cleaned_data
 
 

@@ -75,6 +75,7 @@ from app.models import (
     WalletTransaction,
 )
 from app.utils import calculate_cart_totals
+from accounts.forms import AddressForm
 from .forms import (
     AddressForm,
     EmailChangeForm,
@@ -164,7 +165,7 @@ def send_otp(request):
         send_mail(
             "Your OTP for Sign Up",
             f"Your OTP is: {otp}",
-            "djangoalerts0011@gmail.com",
+            settings.DEFAULT_FROM_EMAIL,
             [email],
             fail_silently=False,
         )
@@ -1153,18 +1154,20 @@ def remove_cart_item(request, cart_id):
 @never_cache
 @login_required
 def checkout_view(request):
+    
     Cart.objects.filter(user=request.user, product__is_deleted=True).delete()
+
     wallet, _ = Wallet.objects.get_or_create(user=request.user)
     cart_items = Cart.objects.filter(
         user=request.user, product__is_deleted=False
     ).select_related("product")
 
+
     if not cart_items.exists():
-        messages.warning(
-            request, "Your cart is empty. Please add items before checkout."
-        )
+        messages.warning(request, "Your cart is empty. Please add items before checkout.")
         return redirect("user_panel:cart")
 
+    
     out_of_stock_items = []
     for item in cart_items:
         if item.quantity > item.product_variant.stock:
@@ -1177,21 +1180,22 @@ def checkout_view(request):
                 item.save()
                 messages.warning(
                     request,
-                    f"Quantity for '{item.product.name}' adjusted to {item.product_variant.stock} due to stock.",
+                    f"Quantity for '{item.product.name}' adjusted to {item.product_variant.stock} due to stock."
                 )
             else:
                 item.delete()
                 messages.warning(
                     request,
-                    f"'{item.product.name}' removed from cart due to out of stock.",
+                    f"'{item.product.name}' removed from cart due to out of stock."
                 )
         return redirect("user_panel:cart")
 
     coupon_discount = 0
     applied_coupon = None
     coupon = None
-
+       
     if request.method == "POST":
+        
         if "apply_coupon" in request.POST:
             code = request.POST.get("coupon_code", "").strip()
             try:
@@ -1202,18 +1206,18 @@ def checkout_view(request):
                     messages.error(request, "You have already used this coupon.")
                 else:
                     request.session["applied_coupon"] = coupon.code
-                    messages.success(
-                        request, f"Coupon '{coupon.code}' applied successfully!"
-                    )
+                    messages.success(request, f"Coupon '{coupon.code}' applied successfully!")
                     return redirect("user_panel:checkout")
-
             except Coupon.DoesNotExist:
                 messages.error(request, "Invalid coupon code.")
+
+        
         elif "remove_coupon" in request.POST:
             request.session.pop("applied_coupon", None)
             messages.info(request, "Coupon removed successfully.")
             return redirect("user_panel:checkout")
 
+    
     totals = calculate_cart_totals(cart_items)
     sub_total = totals.get("subtotal", 0)
 
@@ -1225,11 +1229,8 @@ def checkout_view(request):
             applied_coupon = coupon
             if coupon.valid_from and coupon.valid_to >= date.today():
                 if not coupon.used_users.filter(id=request.user.id).exists():
-                    coupon_discount = (
-                        Decimal(coupon.discount_percentage) / Decimal(100)
-                    ) * sub_total
+                    coupon_discount = (Decimal(coupon.discount_percentage) / Decimal(100)) * sub_total
                     coupon_discount = coupon_discount.quantize(Decimal("0.01"))
-
                     totals["grand_total"] = sub_total - coupon_discount
                 else:
                     messages.warning(request, "Coupon already used. Removing.")
@@ -1242,9 +1243,11 @@ def checkout_view(request):
 
     totals = calculate_cart_totals(cart_items, coupon=coupon)
 
+  
     addresses = Address.objects.filter(user=request.user)
     default_address = addresses.filter(is_default=True).first()
-    address_form = AddressForm()
+    address_form=AddressForm()
+
     available_coupons = (
         Coupon.objects.filter(active=True)
         .exclude(used_users=request.user)
@@ -1255,7 +1258,7 @@ def checkout_view(request):
         "cart_items": cart_items,
         "addresses": addresses,
         "default_address": default_address,
-        "address_form": address_form,
+        "address_form": address_form,  
         "wallet": wallet,
         "coupon_discount": coupon_discount,
         "applied_coupon": applied_coupon,
@@ -1269,14 +1272,21 @@ def checkout_view(request):
 @never_cache
 @login_required
 def add_address_checkout(request):
-    if request.method == "POST":
+    if request.method == 'POST':
         form = AddressForm(request.POST)
         if form.is_valid():
             address = form.save(commit=False)
             address.user = request.user
+            if not Address.objects.filter(user=request.user).exists():
+                address.is_default = True
             address.save()
             messages.success(request, "Address added successfully!")
-    return redirect("user_panel:checkout")
+    return redirect('user_panel:checkout')
+
+
+
+
+
 
 
 @never_cache
