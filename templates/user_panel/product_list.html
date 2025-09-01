@@ -408,7 +408,7 @@ nav a:hover::after {
                 </nav>
                 <div class="header-actions"></div>
             </header>
-            <!-- Navbar -->
+          
             <nav class="navbar navbar-expand-lg">
                 <div class="container">
                     <form class="d-flex ms-auto" method="get" action="">
@@ -418,7 +418,7 @@ nav a:hover::after {
                                name="q"
                                value="{{ query|default:'' }}">
                         <button class="btn btn-outline-light me-2" type="submit">Search</button>
-                        <!-- Cancel Button -->
+                      
                         {% if query %}
                             <a href="{% url 'user_panel:userproduct_list' %}"
                                class="btn btn-outline-secondary">Clear</a>
@@ -426,16 +426,16 @@ nav a:hover::after {
                     </form>
                 </div>
             </nav>
-            <!-- Main -->
+        
             <div class="container mt-4">
                 <div class="row">
-                    <!-- Sidebar Filters -->
+                 
                     <div class="col-md-3 mb-4">
                         <div class="sidebar">
                             <h5>Filter Products</h5>
                             <form method="get" action="">
                                 <input type="hidden" name="q" value="{{ query|default:'' }}">
-                                <!-- Category -->
+                               
                                 <div class="mb-3">
                                     <label class="form-label">Category</label>
                                     <select class="form-select" name="category">
@@ -448,7 +448,7 @@ nav a:hover::after {
                                         {% endfor %}
                                     </select>
                                 </div>
-                                <!-- Price Range -->
+                              
                                 <div class="mb-3">
                                     <label class="form-label">Price Range</label>
                                     <div class="d-flex gap-2">
@@ -464,7 +464,7 @@ nav a:hover::after {
                                                value="{{ max_price|default:'' }}">
                                     </div>
                                 </div>
-                                <!-- Sort -->
+                               
                                 <div class="mb-3">
                                     <label class="form-label">Sort By</label>
                                     <select class="form-select" name="sort">
@@ -488,7 +488,7 @@ nav a:hover::after {
                             </form>
                         </div>
                     </div>
-                    <!-- Product List -->
+                  
                     <div class="col-md-9">
                         <div class="row">
                             {% for product in products %}

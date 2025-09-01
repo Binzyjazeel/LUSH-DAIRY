@@ -55,7 +55,7 @@
             </form>
             <div class="mb-3">
                 <h4 class="text-dark d-inline" id="priceDisplay">
-                    ₹{{ selected_variant.price }} <!--selected variant price -->
+                    ₹{{ selected_variant.price }} 
                 </h4>
                 <small class="text-danger" id="delPrice">
                     {% if selected_variant.price < product.selling_price %}<del>₹{{ product.selling_price }}</del>{% endif %}
@@ -64,13 +64,13 @@
                     {% endif %}
                 </small>
             </div>
-            <!-- Stock -->
+         
             {% if selected_variant.stock > 0 %}
                 <p class="text-success">In Stock ({{ selected_variant.stock }})</p>
             {% else %}
                 <p class="text-danger">Out of Stock</p>
             {% endif %}
-            <!-- Add to Cart + Wishlist Block -->
+         
             {% if product.is_blocked or not product.is_available or selected_variant.stock == 0 or product.category.is_blocked or not product.category.is_available %}
                 <button class="btn btn-secondary" disabled>
                     <i class="bi bi-x-circle"></i> Unavailable
@@ -85,7 +85,7 @@
                            id="selectedVariantInput"
                            value="{{ selected_variant.id }}">
                     <div class="d-flex flex-wrap align-items-center gap-2">
-                        <!-- Quantity Input -->
+                     
                         <input type="number"
                                name="quantity"
                                value="1"
@@ -93,12 +93,12 @@
                                max="{{ selected_variant.stock }}"
                                class="form-control form-control-sm"
                                style="width: 90px">
-                        <!-- Add to Cart Button -->
+                       
                         <button type="submit"
                                 class="btn btn-success btn-sm d-flex align-items-center gap-1">
                             <i class="bi bi-cart-plus"></i> Add to Cart
                         </button>
-                        <!-- Wishlist Button -->
+                      
                         {% if user.is_authenticated %}
                             {% if product in wishlist_products %}
                                 <a href="{% url 'user_panel:remove_from_wishlist' product.id %}"
@@ -123,7 +123,7 @@
                     </div>
                 </form>
             {% endif %}
-            <!-- Coupon -->
+         
             {% if product.coupon %}
                 <div class="alert alert-success p-2">
                     <strong>Use Coupon:</strong> <span class="fw-bold">{{ product.coupon.code }}</span>
@@ -131,7 +131,7 @@
                     <small>{{ product.coupon.description }}</small>
                 </div>
             {% endif %}
-            <!-- Highlights -->
+            
             <h5 class="mt-4">Highlights</h5>
             <ul class="list-unstyled">
                 {% if product.description %}
@@ -141,7 +141,7 @@
                     </li>
                 {% endif %}
             </ul>
-            <!-- Services -->
+           
             <h5 class="mt-3">Services</h5>
             <ul class="list-unstyled">
                 <li>
@@ -150,7 +150,7 @@
             </ul>
         </div>
     </div>
-    <!-- Reviews Section -->
+   
     <div class="mt-5">
         <h4>Customer Reviews</h4>
         {% for review in reviews %}
@@ -173,7 +173,7 @@
             </p>
         {% endif %}
     </div>
-    <!-- Related Products Section -->
+   
     <div class="mt-5">
         <h4 class="mb-4">You May Also Like</h4>
         <div class="row g-3">
@@ -208,10 +208,10 @@
             {% endif %}
         </div>
     </div>
-    <!-- Bootstrap Icons CDN (if not in base.html) -->
+ 
     <link rel="stylesheet"
           href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-    <!-- Scripts (load once, at the bottom) -->
+ 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/elevatezoom-plus@1.1.21/jquery.elevateZoom.min.js"></script>
     <script>

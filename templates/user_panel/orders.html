@@ -7,7 +7,7 @@
             <a href="{% url 'user_panel:user_profile' %}"
                class="btn btn-outline-secondary">← Back to Profile</a>
         </div>
-        <!-- Search Form -->
+       
         <form method="GET" action="" class="row g-2 mb-4">
             <div class="col-md-6 col-lg-4">
                 <input type="text"
@@ -22,7 +22,7 @@
         </form>
         {% if orders %}
             {% if orders.count > 1 or not order %}
-                <!-- Show list of orders -->
+                
                 <h5 class="mb-3">Search Results ({{ orders.count }})</h5>
                 <div class="list-group mb-5">
                     {% for o in orders %}
@@ -46,7 +46,7 @@
             <div class="alert alert-warning">No orders found.</div>
         {% endif %}
         {% if order %}
-            <!-- Order Details -->
+           
             <div class="card shadow-sm mb-4">
                 <div class="card-body">
                     <h5 class="card-title mb-3">Order ID: {{ order.order_id }}</h5>

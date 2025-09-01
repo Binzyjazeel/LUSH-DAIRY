@@ -352,7 +352,7 @@
         </head>
         <body>
             <div class="container-fluid main-container">
-                <!-- Cart Header -->
+              
                 <div class="cart-header fade-in">
                     <div class="row align-items-center">
                         <div class="col-md-8">
@@ -448,7 +448,7 @@
                         {% endif %}
                     </div>
                 </div>
-                <!-- Order Summary -->
+               
                 <div class="card-premium mb-4 fade-in">
                     <div class="card-body p-4">
                         <h4 class="card-title mb-4">
@@ -491,7 +491,7 @@
                         </div>
                     </div>
                 </div>
-                <!-- Bootstrap JS (Optional - for tooltips, modals, etc.) -->
+              
                 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
                 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
                 <script>
@@ -519,17 +519,17 @@ $(document).ready(function() {
             },
             success: function(response) {
                 if (response.status === 'success') {
-                    // ✅ Update quantity
+                   
                     $('#quantity-' + cartId).text(response.quantity);
                     $('#cart-items-count').text(response.total_items + ' items');
                     $('#cart-total-amount').text('₹' + response.total.toFixed(2));
                     $('#items-count').text(response.total_items + ' items');
 
 
-                    // ✅ Update item total price
+                  
                     $('#item-total-' + cartId).text('₹' + response.item_total.toFixed(2));
 
-                    // ✅ Update cart summary
+                   
                     $('#cart-subtotal').text('₹' + response.subtotal.toFixed(2));
                     $('#cart-discount').text('-₹' + response.discount.toFixed(2));
                     $('#cart-total').text('₹' + response.total.toFixed(2));

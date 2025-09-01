@@ -102,7 +102,7 @@ function resendOTP() {
     .then(data => {
         alert(data.message || data.error);
         if (!data.error) {
-            // Restart timer
+           
             seconds = 30;
             resendBtn.disabled = true;
             countdownSpan.innerText = seconds;

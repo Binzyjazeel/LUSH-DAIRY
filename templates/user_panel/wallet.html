@@ -8,7 +8,7 @@
                 <h2 class="text-success fw-bold">₹{{ wallet.balance }}</h2>
                 <hr>
                 <a href="{% url 'user_panel:order_list' %}" class="btn btn-primary mb-4">Back to Orders</a>
-                {# Transaction History #}
+            
                 {% if transactions %}
                     <h4 class="mb-3">📜 Wallet Transactions</h4>
                     <div class="table-responsive">
