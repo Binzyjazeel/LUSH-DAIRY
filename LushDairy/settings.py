@@ -96,12 +96,12 @@ DATABASES = {
         "PORT": env("DB_PORT"),
     }
 }
-
 CLOUDINARY_STORAGE = {
-    "CLOUD_NAME": "dzffflpdv",
-    "API_KEY": "521271176699565",
-    "API_SECRET": "lDU_i39zGDbTs2TctuyubyJqG70",
+    "CLOUD_NAME": env("CLOUD_NAME"),
+    "API_KEY": env("API_KEY"),
+    "API_SECRET": env("API_SECRET"),
 }
+
 
 DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
 
