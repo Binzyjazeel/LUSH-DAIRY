@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container text-center my-5">
+  <h1 class="display-4">400</h1>
+  <p class="lead">Bad request. Please check the URL and try again.</p>
+  <a href="{% url 'user_panel:home' %}" class="btn btn-secondary">Go Back</a>
+</div>
+{% endblock %}

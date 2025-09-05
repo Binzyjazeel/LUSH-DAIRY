@@ -3,6 +3,7 @@ from accounts.models import Product, ProductImage, ProductVariant, CustomUser
 from django.utils import timezone
 from django.contrib.auth.models import User
 from django.urls import reverse
+from cloudinary_storage.storage import MediaCloudinaryStorage
 
 
 class PasswordResetOTP(models.Model):
@@ -38,7 +39,7 @@ class UserProfile(models.Model):
     user = models.OneToOneField(
         CustomUser, on_delete=models.CASCADE, related_name="profile"
     )
-    profile_image = models.ImageField(
+    profile_image = models.ImageField(storage=MediaCloudinaryStorage(),
         upload_to="profiles/", default="profiles/default.jpeg"
     )
     bio = models.TextField(max_length=500, blank=True)
@@ -237,7 +238,7 @@ class ReturnRequest(models.Model):
     verified = models.BooleanField(default=False)
     refunded = models.BooleanField(default=False)
     requested_at = models.DateTimeField(auto_now_add=True)
-    image = models.ImageField(upload_to="complaint_images/", blank=True, null=True)
+    image = models.ImageField(storage=MediaCloudinaryStorage(),upload_to="complaint_images/", blank=True, null=True)
 
     def __str__(self):
         return f"ReturnRequest #{self.id} for Order {self.order.order_id}"

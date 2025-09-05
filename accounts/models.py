@@ -3,6 +3,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.utils import timezone
 from django.templatetags.static import static
+from cloudinary_storage.storage import MediaCloudinaryStorage
 
 
 class CustomUser(AbstractUser):
@@ -21,7 +22,7 @@ class CustomUser(AbstractUser):
     is_blocked = models.BooleanField(default=False)
     created_at = models.DateTimeField(default=timezone.now)
     mobile = models.CharField(max_length=15, blank=True)
-    profile_image = models.ImageField(
+    profile_image = models.ImageField(storage=MediaCloudinaryStorage(),
         upload_to="profiles/", default="profiles/default.jpeg"
     )
     bio = models.TextField(blank=True)
@@ -77,7 +78,7 @@ class Category(models.Model):
     offer_text = models.CharField(max_length=255, blank=True, null=True)
     is_available = models.BooleanField(default=True)
     is_blocked = models.BooleanField(default=False)
-    image = models.ImageField(upload_to="categories/", blank=True, null=True)
+    image = models.ImageField(storage=MediaCloudinaryStorage(),upload_to="categories/", blank=True, null=True)
     objects = CategoryManager()
     all_objects = models.Manager()
 
@@ -121,10 +122,10 @@ class Product(models.Model):
     average_rating = models.FloatField(default=0.0)
     specs = models.TextField(blank=True)
     created_at = models.DateTimeField(default=timezone.now)
-    main_image = models.ImageField(
+    main_image = models.ImageField(storage=MediaCloudinaryStorage(),
         upload_to="products/", blank=True, null=True, default="default.jpeg"
     )
-    images = models.ImageField(upload_to="product_images/", blank=True, null=True)
+    images = models.ImageField(storage=MediaCloudinaryStorage(),upload_to="product_images/", blank=True, null=True)
 
     def final_price(self):
         """Calculate the final price after discount."""
@@ -157,7 +158,7 @@ class ProductImage(models.Model):
     product = models.ForeignKey(
         Product, on_delete=models.CASCADE, related_name="uploadimage"
     )
-    image = models.ImageField(upload_to="product_images/")
+    image = models.ImageField(storage=MediaCloudinaryStorage(),upload_to="product_images/")
 
     def __str__(self):
         return f"{self.product.name} - Image"
