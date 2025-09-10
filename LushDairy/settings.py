@@ -24,7 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = env("SECRET_KEY")
 
 
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=["localhost", "127.0.0.1"])
 CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS", default=[])
@@ -175,7 +175,7 @@ DEFAULT_FROM_EMAIL = env("EMAIL_HOST_USER")
 #MEDIA_ROOT = BASE_DIR / "media"
 import os
 
-STATIC_URL = "/static/"
+
 
 
 STATICFILES_DIRS = [

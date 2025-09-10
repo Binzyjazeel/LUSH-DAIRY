@@ -1150,7 +1150,7 @@ def remove_cart_item(request, cart_id):
     Cart.objects.filter(id=cart_id, user=request.user).delete()
     return redirect("user_panel:cart")
 
-
+from accounts.forms import AddressForm
 @never_cache
 @login_required
 def checkout_view(request):

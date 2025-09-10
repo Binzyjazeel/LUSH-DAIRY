@@ -33,3 +33,20 @@ if settings.DEBUG:
     from django.contrib.staticfiles.urls import staticfiles_urlpatterns
     urlpatterns += staticfiles_urlpatterns()
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+from django.conf.urls import handler400, handler404, handler500
+from django.shortcuts import render
+
+def error_400(request, exception):
+    return render(request, "400.html", status=400)
+
+def error_404(request, exception):
+    return render(request, "404.html", status=404)
+
+def error_500(request):
+    return render(request, "500.html", status=500)
+
+handler400 = error_400
+handler404 = error_404
+handler500 = error_500
+
