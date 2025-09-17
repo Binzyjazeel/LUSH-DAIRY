@@ -1579,7 +1579,7 @@ def cancel_entire_order(request, order_id):
         order.status = "Cancelled"
         order.save()
         messages.success(request, "Order cancelled successfully.")
-        return redirect("user_panel:orders.html")
+        return redirect("user_panel:order_list")
 
     return render(request, "user_panel/cancel_order.html", {"order": order})
 
@@ -1823,7 +1823,7 @@ def razorpay_checkout_view(request):
             order_id=get_random_string(12).upper(),
             total_amount=wallet_amount_used,
             wallet_amount=wallet_amount_used,
-            status="placed",
+            status="pending",
             payment_method="Wallet",
             subtotal=totals["subtotal"],
             shipping=totals["shipping"],
@@ -1954,7 +1954,7 @@ def payment_handler(request):
         order_obj.razorpay_payment_id = payment_id
         order_obj.razorpay_signature = signature
         order_obj.payment_status = "Paid"
-        order_obj.status = "placed"
+        order_obj.status = "pending"
         order_obj.save()
 
         for item in order_obj.items.all():
